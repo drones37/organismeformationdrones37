@@ -26,6 +26,27 @@ export interface AttendanceSheet {
   status: "brouillon" | "en_cours" | "cloturee";
 }
 
+export interface ProgressionModule {
+  id: string;
+  name: string;
+  objectives: string[];
+  status: "non_evalue" | "en_cours" | "acquis" | "non_acquis";
+  comment?: string;
+  evaluatedAt?: string;
+}
+
+export interface ProgressionSheet {
+  id: string;
+  studentId: string;
+  studentName: string;
+  formation: string;
+  startDate: string;
+  endDate: string;
+  modules: ProgressionModule[];
+  globalResult?: "acquis" | "en_cours" | "non_acquis";
+  instructorName: string;
+}
+
 export interface Document {
   id: string;
   name: string;
