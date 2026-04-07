@@ -83,9 +83,32 @@ const demoDocuments: Document[] = [
   { id: "4", name: "Facture Formation Mars.pdf", category: "facture", createdAt: "2025-03-20", size: "95 Ko" },
 ];
 
+const defaultModules: Omit<ProgressionModule, "id">[] = [
+  { name: "Réglementation aérienne", objectives: ["Connaître la réglementation DGAC", "Maîtriser les scénarios STS-01", "Comprendre les restrictions de vol"], status: "non_evalue" },
+  { name: "Préparation de mission", objectives: ["Analyser les besoins de la mission", "Choisir l'aéronef adapté", "Préparer le dossier de vol"], status: "non_evalue" },
+  { name: "Pilotage en vol", objectives: ["Décoller et atterrir en sécurité", "Maîtriser les trajectoires", "Gérer les situations d'urgence"], status: "non_evalue" },
+  { name: "Techniques de pulvérisation", objectives: ["Choisir les produits adaptés", "Régler le matériel de pulvérisation", "Appliquer les techniques sur bâtiments"], status: "non_evalue" },
+  { name: "Sécurité et procédures", objectives: ["Appliquer les procédures de sécurité", "Gérer les risques", "Respecter les zones d'exclusion"], status: "non_evalue" },
+];
+
+const demoProgressions: ProgressionSheet[] = [
+  {
+    id: "1", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone - Initiation",
+    startDate: "2025-03-10", endDate: "2025-03-14", instructorName: "Stéphane PELARD",
+    globalResult: "acquis",
+    modules: defaultModules.map((m, i) => ({ ...m, id: `m${i}`, status: "acquis" as const, evaluatedAt: "2025-03-14" })),
+  },
+  {
+    id: "2", studentId: "2", studentName: "Sophie Durand", formation: "Scénarios S1/S2/S3",
+    startDate: "2025-04-01", endDate: "2025-04-05", instructorName: "Stéphane PELARD",
+    modules: defaultModules.map((m, i) => ({ ...m, id: `m${i}`, status: i < 2 ? "acquis" as const : "en_cours" as const })),
+  },
+];
+
 let students = [...demoStudents];
 let attendance = [...demoAttendance];
 let documents = [...demoDocuments];
+let progressions = [...demoProgressions];
 
 export const store = {
   getStudents: () => students,
@@ -121,4 +144,24 @@ export const store = {
     return newDoc;
   },
   deleteDocument: (id: string) => { documents = documents.filter(d => d.id !== id); },
+
+  getProgressions: () => progressions,
+  getProgressionByStudent: (studentId: string) => progressions.find(p => p.studentId === studentId),
+  addProgression: (p: Omit<ProgressionSheet, "id">) => {
+    const newP = { ...p, id: Date.now().toString() };
+    progressions = [...progressions, newP];
+    return newP;
+  },
+  updateModuleStatus: (progressionId: string, moduleId: string, status: ProgressionModule["status"], comment?: string) => {
+    progressions = progressions.map(p => p.id === progressionId ? {
+      ...p,
+      modules: p.modules.map(m => m.id === moduleId ? {
+        ...m, status, comment, evaluatedAt: new Date().toLocaleDateString("fr-FR"),
+      } : m),
+    } : p);
+  },
+  setGlobalResult: (progressionId: string, result: ProgressionSheet["globalResult"]) => {
+    progressions = progressions.map(p => p.id === progressionId ? { ...p, globalResult: result } : p);
+  },
+  getDefaultModules: () => defaultModules.map((m, i) => ({ ...m, id: `m${Date.now()}_${i}` })),
 };
