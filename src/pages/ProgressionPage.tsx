@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { store, ProgressionModule } from "@/lib/store";
-import { BookOpen, CheckCircle2, Clock, XCircle, AlertCircle, Download, Plus } from "lucide-react";
+import { FORMATION_TYPES, type FormationType } from "@/lib/formationModules";
+import { BookOpen, CheckCircle2, Clock, XCircle, AlertCircle, Download, Plus, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { generateProgressionPDF } from "@/lib/pdfGenerator";
 
 const statusConfig: Record<ProgressionModule["status"], { label: string; icon: typeof CheckCircle2; color: string }> = {
@@ -14,33 +16,60 @@ const statusConfig: Record<ProgressionModule["status"], { label: string; icon: t
   non_evalue: { label: "Non évalué", icon: AlertCircle, color: "text-muted-foreground" },
 };
 
+const RatingStars = ({ value, onChange }: { value?: number; onChange: (v: number) => void }) => (
+  <div className="flex gap-0.5">
+    {[1, 2, 3, 4, 5].map(n => (
+      <button
+        key={n}
+        onClick={() => onChange(n)}
+        className="p-0.5 hover:scale-110 transition-transform"
+      >
+        <Star
+          className={`w-4 h-4 ${n <= (value || 0) ? "fill-accent text-accent" : "text-muted-foreground/30"}`}
+        />
+      </button>
+    ))}
+  </div>
+);
+
 const ProgressionPage = () => {
   const [, forceUpdate] = useState(0);
   const [openCreate, setOpenCreate] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState("");
+  const [selectedFormation, setSelectedFormation] = useState<string>("");
 
   const progressions = store.getProgressions();
   const allStudents = store.getStudents();
 
   const handleCreate = () => {
     const student = allStudents.find(s => s.id === selectedStudent);
-    if (!student) return;
+    if (!student || !selectedFormation) return;
     store.addProgression({
       studentId: student.id,
       studentName: `${student.firstName} ${student.lastName}`,
-      formation: student.formation,
+      formation: selectedFormation,
       startDate: student.startDate,
       endDate: student.endDate,
       instructorName: "Stéphane PELARD",
-      modules: store.getDefaultModules(),
+      modules: store.getDefaultModules(selectedFormation),
     });
     setSelectedStudent("");
+    setSelectedFormation("");
     setOpenCreate(false);
     forceUpdate(n => n + 1);
   };
 
   const handleStatusChange = (progressionId: string, moduleId: string, status: ProgressionModule["status"]) => {
     store.updateModuleStatus(progressionId, moduleId, status);
+    forceUpdate(n => n + 1);
+  };
+
+  const handleRatingChange = (progressionId: string, moduleId: string, type: "start" | "end", value: number) => {
+    if (type === "start") {
+      store.updateModuleRating(progressionId, moduleId, value, undefined);
+    } else {
+      store.updateModuleRating(progressionId, moduleId, undefined, value);
+    }
     forceUpdate(n => n + 1);
   };
 
@@ -73,12 +102,23 @@ const ProgressionPage = () => {
                   <SelectTrigger><SelectValue placeholder="Sélectionner un élève" /></SelectTrigger>
                   <SelectContent>
                     {allStudents.filter(s => !store.getProgressionByStudent(s.id)).map(s => (
-                      <SelectItem key={s.id} value={s.id}>{s.firstName} {s.lastName} — {s.formation}</SelectItem>
+                      <SelectItem key={s.id} value={s.id}>{s.firstName} {s.lastName}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={handleCreate} className="w-full bg-accent text-accent-foreground hover:opacity-90" disabled={!selectedStudent}>
+              <div>
+                <Label>Type de formation</Label>
+                <Select value={selectedFormation} onValueChange={setSelectedFormation}>
+                  <SelectTrigger><SelectValue placeholder="Sélectionner la formation" /></SelectTrigger>
+                  <SelectContent>
+                    {FORMATION_TYPES.map(f => (
+                      <SelectItem key={f} value={f}>{f}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleCreate} className="w-full bg-accent text-accent-foreground hover:opacity-90" disabled={!selectedStudent || !selectedFormation}>
                 Créer le livret
               </Button>
             </div>
@@ -94,15 +134,14 @@ const ProgressionPage = () => {
           return (
             <div key={prog.id} className="bg-card rounded-xl border border-border p-6">
               <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <BookOpen className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-heading font-semibold">{prog.studentName}</h2>
-                      <p className="text-sm text-muted-foreground">{prog.formation} — {new Date(prog.startDate).toLocaleDateString("fr-FR")} au {new Date(prog.endDate).toLocaleDateString("fr-FR")}</p>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-heading font-semibold">{prog.studentName}</h2>
+                    <p className="text-sm text-muted-foreground">{prog.formation}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(prog.startDate).toLocaleDateString("fr-FR")} au {new Date(prog.endDate).toLocaleDateString("fr-FR")}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -128,7 +167,7 @@ const ProgressionPage = () => {
               {/* Progress bar */}
               <div className="mb-4">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                  <span>{acquis}/{prog.modules.length} modules acquis</span>
+                  <span>{acquis}/{prog.modules.length} items acquis</span>
                   <span>{pct}%</span>
                 </div>
                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -136,38 +175,76 @@ const ProgressionPage = () => {
                 </div>
               </div>
 
-              {/* Modules */}
-              <div className="space-y-2">
-                {prog.modules.map(mod => {
-                  const config = statusConfig[mod.status];
-                  const Icon = config.icon;
-                  return (
-                    <div key={mod.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div className="flex items-center gap-3 flex-1">
-                        <Icon className={`w-5 h-5 ${config.color}`} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{mod.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">{mod.objectives.join(" • ")}</p>
+              <Tabs defaultValue="evaluation" className="w-full">
+                <TabsList className="mb-3">
+                  <TabsTrigger value="evaluation">Évaluation des acquis</TabsTrigger>
+                  <TabsTrigger value="status">Statut par item</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="evaluation">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-2 px-3 font-medium text-muted-foreground">Item d'évaluation</th>
+                          <th className="text-center py-2 px-3 font-medium text-muted-foreground whitespace-nowrap">Début (1-5)</th>
+                          <th className="text-center py-2 px-3 font-medium text-muted-foreground whitespace-nowrap">Fin (1-5)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {prog.modules.map(mod => (
+                          <tr key={mod.id} className="border-b border-border/50 hover:bg-muted/30">
+                            <td className="py-2.5 px-3 text-sm">{mod.name}</td>
+                            <td className="py-2.5 px-3 text-center">
+                              <RatingStars
+                                value={mod.ratingStart}
+                                onChange={v => handleRatingChange(prog.id, mod.id, "start", v)}
+                              />
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              <RatingStars
+                                value={mod.ratingEnd}
+                                onChange={v => handleRatingChange(prog.id, mod.id, "end", v)}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="status">
+                  <div className="space-y-2">
+                    {prog.modules.map(mod => {
+                      const config = statusConfig[mod.status];
+                      const Icon = config.icon;
+                      return (
+                        <div key={mod.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <Icon className={`w-5 h-5 shrink-0 ${config.color}`} />
+                            <p className="text-sm font-medium truncate">{mod.name}</p>
+                          </div>
+                          <Select
+                            value={mod.status}
+                            onValueChange={v => handleStatusChange(prog.id, mod.id, v as ProgressionModule["status"])}
+                          >
+                            <SelectTrigger className="w-36 h-8 text-xs shrink-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="non_evalue">Non évalué</SelectItem>
+                              <SelectItem value="en_cours">En cours</SelectItem>
+                              <SelectItem value="acquis">Acquis</SelectItem>
+                              <SelectItem value="non_acquis">Non acquis</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                      </div>
-                      <Select
-                        value={mod.status}
-                        onValueChange={v => handleStatusChange(prog.id, mod.id, v as ProgressionModule["status"])}
-                      >
-                        <SelectTrigger className="w-36 h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="non_evalue">Non évalué</SelectItem>
-                          <SelectItem value="en_cours">En cours</SelectItem>
-                          <SelectItem value="acquis">Acquis</SelectItem>
-                          <SelectItem value="non_acquis">Non acquis</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           );
         })}
