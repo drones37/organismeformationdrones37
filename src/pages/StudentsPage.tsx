@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { store, Student } from "@/lib/store";
-import { Plus, Trash2, Search, User } from "lucide-react";
+import { Plus, Trash2, Search, User, Download, BookOpen } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { generateAttestationPDF, generateProgressionPDF } from "@/lib/pdfGenerator";
 
 const statusLabels: Record<Student["status"], string> = {
   en_cours: "En cours",
@@ -129,9 +130,28 @@ const StudentsPage = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button onClick={() => handleDelete(s.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => generateAttestationPDF(s)}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
+                      title="Télécharger l'attestation"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const prog = store.getProgressionByStudent(s.id);
+                        if (prog) generateProgressionPDF(prog);
+                      }}
+                      className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Télécharger le livret de progression"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(s.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

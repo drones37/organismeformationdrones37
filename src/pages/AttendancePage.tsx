@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { store } from "@/lib/store";
-import { Plus, ClipboardCheck, CheckCircle2, Clock, Lock } from "lucide-react";
+import { Plus, ClipboardCheck, CheckCircle2, Clock, Lock, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import SignatureCanvas from "@/components/SignatureCanvas";
+import { generateAttendancePDF } from "@/lib/pdfGenerator";
 
 const AttendancePage = () => {
   const [, forceUpdate] = useState(0);
@@ -122,11 +123,16 @@ const AttendancePage = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">{sheet.formation} — {new Date(sheet.date).toLocaleDateString("fr-FR")}</p>
               </div>
-              {sheet.status === "en_cours" && (
-                <Button variant="outline" size="sm" onClick={() => handleClose(sheet.id)}>
-                  <Lock className="w-3.5 h-3.5 mr-1" /> Clôturer
+              <div className="flex gap-2">
+                {sheet.status === "en_cours" && (
+                  <Button variant="outline" size="sm" onClick={() => handleClose(sheet.id)}>
+                    <Lock className="w-3.5 h-3.5 mr-1" /> Clôturer
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => generateAttendancePDF(sheet)}>
+                  <Download className="w-3.5 h-3.5 mr-1" /> PDF
                 </Button>
-              )}
+              </div>
             </div>
 
             <div className="space-y-2">
