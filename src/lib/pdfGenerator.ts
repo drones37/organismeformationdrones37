@@ -323,13 +323,12 @@ export function generateAttestationPDF(student: Student) {
 
 export function generateProgressionPDF(progression: ProgressionSheet) {
   const doc = new jsPDF();
-  const totalPages = 2;
 
-  // ---- PAGE 1 ----
+  // ---- PAGE 1: Couverture ----
   addHeader(doc);
-  let y = 44;
+  let y = 50;
 
-  // Title
+  // Title block
   doc.setFillColor(...COLORS.primary);
   doc.roundedRect(25, y - 3, 160, 16, 3, 3, "F");
   doc.setTextColor(...COLORS.white);
@@ -337,12 +336,17 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   doc.setFont("helvetica", "bold");
   doc.text("LIVRET DE PROGRESSION", 105, y + 7, { align: "center" });
   doc.setTextColor(...COLORS.text);
-  y += 22;
+  y += 24;
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.text("Télépilote professionnel de drone", 105, y, { align: "center" });
-  y += 12;
+  // Formation type
+  doc.setFillColor(...COLORS.accent);
+  doc.roundedRect(20, y, 170, 14, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(progression.formation.toUpperCase(), 105, y + 9, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 26;
 
   // Student info
   doc.setFillColor(...COLORS.lightGray);
@@ -350,7 +354,7 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   y += 9;
   doc.setFontSize(10);
   const infoLeft = [
-    ["Stagiaire :", `${progression.studentName}`],
+    ["Stagiaire :", progression.studentName],
     ["Formation :", progression.formation],
     ["Formateur :", progression.instructorName],
   ];
@@ -373,29 +377,46 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   });
   y += 36;
 
-  // Modules table
-  const statusLabel = (s: string) => {
-    switch (s) {
-      case "acquis": return "Acquis ✓";
-      case "en_cours": return "En cours";
-      case "non_acquis": return "Non acquis";
-      default: return "Non évalué";
-    }
-  };
+  // Mise à jour
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.text(`Dernière mise à jour le ${new Date().toLocaleDateString("fr-FR")}`, 105, y, { align: "center" });
 
-  const moduleRows = progression.modules.map((m, i) => [
-    (i + 1).toString(),
+  addFooter(doc, 1, 4);
+
+  // ---- PAGE 2: Évaluation début de formation ----
+  doc.addPage();
+  addHeader(doc);
+  y = 44;
+
+  doc.setFillColor(...COLORS.primary);
+  doc.roundedRect(25, y - 3, 160, 14, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("ÉVALUATION DÉBUT DE FORMATION", 105, y + 6, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 18;
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.text("Indiquez le niveau de maîtrise sur chacun des items : 1 = Faible — 5 = Excellent", 105, y, { align: "center" });
+  y += 8;
+
+  // Evaluation table - début
+  const evalStartRows = progression.modules.map(m => [
     m.name,
-    m.objectives.join("\n"),
-    statusLabel(m.status),
-    m.evaluatedAt || "-",
-    m.comment || "",
+    m.ratingStart === 1 ? "●" : "",
+    m.ratingStart === 2 ? "●" : "",
+    m.ratingStart === 3 ? "●" : "",
+    m.ratingStart === 4 ? "●" : "",
+    m.ratingStart === 5 ? "●" : "",
   ]);
 
   autoTable(doc, {
     startY: y,
-    head: [["N°", "Module", "Objectifs", "Statut", "Date", "Remarques"]],
-    body: moduleRows,
+    head: [["Évaluation des acquis à l'entrée", "1", "2", "3", "4", "5"]],
+    body: evalStartRows,
     theme: "grid",
     headStyles: {
       fillColor: COLORS.primary,
@@ -404,43 +425,120 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
       fontSize: 8,
       halign: "center",
     },
-    bodyStyles: {
-      fontSize: 7.5,
-      cellPadding: 3,
-    },
+    bodyStyles: { fontSize: 7.5, cellPadding: 3 },
     columnStyles: {
-      0: { halign: "center", cellWidth: 10 },
-      1: { cellWidth: 32, fontStyle: "bold" },
-      2: { cellWidth: 55 },
-      3: { halign: "center", cellWidth: 22 },
-      4: { halign: "center", cellWidth: 20 },
-      5: { cellWidth: 35 },
+      0: { cellWidth: 110 },
+      1: { halign: "center", cellWidth: 12 },
+      2: { halign: "center", cellWidth: 12 },
+      3: { halign: "center", cellWidth: 12 },
+      4: { halign: "center", cellWidth: 12 },
+      5: { halign: "center", cellWidth: 12 },
     },
     margin: { left: 15, right: 15 },
     alternateRowStyles: { fillColor: [245, 248, 250] },
-    didParseCell(data) {
-      if (data.section === "body" && data.column.index === 3) {
-        const val = data.cell.raw as string;
-        if (val.includes("Acquis")) data.cell.styles.textColor = COLORS.success;
-        else if (val.includes("En cours")) data.cell.styles.textColor = COLORS.warning;
-        else if (val.includes("Non acquis")) data.cell.styles.textColor = COLORS.danger;
-      }
-    },
   });
 
-  addFooter(doc, 1, totalPages);
+  const afterStart = (doc as any).lastAutoTable?.finalY || y + 60;
+  let sigY = afterStart + 15;
 
-  // ---- PAGE 2: Global result + Signatures ----
+  // Signatures
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Nom - Prénom - Signature de l'instructeur", 20, sigY);
+  doc.text("Nom - Prénom - Signature du Stagiaire", 120, sigY);
+  sigY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text(progression.instructorName, 20, sigY);
+  doc.text(progression.studentName, 120, sigY);
+  sigY += 3;
+  doc.setDrawColor(...COLORS.lightGray);
+  doc.rect(20, sigY, 70, 25);
+  doc.rect(120, sigY, 70, 25);
+
+  addFooter(doc, 2, 4);
+
+  // ---- PAGE 3: Évaluation fin de formation ----
   doc.addPage();
   addHeader(doc);
   y = 44;
 
-  // Global result
+  doc.setFillColor(...COLORS.primary);
+  doc.roundedRect(25, y - 3, 160, 14, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("ÉVALUATION FIN DE FORMATION", 105, y + 6, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 18;
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.text("Indiquez le niveau de maîtrise sur chacun des items : 1 = Faible — 5 = Excellent", 105, y, { align: "center" });
+  y += 8;
+
+  const evalEndRows = progression.modules.map(m => [
+    m.name,
+    m.ratingEnd === 1 ? "●" : "",
+    m.ratingEnd === 2 ? "●" : "",
+    m.ratingEnd === 3 ? "●" : "",
+    m.ratingEnd === 4 ? "●" : "",
+    m.ratingEnd === 5 ? "●" : "",
+  ]);
+
+  autoTable(doc, {
+    startY: y,
+    head: [["Évaluation des acquis à l'issue de la formation", "1", "2", "3", "4", "5"]],
+    body: evalEndRows,
+    theme: "grid",
+    headStyles: {
+      fillColor: COLORS.primary,
+      textColor: COLORS.white,
+      fontStyle: "bold",
+      fontSize: 8,
+      halign: "center",
+    },
+    bodyStyles: { fontSize: 7.5, cellPadding: 3 },
+    columnStyles: {
+      0: { cellWidth: 110 },
+      1: { halign: "center", cellWidth: 12 },
+      2: { halign: "center", cellWidth: 12 },
+      3: { halign: "center", cellWidth: 12 },
+      4: { halign: "center", cellWidth: 12 },
+      5: { halign: "center", cellWidth: 12 },
+    },
+    margin: { left: 15, right: 15 },
+    alternateRowStyles: { fillColor: [245, 248, 250] },
+  });
+
+  const afterEnd = (doc as any).lastAutoTable?.finalY || y + 60;
+  sigY = afterEnd + 15;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Nom - Prénom - Signature de l'instructeur", 20, sigY);
+  doc.text("Nom - Prénom - Signature du Stagiaire", 120, sigY);
+  sigY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text(progression.instructorName, 20, sigY);
+  doc.text(progression.studentName, 120, sigY);
+  sigY += 3;
+  doc.setDrawColor(...COLORS.lightGray);
+  doc.rect(20, sigY, 70, 25);
+  doc.rect(120, sigY, 70, 25);
+
+  addFooter(doc, 3, 4);
+
+  // ---- PAGE 4: Résultat global + Attestation ----
+  doc.addPage();
+  addHeader(doc);
+  y = 44;
+
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text("RÉSULTAT GLOBAL", 105, y, { align: "center" });
   y += 14;
 
+  // Global result checkboxes
   const results = [
     { label: "Formation acquise", key: "acquis", color: COLORS.success },
     { label: "Formation en cours d'acquisition", key: "en_cours", color: COLORS.warning },
@@ -474,7 +572,7 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   doc.setFont("helvetica", "bold");
   doc.text("Progression globale :", 40, y + 10);
   doc.setFont("helvetica", "normal");
-  doc.text(`${acquis}/${total} modules acquis (${pct}%)`, 40, y + 18);
+  doc.text(`${acquis}/${total} items acquis (${pct}%)`, 40, y + 18);
 
   // Progress bar
   doc.setFillColor(220, 220, 220);
@@ -501,7 +599,6 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   doc.text(`Fait à Montlouis sur Loire, le ${new Date().toLocaleDateString("fr-FR")}`, 20, y);
   y += 12;
 
-  // Two signature columns
   doc.setFont("helvetica", "bold");
   doc.text("Le formateur", 55, y, { align: "center" });
   doc.text("Le stagiaire", 155, y, { align: "center" });
@@ -512,12 +609,11 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   doc.text(progression.studentName, 155, y, { align: "center" });
   y += 4;
 
-  // Signature boxes
   doc.setDrawColor(...COLORS.lightGray);
   doc.rect(20, y, 70, 30);
   doc.rect(120, y, 70, 30);
 
-  addFooter(doc, 2, totalPages);
+  addFooter(doc, 4, 4);
 
   doc.save(`Livret_Progression_${progression.studentName.replace(/\s+/g, "_")}.pdf`);
 }
