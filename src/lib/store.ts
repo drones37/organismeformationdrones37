@@ -31,6 +31,8 @@ export interface ProgressionModule {
   name: string;
   objectives: string[];
   status: "non_evalue" | "en_cours" | "acquis" | "non_acquis";
+  ratingStart?: number; // 1-5, évaluation début de formation
+  ratingEnd?: number;   // 1-5, évaluation fin de formation
   comment?: string;
   evaluatedAt?: string;
 }
@@ -83,25 +85,27 @@ const demoDocuments: Document[] = [
   { id: "4", name: "Facture Formation Mars.pdf", category: "facture", createdAt: "2025-03-20", size: "95 Ko" },
 ];
 
-const defaultModules: Omit<ProgressionModule, "id">[] = [
-  { name: "Réglementation aérienne", objectives: ["Connaître la réglementation DGAC", "Maîtriser les scénarios STS-01", "Comprendre les restrictions de vol"], status: "non_evalue" },
-  { name: "Préparation de mission", objectives: ["Analyser les besoins de la mission", "Choisir l'aéronef adapté", "Préparer le dossier de vol"], status: "non_evalue" },
-  { name: "Pilotage en vol", objectives: ["Décoller et atterrir en sécurité", "Maîtriser les trajectoires", "Gérer les situations d'urgence"], status: "non_evalue" },
-  { name: "Techniques de pulvérisation", objectives: ["Choisir les produits adaptés", "Régler le matériel de pulvérisation", "Appliquer les techniques sur bâtiments"], status: "non_evalue" },
-  { name: "Sécurité et procédures", objectives: ["Appliquer les procédures de sécurité", "Gérer les risques", "Respecter les zones d'exclusion"], status: "non_evalue" },
-];
+import { getModulesForFormation } from "./formationModules";
+
+function buildModulesForFormation(formation: string): Omit<ProgressionModule, "id">[] {
+  return getModulesForFormation(formation).map(item => ({
+    name: item.name,
+    objectives: [],
+    status: "non_evalue" as const,
+  }));
+}
 
 const demoProgressions: ProgressionSheet[] = [
   {
-    id: "1", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone - Initiation",
+    id: "1", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone STS-01/STS-02",
     startDate: "2025-03-10", endDate: "2025-03-14", instructorName: "Stéphane PELARD",
     globalResult: "acquis",
-    modules: defaultModules.map((m, i) => ({ ...m, id: `m${i}`, status: "acquis" as const, evaluatedAt: "2025-03-14" })),
+    modules: buildModulesForFormation("Télépilote Drone STS-01/STS-02").map((m, i) => ({ ...m, id: `m${i}`, status: "acquis" as const, ratingStart: 2, ratingEnd: 5, evaluatedAt: "2025-03-14" })),
   },
   {
-    id: "2", studentId: "2", studentName: "Sophie Durand", formation: "Scénarios S1/S2/S3",
+    id: "2", studentId: "2", studentName: "Sophie Durand", formation: "Pulvérisation sur bâtiments par drone",
     startDate: "2025-04-01", endDate: "2025-04-05", instructorName: "Stéphane PELARD",
-    modules: defaultModules.map((m, i) => ({ ...m, id: `m${i}`, status: i < 2 ? "acquis" as const : "en_cours" as const })),
+    modules: buildModulesForFormation("Pulvérisation sur bâtiments par drone").map((m, i) => ({ ...m, id: `m${i}`, status: i < 5 ? "acquis" as const : "en_cours" as const, ratingStart: 1 })),
   },
 ];
 
@@ -160,8 +164,21 @@ export const store = {
       } : m),
     } : p);
   },
+  updateModuleRating: (progressionId: string, moduleId: string, ratingStart?: number, ratingEnd?: number) => {
+    progressions = progressions.map(p => p.id === progressionId ? {
+      ...p,
+      modules: p.modules.map(m => m.id === moduleId ? {
+        ...m,
+        ...(ratingStart !== undefined && { ratingStart }),
+        ...(ratingEnd !== undefined && { ratingEnd }),
+      } : m),
+    } : p);
+  },
   setGlobalResult: (progressionId: string, result: ProgressionSheet["globalResult"]) => {
     progressions = progressions.map(p => p.id === progressionId ? { ...p, globalResult: result } : p);
   },
-  getDefaultModules: () => defaultModules.map((m, i) => ({ ...m, id: `m${Date.now()}_${i}` })),
+  getDefaultModules: (formation?: string) => {
+    const mods = formation ? buildModulesForFormation(formation) : buildModulesForFormation("Télépilote Drone STS-01/STS-02");
+    return mods.map((m, i) => ({ ...m, id: `m${Date.now()}_${i}` }));
+  },
 };
