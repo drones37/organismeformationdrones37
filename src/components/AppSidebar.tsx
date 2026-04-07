@@ -1,10 +1,11 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardCheck, FolderOpen } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardCheck, FolderOpen, BookOpen } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
   { to: "/eleves", icon: Users, label: "Élèves" },
   { to: "/emargement", icon: ClipboardCheck, label: "Émargement" },
+  { to: "/progression", icon: BookOpen, label: "Progression" },
   { to: "/documents", icon: FolderOpen, label: "Documents" },
 ];
 
