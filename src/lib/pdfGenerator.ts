@@ -66,72 +66,80 @@ function addFooter(doc: jsPDF, pageNum?: number, totalPages?: number) {
 // ===================== FEUILLE D'ÉMARGEMENT =====================
 
 export function generateAttendancePDF(sheet: AttendanceSheet) {
-  const doc = new jsPDF();
-  addHeader(doc);
+  const doc = new jsPDF({ orientation: "landscape" });
+  addHeaderLandscape(doc);
 
-  let y = 44;
+  let y = 38;
 
   // Title
-  doc.setFontSize(16);
+  doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("FEUILLE D'ÉMARGEMENT", 105, y, { align: "center" });
-  y += 10;
+  doc.text("FEUILLE D'ÉMARGEMENT", 148.5, y, { align: "center" });
+  y += 8;
 
   // Info block
   doc.setFillColor(...COLORS.lightGray);
-  doc.roundedRect(15, y, 180, 30, 3, 3, "F");
-  y += 8;
-  doc.setFontSize(10);
+  doc.roundedRect(15, y, 267, 22, 3, 3, "F");
+  y += 7;
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.text("Session :", 20, y);
   doc.setFont("helvetica", "normal");
-  doc.text(sheet.title, 50, y);
-  y += 7;
+  doc.text(sheet.title, 48, y);
   doc.setFont("helvetica", "bold");
-  doc.text("Formation :", 20, y);
+  doc.text("Formation :", 140, y);
   doc.setFont("helvetica", "normal");
-  doc.text(sheet.formation, 50, y);
+  doc.text(sheet.formation, 172, y);
   y += 7;
   doc.setFont("helvetica", "bold");
   doc.text("Date :", 20, y);
   doc.setFont("helvetica", "normal");
-  doc.text(new Date(sheet.date).toLocaleDateString("fr-FR"), 50, y);
+  doc.text(new Date(sheet.date).toLocaleDateString("fr-FR"), 40, y);
   doc.setFont("helvetica", "bold");
-  doc.text("Lieu :", 110, y);
+  doc.text("Lieu :", 140, y);
   doc.setFont("helvetica", "normal");
-  doc.text("Montlouis sur Loire", 130, y);
-  y += 7;
-
-  // Horaires
+  doc.text("Montlouis sur Loire", 155, y);
   doc.setFont("helvetica", "bold");
-  doc.text("Horaires :", 20, y);
+  doc.text("Formateur :", 210, y);
   doc.setFont("helvetica", "normal");
-  doc.text("09h00 - 13h00 / 14h00 - 17h00", 50, y);
-  y += 10;
+  doc.text(COMPANY.owner, 240, y);
+  y += 12;
 
-  // Formateur
-  doc.setFillColor(...COLORS.accent);
-  doc.roundedRect(15, y, 180, 12, 2, 2, "F");
-  doc.setTextColor(...COLORS.white);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("FORMATEUR : " + COMPANY.owner, 20, y + 8);
-  doc.text("Signature : ____________________", 120, y + 8);
-  doc.setTextColor(...COLORS.text);
-  y += 20;
+  // Build day columns
+  const dayLabels = Array.from({ length: sheet.days }, (_, i) => `J${i + 1}`);
 
-  // Table
-  const tableData = sheet.students.map((s, i) => [
-    (i + 1).toString(),
-    s.studentName,
-    "",
-    s.signed ? "✓" : "",
-    s.signedAt || "",
-  ]);
+  // Table headers
+  const head = [["N°", "Nom Prénom", "Grade / Fonction", "Livret vu", ...dayLabels]];
+
+  const tableData = sheet.students.map((s, i) => {
+    const dayCells = dayLabels.map(day => {
+      const sig = s.signatures[day];
+      return sig?.signed ? "✓" : "";
+    });
+    return [
+      (i + 1).toString(),
+      s.studentName,
+      s.grade || "",
+      s.livretVu ? "✓" : "",
+      ...dayCells,
+    ];
+  });
+
+  const dayColWidth = Math.min(35, 120 / sheet.days);
+
+  const colStyles: Record<number, any> = {
+    0: { halign: "center", cellWidth: 12 },
+    1: { cellWidth: 50 },
+    2: { cellWidth: 45 },
+    3: { halign: "center", cellWidth: 22 },
+  };
+  dayLabels.forEach((_, i) => {
+    colStyles[4 + i] = { halign: "center", cellWidth: dayColWidth };
+  });
 
   autoTable(doc, {
     startY: y,
-    head: [["N°", "Stagiaire", "Entreprise", "Émargement Matin", "Émargement Après-midi"]],
+    head,
     body: tableData,
     theme: "grid",
     headStyles: {
@@ -139,41 +147,76 @@ export function generateAttendancePDF(sheet: AttendanceSheet) {
       textColor: COLORS.white,
       fontStyle: "bold",
       halign: "center",
-      fontSize: 9,
+      fontSize: 8,
     },
     bodyStyles: {
-      fontSize: 9,
-      cellPadding: 6,
-      minCellHeight: 18,
+      fontSize: 8,
+      cellPadding: 4,
+      minCellHeight: 16,
     },
-    columnStyles: {
-      0: { halign: "center", cellWidth: 15 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 40 },
-      3: { halign: "center", cellWidth: 42 },
-      4: { halign: "center", cellWidth: 42 },
-    },
+    columnStyles: colStyles,
     margin: { left: 15, right: 15 },
     alternateRowStyles: { fillColor: [245, 248, 250] },
-  });
-
-  // Signature images
-  const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
-  let sigY = finalY + 5;
-
-  sheet.students.forEach((s) => {
-    if (s.signed && s.signatureData) {
-      try {
-        doc.addImage(s.signatureData, "PNG", 120, sigY - 16, 30, 12);
-      } catch {
-        // skip if image fails
+    didDrawCell: (data: any) => {
+      // Draw signature images in day columns
+      if (data.section === "body" && data.column.index >= 4) {
+        const studentIdx = data.row.index;
+        const dayIdx = data.column.index - 4;
+        const student = sheet.students[studentIdx];
+        const day = dayLabels[dayIdx];
+        const sig = student?.signatures[day];
+        if (sig?.signed && sig?.signatureData) {
+          try {
+            doc.addImage(sig.signatureData, "PNG", data.cell.x + 2, data.cell.y + 1, dayColWidth - 4, data.cell.height - 2);
+          } catch { /* skip */ }
+        }
       }
-    }
+    },
   });
 
-  addFooter(doc);
+  const finalY = (doc as any).lastAutoTable?.finalY || y + 40;
+  let sigY = finalY + 10;
+
+  // Instructor signature
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Signature du formateur :", 20, sigY);
+  doc.setFont("helvetica", "normal");
+  doc.text(COMPANY.owner, 75, sigY);
+  doc.setDrawColor(...COLORS.lightGray);
+  doc.rect(140, sigY - 5, 60, 20);
+
+  addFooterLandscape(doc);
 
   doc.save(`Emargement_${sheet.title.replace(/\s+/g, "_")}.pdf`);
+}
+
+function addHeaderLandscape(doc: jsPDF) {
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, 297, 28, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("DRONES37", 15, 15);
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "normal");
+  doc.text("ORGANISME DE FORMATION", 15, 21);
+  doc.text(`${COMPANY.address}`, 282, 10, { align: "right" });
+  doc.text(`Tél: ${COMPANY.phone} | ${COMPANY.email}`, 282, 15, { align: "right" });
+  doc.text(`SIRET: ${COMPANY.siret} | NDA: ${COMPANY.nda}`, 282, 20, { align: "right" });
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(0, 28, 297, 2, "F");
+  doc.setTextColor(...COLORS.text);
+}
+
+function addFooterLandscape(doc: jsPDF) {
+  const h = doc.internal.pageSize.height;
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, h - 12, 297, 12, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(7);
+  doc.text(`EI DRONES37 — SIRET ${COMPANY.siret} — NDA ${COMPANY.nda}`, 148.5, h - 5, { align: "center" });
+  doc.setTextColor(...COLORS.text);
 }
 
 // ===================== ATTESTATION DE SUIVI =====================
