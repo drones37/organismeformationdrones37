@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { store, Student } from "@/lib/store";
 import { Plus, Trash2, Search, User, Download, BookOpen } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -22,6 +23,7 @@ const statusVariants: Record<Student["status"], string> = {
 };
 
 const StudentsPage = () => {
+  const navigate = useNavigate();
   const [, forceUpdate] = useState(0);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -39,7 +41,8 @@ const StudentsPage = () => {
     forceUpdate(n => n + 1);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     store.deleteStudent(id);
     forceUpdate(n => n + 1);
   };
@@ -108,7 +111,7 @@ const StudentsPage = () => {
           </thead>
           <tbody>
             {students.map(s => (
-              <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+              <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/eleves/${s.id}`)}>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
@@ -132,14 +135,15 @@ const StudentsPage = () => {
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button
-                      onClick={() => generateAttestationPDF(s)}
+                      onClick={(e) => { e.stopPropagation(); generateAttestationPDF(s); }}
                       className="p-1.5 rounded-lg text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
                       title="Télécharger l'attestation"
                     >
                       <Download className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         const prog = store.getProgressionByStudent(s.id);
                         if (prog) generateProgressionPDF(prog);
                       }}
@@ -148,7 +152,7 @@ const StudentsPage = () => {
                     >
                       <BookOpen className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(s.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                    <button onClick={(e) => handleDelete(s.id, e)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
