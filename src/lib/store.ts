@@ -11,18 +11,27 @@ export interface Student {
   status: "en_cours" | "terminee" | "a_venir";
 }
 
+export interface AttendanceStudent {
+  studentId: string;
+  studentName: string;
+  grade: string; // Grade / Fonction
+  livretVu: boolean;
+  signatures: {
+    [day: string]: { // "J1", "J2", "J3"
+      signed: boolean;
+      signatureData?: string;
+      signedAt?: string;
+    };
+  };
+}
+
 export interface AttendanceSheet {
   id: string;
   title: string;
   date: string;
   formation: string;
-  students: {
-    studentId: string;
-    studentName: string;
-    signed: boolean;
-    signatureData?: string;
-    signedAt?: string;
-  }[];
+  days: number; // nombre de jours (1-5)
+  students: AttendanceStudent[];
   status: "brouillon" | "en_cours" | "cloturee";
 }
 
@@ -70,10 +79,10 @@ const demoStudents: Student[] = [
 
 const demoAttendance: AttendanceSheet[] = [
   {
-    id: "1", title: "Émargement - Jour 1", date: "2025-04-01", formation: "Scénarios S1/S2/S3", status: "en_cours",
+    id: "1", title: "Émargement - Session Avril", date: "2025-04-01", formation: "Scénarios S1/S2/S3", status: "en_cours", days: 3,
     students: [
-      { studentId: "2", studentName: "Sophie Durand", signed: true, signedAt: "2025-04-01 09:02" },
-      { studentId: "5", studentName: "Maxime Robert", signed: false },
+      { studentId: "2", studentName: "Sophie Durand", grade: "Technicienne", livretVu: true, signatures: { J1: { signed: true, signedAt: "2025-04-01 09:02" }, J2: { signed: false }, J3: { signed: false } } },
+      { studentId: "5", studentName: "Maxime Robert", grade: "Ingénieur", livretVu: false, signatures: { J1: { signed: false }, J2: { signed: false }, J3: { signed: false } } },
     ],
   },
 ];
@@ -129,12 +138,28 @@ export const store = {
     attendance = [...attendance, newSheet];
     return newSheet;
   },
-  signAttendance: (sheetId: string, studentId: string, signatureData: string) => {
+  signAttendance: (sheetId: string, studentId: string, day: string, signatureData: string) => {
     attendance = attendance.map(a => a.id === sheetId ? {
       ...a,
       students: a.students.map(s => s.studentId === studentId ? {
-        ...s, signed: true, signatureData, signedAt: new Date().toLocaleString("fr-FR"),
+        ...s,
+        signatures: {
+          ...s.signatures,
+          [day]: { signed: true, signatureData, signedAt: new Date().toLocaleString("fr-FR") },
+        },
       } : s),
+    } : a);
+  },
+  updateStudentGrade: (sheetId: string, studentId: string, grade: string) => {
+    attendance = attendance.map(a => a.id === sheetId ? {
+      ...a,
+      students: a.students.map(s => s.studentId === studentId ? { ...s, grade } : s),
+    } : a);
+  },
+  toggleLivretVu: (sheetId: string, studentId: string) => {
+    attendance = attendance.map(a => a.id === sheetId ? {
+      ...a,
+      students: a.students.map(s => s.studentId === studentId ? { ...s, livretVu: !s.livretVu } : s),
     } : a);
   },
   closeAttendance: (id: string) => {
