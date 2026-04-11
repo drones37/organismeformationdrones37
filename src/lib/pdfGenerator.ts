@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { AttendanceSheet, ProgressionSheet, Student } from "./store";
+import type { AttendanceSheet, ProgressionSheet, Student, SatisfactionResponse } from "./store";
 
 const COMPANY = {
   name: "DRONES37",
@@ -13,10 +13,10 @@ const COMPANY = {
 };
 
 const COLORS = {
-  primary: [21, 67, 96] as [number, number, number],     // dark blue
-  accent: [26, 188, 156] as [number, number, number],     // teal
-  text: [44, 62, 80] as [number, number, number],
-  lightGray: [236, 240, 241] as [number, number, number],
+  primary: [42, 42, 42] as [number, number, number],
+  accent: [229, 165, 0] as [number, number, number],     // golden yellow from logo
+  text: [44, 44, 44] as [number, number, number],
+  lightGray: [245, 243, 238] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
   success: [39, 174, 96] as [number, number, number],
   warning: [243, 156, 18] as [number, number, number],
@@ -659,4 +659,311 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   addFooter(doc, 4, 4);
 
   doc.save(`Livret_Progression_${progression.studentName.replace(/\s+/g, "_")}.pdf`);
+}
+
+// ===================== CONVOCATION =====================
+
+export function generateConvocationPDF(student: Student) {
+  const doc = new jsPDF();
+  addHeader(doc);
+
+  let y = 50;
+
+  // Title
+  doc.setFillColor(...COLORS.primary);
+  doc.roundedRect(20, y - 5, 170, 16, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("CONVOCATION À UNE FORMATION", 105, y + 5, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 22;
+
+  // Subtitle
+  doc.setFillColor(...COLORS.accent);
+  doc.roundedRect(20, y, 170, 12, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(11);
+  doc.text(student.formation.toUpperCase(), 105, y + 8, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 22;
+
+  // Date & place
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`À Montlouis sur Loire, le ${new Date().toLocaleDateString("fr-FR")}`, 20, y);
+  y += 14;
+
+  // Recipient
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${student.firstName} ${student.lastName}`, 20, y);
+  y += 14;
+
+  // Body text
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  const bodyText = `Vous êtes convoqué(e) à la formation "${student.formation}".`;
+  doc.text(bodyText, 20, y, { maxWidth: 170 });
+  y += 14;
+
+  // Details box
+  doc.setFillColor(...COLORS.lightGray);
+  doc.roundedRect(20, y, 170, 50, 3, 3, "F");
+  y += 10;
+
+  const details = [
+    ["Lieu :", `19 rue Madeleine Vernet, 37270 Montlouis sur Loire`],
+    ["Durée :", `du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`],
+    ["Horaire :", "09h00"],
+    ["Matériel demandé :", "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD."],
+  ];
+
+  details.forEach(([label, val]) => {
+    doc.setFont("helvetica", "bold");
+    doc.text(label, 25, y);
+    doc.setFont("helvetica", "normal");
+    const labelWidth = doc.getTextWidth(label) + 3;
+    doc.text(val, 25 + labelWidth, y, { maxWidth: 160 - labelWidth });
+    y += 10;
+  });
+
+  y += 12;
+
+  // Signature
+  doc.setFont("helvetica", "normal");
+  doc.text("Le responsable de formation,", 20, y);
+  y += 10;
+  doc.setFont("helvetica", "bold");
+  doc.text(COMPANY.owner, 20, y);
+  y += 5;
+  doc.setDrawColor(...COLORS.lightGray);
+  doc.rect(20, y, 70, 25);
+
+  addFooter(doc);
+  doc.save(`Convocation_${student.firstName}_${student.lastName}.pdf`);
+}
+
+// ===================== CONVENTION =====================
+
+export function generateConventionPDF(student: Student) {
+  const doc = new jsPDF();
+  addHeader(doc);
+
+  let y = 48;
+
+  // Title
+  doc.setFillColor(...COLORS.primary);
+  doc.roundedRect(15, y - 5, 180, 16, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("CONVENTION DE FORMATION PROFESSIONNELLE", 105, y + 5, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 18;
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "italic");
+  doc.text("(Articles L. 6353-1 et D.6353-1 du Code du travail)", 105, y, { align: "center" });
+  y += 10;
+
+  // Between parties
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Entre les soussignés :", 20, y);
+  y += 8;
+
+  // OF info
+  doc.setFillColor(...COLORS.lightGray);
+  doc.roundedRect(20, y, 170, 28, 3, 3, "F");
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("L'Organisme de Formation :", 25, y);
+  doc.setFont("helvetica", "normal");
+  y += 6;
+  doc.text(`${COMPANY.name} — ${COMPANY.owner}`, 25, y);
+  y += 5;
+  doc.text(`${COMPANY.address}`, 25, y);
+  y += 5;
+  doc.text(`SIRET : ${COMPANY.siret} — NDA : ${COMPANY.nda}`, 25, y);
+  y += 12;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Et le stagiaire :", 25, y);
+  doc.setFont("helvetica", "normal");
+  y += 6;
+  doc.text(`${student.firstName} ${student.lastName}`, 25, y);
+  if (student.email) { y += 5; doc.text(`Email : ${student.email}`, 25, y); }
+  if (student.phone) { y += 5; doc.text(`Tél : ${student.phone}`, 25, y); }
+  y += 12;
+
+  // Article I
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.accent);
+  doc.text("I — OBJET DE LA CONVENTION", 20, y);
+  doc.setTextColor(...COLORS.text);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`L'organisme de formation organisera l'action de formation suivante :`, 20, y);
+  y += 6;
+  doc.setFont("helvetica", "bold");
+  doc.text(student.formation, 20, y);
+  y += 10;
+
+  // Article II
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.accent);
+  doc.text("II — ENGAGEMENT DE PARTICIPATION", 20, y);
+  doc.setTextColor(...COLORS.text);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Le(s) participant(s) : ${student.firstName} ${student.lastName}`, 20, y);
+  y += 10;
+
+  // Article III - Dates
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.accent);
+  doc.text("III — MODALITÉS DE DÉROULEMENT", 20, y);
+  doc.setTextColor(...COLORS.text);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Date : du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`, 20, y);
+  y += 6;
+  doc.text(`Lieu : ${COMPANY.address}`, 20, y);
+  y += 6;
+  doc.text("Modalité : Formation présentielle", 20, y);
+  y += 10;
+
+  // Article IV
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.accent);
+  doc.text("IV — MOYENS D'ÉVALUATION", 20, y);
+  doc.setTextColor(...COLORS.text);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text("Feuilles de présence signées par les stagiaires et le formateur par demi-journée.", 20, y, { maxWidth: 170 });
+  y += 6;
+  doc.text("Mise en situation concrète et évaluation pratique en continu.", 20, y, { maxWidth: 170 });
+  y += 14;
+
+  // Signatures
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Fait à Montlouis sur Loire, le ${new Date().toLocaleDateString("fr-FR")}, en deux exemplaires.`, 20, y);
+  y += 12;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Le Stagiaire bénéficiaire", 50, y, { align: "center" });
+  doc.text("L'organisme de formation", 160, y, { align: "center" });
+  y += 4;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text("Cachet, nom, qualité et signature", 50, y, { align: "center" });
+  doc.text("Cachet, nom, qualité et signature", 160, y, { align: "center" });
+  y += 4;
+  doc.setDrawColor(...COLORS.lightGray);
+  doc.rect(15, y, 70, 30);
+  doc.rect(125, y, 70, 30);
+
+  addFooter(doc);
+  doc.save(`Convention_${student.firstName}_${student.lastName}.pdf`);
+}
+
+// ===================== QUESTIONNAIRE SATISFACTION PDF =====================
+
+export function generateSatisfactionPDF(response: SatisfactionResponse) {
+  const doc = new jsPDF();
+  addHeader(doc);
+
+  let y = 48;
+
+  const title = response.type === "chaud" ? "QUESTIONNAIRE DE SATISFACTION À CHAUD" : "QUESTIONNAIRE DE SATISFACTION À FROID";
+  doc.setFillColor(...COLORS.primary);
+  doc.roundedRect(15, y - 5, 180, 16, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.text(title, 105, y + 5, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 20;
+
+  // Student info
+  doc.setFillColor(...COLORS.lightGray);
+  doc.roundedRect(20, y, 170, 22, 3, 3, "F");
+  y += 8;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Nom / Prénom :", 25, y); doc.setFont("helvetica", "normal"); doc.text(response.studentName, 65, y);
+  y += 7;
+  doc.setFont("helvetica", "bold");
+  doc.text("Formation :", 25, y); doc.setFont("helvetica", "normal"); doc.text(response.formation, 55, y);
+  doc.setFont("helvetica", "bold"); doc.text("Date :", 130, y); doc.setFont("helvetica", "normal"); doc.text(new Date(response.date).toLocaleDateString("fr-FR"), 145, y);
+  y += 14;
+
+  // Questions table
+  const rows = response.questions.map(q => [
+    q.text,
+    q.rating === 1 ? "●" : "",
+    q.rating === 2 ? "●" : "",
+    q.rating === 3 ? "●" : "",
+    q.rating === 4 ? "●" : "",
+    q.rating === 5 ? "●" : "",
+  ]);
+
+  autoTable(doc, {
+    startY: y,
+    head: [["Question", "1", "2", "3", "4", "5"]],
+    body: rows,
+    theme: "grid",
+    headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9, halign: "center" },
+    bodyStyles: { fontSize: 8.5, cellPadding: 4 },
+    columnStyles: {
+      0: { cellWidth: 110 },
+      1: { halign: "center", cellWidth: 12 },
+      2: { halign: "center", cellWidth: 12 },
+      3: { halign: "center", cellWidth: 12 },
+      4: { halign: "center", cellWidth: 12 },
+      5: { halign: "center", cellWidth: 12 },
+    },
+    margin: { left: 20, right: 20 },
+    alternateRowStyles: { fillColor: [250, 248, 243] },
+  });
+
+  const afterTable = (doc as any).lastAutoTable?.finalY || y + 60;
+  y = afterTable + 12;
+
+  // Average
+  const avg = response.questions.reduce((sum, q) => sum + q.rating, 0) / response.questions.length;
+  const pct = Math.round((avg / 5) * 100);
+  doc.setFillColor(...COLORS.accent);
+  doc.roundedRect(20, y, 170, 14, 3, 3, "F");
+  doc.setTextColor(...COLORS.white);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Satisfaction globale : ${pct}% (${avg.toFixed(1)}/5)`, 105, y + 9, { align: "center" });
+  doc.setTextColor(...COLORS.text);
+  y += 22;
+
+  // Comment
+  if (response.comment) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("Commentaires / Suggestions :", 20, y);
+    y += 7;
+    doc.setFont("helvetica", "normal");
+    doc.text(response.comment, 20, y, { maxWidth: 170 });
+  }
+
+  addFooter(doc);
+  doc.save(`Questionnaire_${response.type}_${response.studentName.replace(/\s+/g, "_")}.pdf`);
 }

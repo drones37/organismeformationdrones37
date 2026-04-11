@@ -1,4 +1,4 @@
-import { Users, ClipboardCheck, FolderOpen, TrendingUp, CalendarDays } from "lucide-react";
+import { Users, ClipboardCheck, FolderOpen, TrendingUp, CalendarDays, Star, MessageSquare } from "lucide-react";
 import { store } from "@/lib/store";
 import StatCard from "@/components/StatCard";
 import { Link } from "react-router-dom";
@@ -7,6 +7,9 @@ const Dashboard = () => {
   const students = store.getStudents();
   const sheets = store.getAttendance();
   const docs = store.getDocuments();
+  const globalSat = store.getGlobalSatisfaction();
+  const satChaud = store.getSatisfactionByType("chaud");
+  const satFroid = store.getSatisfactionByType("froid");
 
   const enCours = students.filter(s => s.status === "en_cours").length;
   const terminees = students.filter(s => s.status === "terminee").length;
@@ -20,15 +23,16 @@ const Dashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard title="Total élèves" value={students.length} icon={Users} accent />
         <StatCard title="Formations en cours" value={enCours} icon={TrendingUp} />
         <StatCard title="Feuilles d'émargement" value={sheets.length} icon={ClipboardCheck} />
         <StatCard title="Documents" value={docs.length} icon={FolderOpen} />
+        <StatCard title="Satisfaction globale" value={`${globalSat}%`} icon={Star} accent />
       </div>
 
       {/* Recent activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Formations en cours */}
         <div className="bg-card rounded-xl border border-border p-6">
           <div className="flex items-center justify-between mb-4">
@@ -37,7 +41,7 @@ const Dashboard = () => {
           </div>
           <div className="space-y-3">
             {students.filter(s => s.status === "en_cours").map(s => (
-              <div key={s.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+              <Link key={s.id} to={`/eleves/${s.id}`} className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/70 transition-colors">
                 <div>
                   <p className="font-medium text-sm">{s.firstName} {s.lastName}</p>
                   <p className="text-xs text-muted-foreground">{s.formation}</p>
@@ -46,7 +50,7 @@ const Dashboard = () => {
                   <CalendarDays className="w-3.5 h-3.5" />
                   {new Date(s.endDate).toLocaleDateString("fr-FR")}
                 </div>
-              </div>
+              </Link>
             ))}
             {enCours === 0 && <p className="text-sm text-muted-foreground text-center py-4">Aucune formation en cours</p>}
           </div>
@@ -85,6 +89,44 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Satisfaction card */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <MessageSquare className="w-5 h-5 text-accent" />
+            <h2 className="text-lg font-heading font-semibold">Satisfaction</h2>
+          </div>
+
+          <div className="flex items-center justify-center mb-6">
+            <div className="relative w-32 h-32">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
+                <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--accent))" strokeWidth="8"
+                  strokeDasharray={`${globalSat * 2.64} ${264 - globalSat * 2.64}`}
+                  strokeLinecap="round" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-heading font-bold">{globalSat}%</span>
+                <span className="text-xs text-muted-foreground">globale</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <span className="text-sm">🔥 À chaud</span>
+              <span className={`text-sm font-bold ${satChaud >= 80 ? "text-success" : satChaud >= 60 ? "text-warning" : "text-destructive"}`}>{satChaud}%</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <span className="text-sm">❄️ À froid</span>
+              <span className={`text-sm font-bold ${satFroid >= 80 ? "text-success" : satFroid >= 60 ? "text-warning" : "text-destructive"}`}>{satFroid}%</span>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-4 text-center">
+            Basé sur {store.getSatisfactions().length} questionnaire(s)
+          </p>
         </div>
       </div>
     </div>

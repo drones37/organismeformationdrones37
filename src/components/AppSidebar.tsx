@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, Users, ClipboardCheck, FolderOpen, BookOpen } from "lucide-react";
+import logo from "@/assets/drones37-logo.png";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
@@ -15,11 +16,11 @@ const AppSidebar = () => {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar flex flex-col z-50">
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-sidebar-border">
-        <h1 className="text-2xl font-heading font-bold text-sidebar-primary-foreground tracking-wider">
-          <span className="text-accent">DRONES</span>37
-        </h1>
-        <p className="text-xs text-sidebar-foreground mt-1 tracking-wide">GESTION DE FORMATION</p>
+      <div className="px-6 py-5 border-b border-sidebar-border flex items-center gap-3">
+        <img src={logo} alt="DRONES37" className="h-10 w-auto" />
+        <div>
+          <p className="text-xs text-sidebar-foreground mt-0.5 tracking-wide">GESTION DE FORMATION</p>
+        </div>
       </div>
 
       {/* Navigation */}

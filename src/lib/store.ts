@@ -58,6 +58,23 @@ export interface ProgressionSheet {
   instructorName: string;
 }
 
+export interface SatisfactionQuestion {
+  id: string;
+  text: string;
+  rating: number; // 1-5
+}
+
+export interface SatisfactionResponse {
+  id: string;
+  studentId: string;
+  studentName: string;
+  formation: string;
+  type: "chaud" | "froid";
+  date: string;
+  questions: SatisfactionQuestion[];
+  comment?: string;
+}
+
 export interface Document {
   id: string;
   name: string;
@@ -118,10 +135,48 @@ const demoProgressions: ProgressionSheet[] = [
   },
 ];
 
+const QUESTIONS_CHAUD: Omit<SatisfactionQuestion, "id">[] = [
+  { text: "Qualité du contenu pédagogique", rating: 0 },
+  { text: "Compétence du formateur", rating: 0 },
+  { text: "Clarté des explications", rating: 0 },
+  { text: "Adéquation de la formation avec vos attentes", rating: 0 },
+  { text: "Qualité du matériel utilisé", rating: 0 },
+  { text: "Organisation générale", rating: 0 },
+];
+
+const QUESTIONS_FROID: Omit<SatisfactionQuestion, "id">[] = [
+  { text: "J'utilise les compétences acquises dans mon activité professionnelle", rating: 0 },
+  { text: "Je me sens autonome dans l'utilisation du drone en conditions professionnelles", rating: 0 },
+  { text: "J'applique correctement la réglementation et les règles de sécurité", rating: 0 },
+  { text: "La formation a amélioré mon efficacité professionnelle", rating: 0 },
+  { text: "La formation a eu un impact professionnel positif", rating: 0 },
+];
+
+const demoSatisfactions: SatisfactionResponse[] = [
+  {
+    id: "sat1", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone - Initiation",
+    type: "chaud", date: "2025-03-14",
+    questions: QUESTIONS_CHAUD.map((q, i) => ({ ...q, id: `qc${i}`, rating: [5, 5, 4, 5, 4, 5][i] })),
+    comment: "Excellente formation, très pratique !",
+  },
+  {
+    id: "sat2", studentId: "4", studentName: "Camille Petit", formation: "Télépilote Drone - Initiation",
+    type: "chaud", date: "2025-03-14",
+    questions: QUESTIONS_CHAUD.map((q, i) => ({ ...q, id: `qc${i}`, rating: [4, 5, 5, 4, 4, 4][i] })),
+  },
+  {
+    id: "sat3", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone - Initiation",
+    type: "froid", date: "2025-04-14",
+    questions: QUESTIONS_FROID.map((q, i) => ({ ...q, id: `qf${i}`, rating: [5, 4, 5, 4, 5][i] })),
+    comment: "J'utilise les acquis quotidiennement.",
+  },
+];
+
 let students = [...demoStudents];
 let attendance = [...demoAttendance];
 let documents = [...demoDocuments];
 let progressions = [...demoProgressions];
+let satisfactions = [...demoSatisfactions];
 
 export const store = {
   getStudents: () => students,
@@ -205,5 +260,38 @@ export const store = {
   getDefaultModules: (formation?: string) => {
     const mods = formation ? buildModulesForFormation(formation) : buildModulesForFormation("Télépilote Drone STS-01/STS-02");
     return mods.map((m, i) => ({ ...m, id: `m${Date.now()}_${i}` }));
+  },
+
+  // Satisfaction
+  getSatisfactions: () => satisfactions,
+  getSatisfactionsByStudent: (studentId: string) => satisfactions.filter(s => s.studentId === studentId),
+  addSatisfaction: (s: Omit<SatisfactionResponse, "id">) => {
+    const newS = { ...s, id: Date.now().toString() };
+    satisfactions = [...satisfactions, newS];
+    return newS;
+  },
+  updateSatisfactionRating: (satisfactionId: string, questionId: string, rating: number) => {
+    satisfactions = satisfactions.map(s => s.id === satisfactionId ? {
+      ...s,
+      questions: s.questions.map(q => q.id === questionId ? { ...q, rating } : q),
+    } : s);
+  },
+  updateSatisfactionComment: (satisfactionId: string, comment: string) => {
+    satisfactions = satisfactions.map(s => s.id === satisfactionId ? { ...s, comment } : s);
+  },
+  getGlobalSatisfaction: () => {
+    const allRatings = satisfactions.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
+    if (allRatings.length === 0) return 0;
+    return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
+  },
+  getSatisfactionByType: (type: "chaud" | "froid") => {
+    const responses = satisfactions.filter(s => s.type === type);
+    const allRatings = responses.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
+    if (allRatings.length === 0) return 0;
+    return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
+  },
+  getDefaultQuestions: (type: "chaud" | "froid") => {
+    const qs = type === "chaud" ? QUESTIONS_CHAUD : QUESTIONS_FROID;
+    return qs.map((q, i) => ({ ...q, id: `q${type[0]}${Date.now()}_${i}` }));
   },
 };

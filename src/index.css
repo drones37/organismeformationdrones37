@@ -15,32 +15,32 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 30% 12%;
 
-    --primary: 210 80% 45%;
+    --primary: 42 90% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 92%;
-    --secondary-foreground: 220 30% 20%;
+    --secondary: 40 30% 93%;
+    --secondary-foreground: 40 30% 20%;
 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 40 15% 94%;
+    --muted-foreground: 40 10% 45%;
 
-    --accent: 185 70% 42%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 42 100% 50%;
+    --accent-foreground: 0 0% 10%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 88%;
     --input: 220 15% 88%;
-    --ring: 210 80% 45%;
+    --ring: 42 90% 45%;
 
     --radius: 0.625rem;
 
-    --sidebar-bg: 220 30% 12%;
-    --sidebar-fg: 220 15% 75%;
-    --sidebar-active: 185 70% 42%;
+    --sidebar-bg: 30 20% 12%;
+    --sidebar-fg: 40 15% 70%;
+    --sidebar-active: 42 100% 50%;
     --sidebar-active-fg: 0 0% 100%;
-    --sidebar-hover: 220 25% 18%;
+    --sidebar-hover: 30 20% 18%;
 
     --success: 152 60% 42%;
     --success-foreground: 0 0% 100%;
@@ -50,14 +50,14 @@
     --font-heading: 'Rajdhani', sans-serif;
     --font-body: 'Inter', sans-serif;
 
-    --sidebar-background: 220 30% 12%;
-    --sidebar-foreground: 220 15% 75%;
-    --sidebar-primary: 185 70% 42%;
+    --sidebar-background: 30 20% 12%;
+    --sidebar-foreground: 40 15% 70%;
+    --sidebar-primary: 42 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 25% 18%;
-    --sidebar-accent-foreground: 220 15% 85%;
-    --sidebar-border: 220 25% 20%;
-    --sidebar-ring: 185 70% 42%;
+    --sidebar-accent: 30 20% 18%;
+    --sidebar-accent-foreground: 40 15% 85%;
+    --sidebar-border: 30 20% 20%;
+    --sidebar-ring: 42 100% 50%;
   }
 }
 
