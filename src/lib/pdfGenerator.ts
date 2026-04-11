@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { AttendanceSheet, ProgressionSheet, Student } from "./store";
+import type { AttendanceSheet, ProgressionSheet, Student, SatisfactionResponse } from "./store";
 
 const COMPANY = {
   name: "DRONES37",
@@ -13,10 +13,10 @@ const COMPANY = {
 };
 
 const COLORS = {
-  primary: [21, 67, 96] as [number, number, number],     // dark blue
-  accent: [26, 188, 156] as [number, number, number],     // teal
-  text: [44, 62, 80] as [number, number, number],
-  lightGray: [236, 240, 241] as [number, number, number],
+  primary: [42, 42, 42] as [number, number, number],
+  accent: [229, 165, 0] as [number, number, number],     // golden yellow from logo
+  text: [44, 44, 44] as [number, number, number],
+  lightGray: [245, 243, 238] as [number, number, number],
   white: [255, 255, 255] as [number, number, number],
   success: [39, 174, 96] as [number, number, number],
   warning: [243, 156, 18] as [number, number, number],
