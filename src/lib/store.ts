@@ -261,4 +261,37 @@ export const store = {
     const mods = formation ? buildModulesForFormation(formation) : buildModulesForFormation("Télépilote Drone STS-01/STS-02");
     return mods.map((m, i) => ({ ...m, id: `m${Date.now()}_${i}` }));
   },
+
+  // Satisfaction
+  getSatisfactions: () => satisfactions,
+  getSatisfactionsByStudent: (studentId: string) => satisfactions.filter(s => s.studentId === studentId),
+  addSatisfaction: (s: Omit<SatisfactionResponse, "id">) => {
+    const newS = { ...s, id: Date.now().toString() };
+    satisfactions = [...satisfactions, newS];
+    return newS;
+  },
+  updateSatisfactionRating: (satisfactionId: string, questionId: string, rating: number) => {
+    satisfactions = satisfactions.map(s => s.id === satisfactionId ? {
+      ...s,
+      questions: s.questions.map(q => q.id === questionId ? { ...q, rating } : q),
+    } : s);
+  },
+  updateSatisfactionComment: (satisfactionId: string, comment: string) => {
+    satisfactions = satisfactions.map(s => s.id === satisfactionId ? { ...s, comment } : s);
+  },
+  getGlobalSatisfaction: () => {
+    const allRatings = satisfactions.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
+    if (allRatings.length === 0) return 0;
+    return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
+  },
+  getSatisfactionByType: (type: "chaud" | "froid") => {
+    const responses = satisfactions.filter(s => s.type === type);
+    const allRatings = responses.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
+    if (allRatings.length === 0) return 0;
+    return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
+  },
+  getDefaultQuestions: (type: "chaud" | "froid") => {
+    const qs = type === "chaud" ? QUESTIONS_CHAUD : QUESTIONS_FROID;
+    return qs.map((q, i) => ({ ...q, id: `q${type[0]}${Date.now()}_${i}` }));
+  },
 };
