@@ -16,6 +16,7 @@ const categoryLabels: Record<Document["category"], string> = {
   questionnaire: "Questionnaire",
   veille: "Veille réglementaire",
   plan_action: "Plan d'amélioration",
+  prerequis: "Pré-requis",
   autre: "Autre",
 };
 
@@ -28,6 +29,7 @@ const categoryColors: Record<Document["category"], string> = {
   questionnaire: "bg-accent/10 text-accent",
   veille: "bg-secondary text-secondary-foreground",
   plan_action: "bg-secondary text-secondary-foreground",
+  prerequis: "bg-primary/10 text-primary",
   autre: "bg-muted text-muted-foreground",
 };
 
