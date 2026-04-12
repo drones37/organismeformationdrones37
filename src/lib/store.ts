@@ -325,6 +325,10 @@ export const store = {
     satisfactions = satisfactions.map(s => s.id === satisfactionId ? { ...s, comment } : s);
     saveToStorage();
   },
+  deleteSatisfaction: (satisfactionId: string) => {
+    satisfactions = satisfactions.filter(s => s.id !== satisfactionId);
+    saveToStorage();
+  },
   getGlobalSatisfaction: (year?: number) => {
     const filtered = year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year) : satisfactions;
     const allRatings = filtered.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
