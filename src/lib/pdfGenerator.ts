@@ -719,6 +719,7 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
 export function generateConvocationPDF(student: Student) {
   const doc = new jsPDF();
   addHeader(doc);
+  const config = getFormationDocConfig(student.formation);
 
   let y = 50;
 
@@ -756,20 +757,20 @@ export function generateConvocationPDF(student: Student) {
   // Body text
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  const bodyText = `Vous êtes convoqué(e) à la formation "${student.formation}".`;
-  doc.text(bodyText, 20, y, { maxWidth: 170 });
+  doc.text(`Vous êtes convoqué(e) à la formation "${student.formation}".`, 20, y, { maxWidth: 170 });
   y += 14;
 
   // Details box
   doc.setFillColor(...COLORS.lightGray);
-  doc.roundedRect(20, y, 170, 50, 3, 3, "F");
+  doc.roundedRect(20, y, 170, 55, 3, 3, "F");
   y += 10;
 
   const details = [
-    ["Lieu :", `19 rue Madeleine Vernet, 37270 Montlouis sur Loire`],
-    ["Durée :", `du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`],
+    ["Lieu :", COMPANY.address],
+    ["Durée :", `${config.dureeLabel} — du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`],
     ["Horaire :", "09h00"],
-    ["Matériel demandé :", "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD."],
+    ["Prérequis :", config.prerequis],
+    ["Matériel demandé :", config.materiel],
   ];
 
   details.forEach(([label, val]) => {
@@ -777,11 +778,24 @@ export function generateConvocationPDF(student: Student) {
     doc.text(label, 25, y);
     doc.setFont("helvetica", "normal");
     const labelWidth = doc.getTextWidth(label) + 3;
-    doc.text(val, 25 + labelWidth, y, { maxWidth: 160 - labelWidth });
+    doc.text(val, 25 + labelWidth, y, { maxWidth: 155 - labelWidth });
     y += 10;
   });
 
-  y += 12;
+  y += 6;
+
+  // Objectives
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Objectifs de la formation :", 20, y);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  config.objectives.forEach(obj => {
+    doc.text(`•  ${obj}`, 25, y, { maxWidth: 160 });
+    y += 7;
+  });
+  y += 8;
 
   // Signature
   doc.setFont("helvetica", "normal");
