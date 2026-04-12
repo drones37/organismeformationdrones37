@@ -14,6 +14,8 @@ const categoryLabels: Record<Document["category"], string> = {
   facture: "Facture / Devis",
   emargement: "Émargement",
   questionnaire: "Questionnaire",
+  veille: "Veille réglementaire",
+  plan_action: "Plan d'amélioration",
   autre: "Autre",
 };
 
@@ -24,6 +26,8 @@ const categoryColors: Record<Document["category"], string> = {
   facture: "bg-warning/10 text-warning",
   emargement: "bg-primary/10 text-primary",
   questionnaire: "bg-accent/10 text-accent",
+  veille: "bg-secondary text-secondary-foreground",
+  plan_action: "bg-secondary text-secondary-foreground",
   autre: "bg-muted text-muted-foreground",
 };
 
