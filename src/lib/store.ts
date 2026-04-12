@@ -8,7 +8,7 @@ export interface Student {
   formation: string;
   startDate: string;
   endDate: string;
-  status: "en_cours" | "terminee" | "a_venir";
+  status: "en_cours" | "terminee" | "a_venir" | "abandonnee";
 }
 
 export interface AttendanceStudent {
