@@ -86,6 +86,27 @@ export interface Document {
   fileData?: string;
 }
 
+export interface VeilleEntry {
+  id: string;
+  date: string;
+  type: string;
+  contenu: string;
+  exploitation: string;
+  preuves: string;
+}
+
+export interface PlanActionEntry {
+  id: string;
+  date: string;
+  origine: string; // "satisfaction_chaud" | "satisfaction_froid" | "reclamation" | "audit" | "autre"
+  constat: string;
+  action: string;
+  responsable: string;
+  echeance: string;
+  statut: "a_faire" | "en_cours" | "fait";
+  commentaire: string;
+}
+
 // Demo data
 const demoStudents: Student[] = [
   { id: "1", firstName: "Lucas", lastName: "Martin", email: "lucas.martin@email.com", phone: "06 12 34 56 78", formation: "Télépilote Drone - Initiation", startDate: "2025-03-10", endDate: "2025-03-14", status: "terminee" },
@@ -186,7 +207,7 @@ function loadFromStorage() {
 
 function saveToStorage() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }));
   } catch (e) { /* ignore */ }
 }
 
@@ -197,6 +218,8 @@ let documents: Document[] = saved?.documents || [...demoDocuments];
 let progressions: ProgressionSheet[] = saved?.progressions || [...demoProgressions];
 let satisfactions: SatisfactionResponse[] = saved?.satisfactions || [...demoSatisfactions];
 let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || {};
+let veilleEntries: VeilleEntry[] = saved?.veilleEntries || [];
+let planActionEntries: PlanActionEntry[] = saved?.planActionEntries || [];
 
 export const store = {
   getStudents: () => students,
@@ -342,6 +365,40 @@ export const store = {
   getInvoices: () => invoiceStatuses,
   updateInvoiceStatus: (studentId: string, status: "paye" | "en_attente" | "impaye") => {
     invoiceStatuses = { ...invoiceStatuses, [studentId]: status };
+    saveToStorage();
+  },
+
+  // Veille réglementaire
+  getVeilleEntries: () => veilleEntries,
+  addVeilleEntry: (entry: Omit<VeilleEntry, "id">) => {
+    const newEntry = { ...entry, id: Date.now().toString() };
+    veilleEntries = [...veilleEntries, newEntry];
+    saveToStorage();
+    return newEntry;
+  },
+  updateVeilleEntry: (id: string, updates: Partial<VeilleEntry>) => {
+    veilleEntries = veilleEntries.map(e => e.id === id ? { ...e, ...updates } : e);
+    saveToStorage();
+  },
+  deleteVeilleEntry: (id: string) => {
+    veilleEntries = veilleEntries.filter(e => e.id !== id);
+    saveToStorage();
+  },
+
+  // Plan d'amélioration
+  getPlanActionEntries: () => planActionEntries,
+  addPlanActionEntry: (entry: Omit<PlanActionEntry, "id">) => {
+    const newEntry = { ...entry, id: Date.now().toString() };
+    planActionEntries = [...planActionEntries, newEntry];
+    saveToStorage();
+    return newEntry;
+  },
+  updatePlanActionEntry: (id: string, updates: Partial<PlanActionEntry>) => {
+    planActionEntries = planActionEntries.map(e => e.id === id ? { ...e, ...updates } : e);
+    saveToStorage();
+  },
+  deletePlanActionEntry: (id: string) => {
+    planActionEntries = planActionEntries.filter(e => e.id !== id);
     saveToStorage();
   },
 };
