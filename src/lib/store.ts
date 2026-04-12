@@ -312,16 +312,21 @@ export const store = {
     satisfactions = satisfactions.map(s => s.id === satisfactionId ? { ...s, comment } : s);
     saveToStorage();
   },
-  getGlobalSatisfaction: () => {
-    const allRatings = satisfactions.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
+  getGlobalSatisfaction: (year?: number) => {
+    const filtered = year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year) : satisfactions;
+    const allRatings = filtered.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
     if (allRatings.length === 0) return 0;
     return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
   },
-  getSatisfactionByType: (type: "chaud" | "froid") => {
-    const responses = satisfactions.filter(s => s.type === type);
+  getSatisfactionByType: (type: "chaud" | "froid", year?: number) => {
+    let responses = satisfactions.filter(s => s.type === type);
+    if (year) responses = responses.filter(s => new Date(s.date).getFullYear() === year);
     const allRatings = responses.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
     if (allRatings.length === 0) return 0;
     return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
+  },
+  getSatisfactionCount: (year?: number) => {
+    return year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year).length : satisfactions.length;
   },
   getDefaultQuestions: (type: "chaud" | "froid") => {
     const qs = type === "chaud" ? QUESTIONS_CHAUD : QUESTIONS_FROID;
