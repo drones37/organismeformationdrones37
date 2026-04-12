@@ -192,13 +192,13 @@ export function generateLivretAccueilPDF(student: Student) {
 
   // ======================== PAGE 1: COUVERTURE ========================
   pages.push(() => {
-    doc.setFillColor(...COLORS.primary);
+    doc.setFillColor(...COLORS.dark);
     doc.rect(0, 0, 210, 297, "F");
     
     // Logo area
     doc.setFillColor(...COLORS.accent);
     doc.roundedRect(55, 30, 100, 40, 5, 5, "F");
-    doc.setTextColor(...COLORS.primary);
+    doc.setTextColor(...COLORS.dark);
     doc.setFontSize(28);
     doc.setFont("helvetica", "bold");
     doc.text("DRONES37", 105, 52, { align: "center" });
