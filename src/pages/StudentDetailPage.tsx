@@ -457,9 +457,14 @@ const StudentDetailPage = () => {
                           </span>
                         )}
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => generateSatisfactionPDF(sat)}>
-                        <Download className="w-3.5 h-3.5 mr-1" /> PDF
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => generateSatisfactionPDF(sat)}>
+                          <Download className="w-3.5 h-3.5 mr-1" /> PDF
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={() => { store.deleteSatisfaction(sat.id); forceUpdate(n => n + 1); }}>
+                          <Trash2 className="w-3.5 h-3.5 mr-1" /> Réinitialiser
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="space-y-3">
