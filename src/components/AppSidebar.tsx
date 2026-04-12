@@ -1,11 +1,10 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardCheck, CreditCard, Shield, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, Shield, ClipboardList } from "lucide-react";
 import logo from "@/assets/drones37-logo.png";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
   { to: "/eleves", icon: Users, label: "Élèves" },
-  { to: "/emargement", icon: ClipboardCheck, label: "Émargement" },
   { to: "/facturation", icon: CreditCard, label: "Facturation" },
   { to: "/veille", icon: Shield, label: "Veille réglementaire" },
   { to: "/plan-action", icon: ClipboardList, label: "Plan d'amélioration" },
