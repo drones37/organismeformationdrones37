@@ -24,7 +24,60 @@ const COLORS = {
   danger: [231, 76, 60] as [number, number, number],
 };
 
-function addHeader(doc: jsPDF) {
+// Formation-specific content for documents
+interface FormationDocConfig {
+  objectives: string[];
+  materiel: string;
+  dureeLabel: string;
+  prerequis: string;
+}
+
+function getFormationDocConfig(formation: string): FormationDocConfig {
+  const lower = formation.toLowerCase();
+  if (lower.includes("pulvé") || lower.includes("bâtiment")) {
+    return {
+      objectives: [
+        "Connaître et appliquer la réglementation en vigueur concernant l'usage professionnel de drone civil",
+        "Maîtriser le télépilotage d'un drone dans le cadre de missions de pulvérisation sur bâtiments",
+        "Connaître les produits de traitement et leurs utilisations",
+        "Maîtriser les équipements de protection individuelle et le matériel de pulvérisation",
+        "Réaliser des missions de pulvérisation par drone en conformité avec le cadre réglementaire",
+      ],
+      materiel: "Matériel pour écrire, tenue de travail adaptée au chantier, équipement de protection individuelle (EPI), matériel informatique.",
+      dureeLabel: "5 jours (35 heures)",
+      prerequis: "Être titulaire du CATT (Certificat d'Aptitude au Télépilotage Théorique) ou équivalent.",
+    };
+  }
+  if (lower.includes("a1") || lower.includes("a3") || lower.includes("ouverte")) {
+    return {
+      objectives: [
+        "Connaître la réglementation européenne applicable à la catégorie ouverte (A1, A2, A3)",
+        "Connaître les classes d'UAS et les limitations de masse et de vitesse",
+        "Préparer et effectuer un vol en catégorie ouverte en toute sécurité",
+        "Gérer les situations d'urgence et appliquer les règles de sécurité",
+        "Obtenir le BAPD (Brevet d'Aptitude de Pilote à Distance) A1/A3 via AlphaTango",
+      ],
+      materiel: "Matériel pour écrire, tenue décontractée, matériel informatique avec accès internet.",
+      dureeLabel: "2 jours (14 heures)",
+      prerequis: "Aucun prérequis spécifique.",
+    };
+  }
+  // Default: STS-01/STS-02
+  return {
+    objectives: [
+      "Connaître et appliquer la réglementation européenne et française concernant l'usage professionnel de drone civil",
+      "Maîtriser le télépilotage d'un drone civil dans le cadre des scénarios STS-01 et STS-02",
+      "Assurer le suivi administratif indissociable de l'activité (MANEX, AlphaTango, DGAC)",
+      "Maîtriser la préparation du vol mission et la lecture des cartes aéronautiques",
+      "Gérer les situations dégradées et appliquer les procédures d'urgence",
+    ],
+    materiel: "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD.",
+    dureeLabel: "5 jours (35 heures)",
+    prerequis: "Être titulaire du CATT (Certificat d'Aptitude au Télépilotage Théorique) ou équivalent.",
+  };
+}
+
+
   // Header bar
   doc.setFillColor(...COLORS.primary);
   doc.rect(0, 0, 210, 32, "F");
