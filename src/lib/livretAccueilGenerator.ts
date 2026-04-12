@@ -247,21 +247,20 @@ export function generateLivretAccueilPDF(student: Student) {
     y += 4;
 
     const sommaire = [
-      "1. Le mot du gérant",
-      "2. L'entreprise DRONES37",
-      "3. Certification QUALIOPI",
-      "4. Organigramme — Une équipe disponible",
-      "5. Votre formation",
-      "   5.1 Objectifs de la formation",
-      "   5.2 Mise en œuvre de l'action de formation",
-      "   5.3 Modalités pédagogiques",
-      "   5.4 Programme — Items d'évaluation",
-      "6. Site de formation",
-      "7. Constitution de votre dossier",
-      "8. Règlement intérieur",
-      "9. Conditions Générales d'Utilisation (CGU)",
-      "10. Conditions Générales de Vente (CGV)",
-      "11. Protection des données personnelles",
+      "1. L'entreprise DRONES37",
+      "2. Certification QUALIOPI",
+      "3. Organigramme — Une équipe disponible",
+      "4. Votre formation",
+      "   4.1 Objectifs de la formation",
+      "   4.2 Mise en œuvre de l'action de formation",
+      "   4.3 Modalités pédagogiques",
+      "   4.4 Programme — Items d'évaluation",
+      "5. Site de formation",
+      "6. Constitution de votre dossier",
+      "7. Règlement intérieur",
+      "8. Conditions Générales d'Utilisation (CGU)",
+      "9. Conditions Générales de Vente (CGV)",
+      "10. Protection des données personnelles",
     ];
 
     doc.setFontSize(11);
@@ -274,33 +273,7 @@ export function generateLivretAccueilPDF(student: Student) {
     });
   });
 
-  // ======================== PAGE 3: MOT DU GÉRANT ========================
-  pages.push(() => {
-    addHeader(doc);
-    let y = addSectionTitle(doc, "Le mot du gérant", 42);
-    y += 4;
-
-    y = addParagraph(doc, "Bienvenue dans le centre d'enseignement aux métiers du drone avec DRONES37.", y);
-    y += 2;
-    y = addParagraph(doc, "Vous avez choisi la formation de télépilote professionnel de drones et nous vous en remercions.", y);
-    y += 2;
-    y = addParagraph(doc, "Cette formation vous permettra d'acquérir l'ensemble des connaissances relatives au fonctionnement et à l'utilisation de drones civils professionnels. Il s'agira également lors de cette formation de maîtriser l'ensemble des exigences réglementaires et sécuritaires propres à l'utilisation de ces aéronefs dans des contextes variés et parfois dangereux.", y);
-    y += 2;
-    y = addParagraph(doc, "L'usage des drones professionnels présentent de nombreux intérêts dans de multiples domaines d'activités : bâtiment, énergie, assurances, environnement, agriculture, communication notamment. Qu'ils soient utilisés pour l'inspection technique de toitures, la pulvérisation sur bâtiments, pour la recherche de ponts thermiques ou la réalisation de vidéos promotionnelles, les drones sont devenus incontournables.", y);
-    y += 2;
-    y = addParagraph(doc, "Notre équipe de formation, composée d'experts métiers tous télépilotes professionnels, saura vous accompagner tout au long de cette formation exigeante et vous transmettre l'ensemble des connaissances nécessaires à la maîtrise de cette discipline.", y);
-    y += 4;
-    y = addParagraph(doc, "Je vous souhaite une excellente formation et une complète réussite dans vos projets professionnels de pilote de drones.", y);
-    y += 6;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("Stéphane PELARD", 20, y);
-    y += 5;
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
-    doc.text("Gérant DRONES37", 20, y);
-  });
+  // (Page "Mot du gérant" supprimée)
 
   // ======================== PAGE 4: L'ENTREPRISE + QUALIOPI ========================
   pages.push(() => {
@@ -358,7 +331,7 @@ export function generateLivretAccueilPDF(student: Student) {
         ["Référent pédagogique / Formateur", "Stéphane PELARD", COMPANY.email],
         ["Référent administratif", "Stéphane PELARD", COMPANY.email],
         ["Référent handicap", "Stéphane PELARD", COMPANY.email],
-        ["Formateur", "Bertrand", "—"],
+        ["Formateur", "Cédric", "—"],
       ],
       theme: "grid",
       headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9 },
