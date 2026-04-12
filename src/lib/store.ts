@@ -211,6 +211,7 @@ export const store = {
   addAttendance: (a: Omit<AttendanceSheet, "id">) => {
     const newSheet = { ...a, id: Date.now().toString() };
     attendance = [...attendance, newSheet];
+    saveToStorage();
     return newSheet;
   },
   signAttendance: (sheetId: string, studentId: string, day: string, signatureData: string) => {
@@ -224,30 +225,35 @@ export const store = {
         },
       } : s),
     } : a);
+    saveToStorage();
   },
   updateStudentGrade: (sheetId: string, studentId: string, grade: string) => {
     attendance = attendance.map(a => a.id === sheetId ? {
       ...a,
       students: a.students.map(s => s.studentId === studentId ? { ...s, grade } : s),
     } : a);
+    saveToStorage();
   },
   toggleLivretVu: (sheetId: string, studentId: string) => {
     attendance = attendance.map(a => a.id === sheetId ? {
       ...a,
       students: a.students.map(s => s.studentId === studentId ? { ...s, livretVu: !s.livretVu } : s),
     } : a);
+    saveToStorage();
   },
   closeAttendance: (id: string) => {
     attendance = attendance.map(a => a.id === id ? { ...a, status: "cloturee" as const } : a);
+    saveToStorage();
   },
 
   getDocuments: () => documents,
   addDocument: (d: Omit<Document, "id">) => {
     const newDoc = { ...d, id: Date.now().toString() };
     documents = [...documents, newDoc];
+    saveToStorage();
     return newDoc;
   },
-  deleteDocument: (id: string) => { documents = documents.filter(d => d.id !== id); },
+  deleteDocument: (id: string) => { documents = documents.filter(d => d.id !== id); saveToStorage(); },
 
   getProgressions: () => progressions,
   getProgressionByStudent: (studentId: string) => progressions.find(p => p.studentId === studentId),
