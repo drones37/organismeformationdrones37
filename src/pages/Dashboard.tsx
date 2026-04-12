@@ -1,34 +1,55 @@
-import { Users, ClipboardCheck, FolderOpen, TrendingUp, CalendarDays, Star, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { Users, ClipboardCheck, TrendingUp, CalendarDays, Star, MessageSquare, CreditCard } from "lucide-react";
 import { store } from "@/lib/store";
 import StatCard from "@/components/StatCard";
 import { Link } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Dashboard = () => {
-  const students = store.getStudents();
-  const sheets = store.getAttendance();
-  const docs = store.getDocuments();
-  const globalSat = store.getGlobalSatisfaction();
-  const satChaud = store.getSatisfactionByType("chaud");
-  const satFroid = store.getSatisfactionByType("froid");
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(currentYear.toString());
+  const yearNum = Number(year);
+
+  const allStudents = store.getStudents();
+  const students = allStudents.filter(s => new Date(s.startDate).getFullYear() === yearNum);
+  const sheets = store.getAttendance().filter(a => new Date(a.date).getFullYear() === yearNum);
+  const invoices = store.getInvoices();
+
+  const globalSat = store.getGlobalSatisfaction(yearNum);
+  const satChaud = store.getSatisfactionByType("chaud", yearNum);
+  const satFroid = store.getSatisfactionByType("froid", yearNum);
+  const satCount = store.getSatisfactionCount(yearNum);
 
   const enCours = students.filter(s => s.status === "en_cours").length;
   const terminees = students.filter(s => s.status === "terminee").length;
   const aVenir = students.filter(s => s.status === "a_venir").length;
+  const payes = students.filter(s => (invoices[s.id] || "en_attente") === "paye").length;
+
+  const years = [...new Set(allStudents.map(s => new Date(s.startDate).getFullYear()))].sort((a, b) => b - a);
+  if (!years.includes(currentYear)) years.unshift(currentYear);
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-heading font-bold text-foreground">Tableau de bord</h1>
-        <p className="text-muted-foreground mt-1">Vue d'ensemble de votre centre de formation</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold text-foreground">Tableau de bord</h1>
+          <p className="text-muted-foreground mt-1">Vue d'ensemble de votre centre de formation</p>
+        </div>
+        <Select value={year} onValueChange={setYear}>
+          <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard title="Total élèves" value={students.length} icon={Users} accent />
-        <StatCard title="Formations en cours" value={enCours} icon={TrendingUp} />
-        <StatCard title="Feuilles d'émargement" value={sheets.length} icon={ClipboardCheck} />
-        <StatCard title="Documents" value={docs.length} icon={FolderOpen} />
-        <StatCard title="Satisfaction globale" value={`${globalSat}%`} icon={Star} accent />
+        <StatCard title="Élèves" value={students.length} icon={Users} accent />
+        <StatCard title="En cours" value={enCours} icon={TrendingUp} />
+        <StatCard title="Émargements" value={sheets.length} icon={ClipboardCheck} />
+        <StatCard title="Payés" value={`${payes}/${students.length}`} icon={CreditCard} />
+        <StatCard title="Satisfaction" value={`${globalSat}%`} icon={Star} accent />
       </div>
 
       {/* Recent activity */}
@@ -79,23 +100,13 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-
-          <div className="mt-6 pt-4 border-t border-border">
-            <h3 className="text-sm font-medium mb-3">Derniers documents</h3>
-            {docs.slice(0, 3).map(d => (
-              <div key={d.id} className="flex items-center justify-between py-2">
-                <p className="text-sm truncate max-w-[200px]">{d.name}</p>
-                <span className="text-xs text-muted-foreground">{d.size}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Satisfaction card */}
         <div className="bg-card rounded-xl border border-border p-6">
           <div className="flex items-center gap-2 mb-4">
             <MessageSquare className="w-5 h-5 text-accent" />
-            <h2 className="text-lg font-heading font-semibold">Satisfaction</h2>
+            <h2 className="text-lg font-heading font-semibold">Satisfaction {year}</h2>
           </div>
 
           <div className="flex items-center justify-center mb-6">
@@ -125,7 +136,7 @@ const Dashboard = () => {
           </div>
 
           <p className="text-xs text-muted-foreground mt-4 text-center">
-            Basé sur {store.getSatisfactions().length} questionnaire(s)
+            Basé sur {satCount} questionnaire(s)
           </p>
         </div>
       </div>

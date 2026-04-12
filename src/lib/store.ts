@@ -172,25 +172,46 @@ const demoSatisfactions: SatisfactionResponse[] = [
   },
 ];
 
-let students = [...demoStudents];
-let attendance = [...demoAttendance];
-let documents = [...demoDocuments];
-let progressions = [...demoProgressions];
-let satisfactions = [...demoSatisfactions];
+// localStorage persistence helpers
+const STORAGE_KEY = "drones37_store";
+
+function loadFromStorage() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) return JSON.parse(data);
+  } catch (e) { /* ignore */ }
+  return null;
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses }));
+  } catch (e) { /* ignore */ }
+}
+
+const saved = loadFromStorage();
+let students: Student[] = saved?.students || [...demoStudents];
+let attendance: AttendanceSheet[] = saved?.attendance || [...demoAttendance];
+let documents: Document[] = saved?.documents || [...demoDocuments];
+let progressions: ProgressionSheet[] = saved?.progressions || [...demoProgressions];
+let satisfactions: SatisfactionResponse[] = saved?.satisfactions || [...demoSatisfactions];
+let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || {};
 
 export const store = {
   getStudents: () => students,
   addStudent: (s: Omit<Student, "id">) => {
     const newStudent = { ...s, id: Date.now().toString() };
     students = [...students, newStudent];
+    saveToStorage();
     return newStudent;
   },
-  deleteStudent: (id: string) => { students = students.filter(s => s.id !== id); },
+  deleteStudent: (id: string) => { students = students.filter(s => s.id !== id); saveToStorage(); },
   
   getAttendance: () => attendance,
   addAttendance: (a: Omit<AttendanceSheet, "id">) => {
     const newSheet = { ...a, id: Date.now().toString() };
     attendance = [...attendance, newSheet];
+    saveToStorage();
     return newSheet;
   },
   signAttendance: (sheetId: string, studentId: string, day: string, signatureData: string) => {
@@ -204,36 +225,42 @@ export const store = {
         },
       } : s),
     } : a);
+    saveToStorage();
   },
   updateStudentGrade: (sheetId: string, studentId: string, grade: string) => {
     attendance = attendance.map(a => a.id === sheetId ? {
       ...a,
       students: a.students.map(s => s.studentId === studentId ? { ...s, grade } : s),
     } : a);
+    saveToStorage();
   },
   toggleLivretVu: (sheetId: string, studentId: string) => {
     attendance = attendance.map(a => a.id === sheetId ? {
       ...a,
       students: a.students.map(s => s.studentId === studentId ? { ...s, livretVu: !s.livretVu } : s),
     } : a);
+    saveToStorage();
   },
   closeAttendance: (id: string) => {
     attendance = attendance.map(a => a.id === id ? { ...a, status: "cloturee" as const } : a);
+    saveToStorage();
   },
 
   getDocuments: () => documents,
   addDocument: (d: Omit<Document, "id">) => {
     const newDoc = { ...d, id: Date.now().toString() };
     documents = [...documents, newDoc];
+    saveToStorage();
     return newDoc;
   },
-  deleteDocument: (id: string) => { documents = documents.filter(d => d.id !== id); },
+  deleteDocument: (id: string) => { documents = documents.filter(d => d.id !== id); saveToStorage(); },
 
   getProgressions: () => progressions,
   getProgressionByStudent: (studentId: string) => progressions.find(p => p.studentId === studentId),
   addProgression: (p: Omit<ProgressionSheet, "id">) => {
     const newP = { ...p, id: Date.now().toString() };
     progressions = [...progressions, newP];
+    saveToStorage();
     return newP;
   },
   updateModuleStatus: (progressionId: string, moduleId: string, status: ProgressionModule["status"], comment?: string) => {
@@ -243,6 +270,7 @@ export const store = {
         ...m, status, comment, evaluatedAt: new Date().toLocaleDateString("fr-FR"),
       } : m),
     } : p);
+    saveToStorage();
   },
   updateModuleRating: (progressionId: string, moduleId: string, ratingStart?: number, ratingEnd?: number) => {
     progressions = progressions.map(p => p.id === progressionId ? {
@@ -253,9 +281,11 @@ export const store = {
         ...(ratingEnd !== undefined && { ratingEnd }),
       } : m),
     } : p);
+    saveToStorage();
   },
   setGlobalResult: (progressionId: string, result: ProgressionSheet["globalResult"]) => {
     progressions = progressions.map(p => p.id === progressionId ? { ...p, globalResult: result } : p);
+    saveToStorage();
   },
   getDefaultModules: (formation?: string) => {
     const mods = formation ? buildModulesForFormation(formation) : buildModulesForFormation("Télépilote Drone STS-01/STS-02");
@@ -268,6 +298,7 @@ export const store = {
   addSatisfaction: (s: Omit<SatisfactionResponse, "id">) => {
     const newS = { ...s, id: Date.now().toString() };
     satisfactions = [...satisfactions, newS];
+    saveToStorage();
     return newS;
   },
   updateSatisfactionRating: (satisfactionId: string, questionId: string, rating: number) => {
@@ -275,23 +306,37 @@ export const store = {
       ...s,
       questions: s.questions.map(q => q.id === questionId ? { ...q, rating } : q),
     } : s);
+    saveToStorage();
   },
   updateSatisfactionComment: (satisfactionId: string, comment: string) => {
     satisfactions = satisfactions.map(s => s.id === satisfactionId ? { ...s, comment } : s);
+    saveToStorage();
   },
-  getGlobalSatisfaction: () => {
-    const allRatings = satisfactions.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
+  getGlobalSatisfaction: (year?: number) => {
+    const filtered = year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year) : satisfactions;
+    const allRatings = filtered.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
     if (allRatings.length === 0) return 0;
     return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
   },
-  getSatisfactionByType: (type: "chaud" | "froid") => {
-    const responses = satisfactions.filter(s => s.type === type);
+  getSatisfactionByType: (type: "chaud" | "froid", year?: number) => {
+    let responses = satisfactions.filter(s => s.type === type);
+    if (year) responses = responses.filter(s => new Date(s.date).getFullYear() === year);
     const allRatings = responses.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
     if (allRatings.length === 0) return 0;
     return Math.round((allRatings.reduce((a, b) => a + b, 0) / (allRatings.length * 5)) * 100);
   },
+  getSatisfactionCount: (year?: number) => {
+    return year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year).length : satisfactions.length;
+  },
   getDefaultQuestions: (type: "chaud" | "froid") => {
     const qs = type === "chaud" ? QUESTIONS_CHAUD : QUESTIONS_FROID;
     return qs.map((q, i) => ({ ...q, id: `q${type[0]}${Date.now()}_${i}` }));
+  },
+
+  // Invoices
+  getInvoices: () => invoiceStatuses,
+  updateInvoiceStatus: (studentId: string, status: "paye" | "en_attente" | "impaye") => {
+    invoiceStatuses = { ...invoiceStatuses, [studentId]: status };
+    saveToStorage();
   },
 };

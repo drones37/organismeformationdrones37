@@ -1,13 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, ClipboardCheck, FolderOpen, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, ClipboardCheck, CreditCard } from "lucide-react";
 import logo from "@/assets/drones37-logo.png";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
   { to: "/eleves", icon: Users, label: "Élèves" },
   { to: "/emargement", icon: ClipboardCheck, label: "Émargement" },
-  { to: "/progression", icon: BookOpen, label: "Progression" },
-  { to: "/documents", icon: FolderOpen, label: "Documents" },
+  { to: "/facturation", icon: CreditCard, label: "Facturation" },
 ];
 
 const AppSidebar = () => {

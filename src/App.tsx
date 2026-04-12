@@ -8,8 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import StudentsPage from "./pages/StudentsPage";
 import StudentDetailPage from "./pages/StudentDetailPage";
 import AttendancePage from "./pages/AttendancePage";
-import DocumentsPage from "./pages/DocumentsPage";
-import ProgressionPage from "./pages/ProgressionPage";
+import FacturationPage from "./pages/FacturationPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,8 +25,7 @@ const App = () => (
             <Route path="/eleves" element={<StudentsPage />} />
             <Route path="/eleves/:id" element={<StudentDetailPage />} />
             <Route path="/emargement" element={<AttendancePage />} />
-            <Route path="/documents" element={<DocumentsPage />} />
-            <Route path="/progression" element={<ProgressionPage />} />
+            <Route path="/facturation" element={<FacturationPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
