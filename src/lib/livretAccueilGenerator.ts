@@ -16,12 +16,13 @@ const COMPANY = {
 };
 
 const COLORS = {
-  primary: [42, 42, 42] as [number, number, number],
-  accent: [229, 165, 0] as [number, number, number],
-  text: [44, 44, 44] as [number, number, number],
-  lightGray: [245, 243, 238] as [number, number, number],
+  primary: [56, 140, 195] as [number, number, number],    // bleu ciel
+  accent: [229, 165, 0] as [number, number, number],      // jaune doré
+  text: [30, 50, 70] as [number, number, number],
+  lightGray: [230, 240, 248] as [number, number, number], // bleu très clair
   white: [255, 255, 255] as [number, number, number],
-  medGray: [180, 180, 180] as [number, number, number],
+  medGray: [160, 175, 190] as [number, number, number],
+  dark: [25, 55, 80] as [number, number, number],         // bleu foncé
 };
 
 interface FormationConfig {
