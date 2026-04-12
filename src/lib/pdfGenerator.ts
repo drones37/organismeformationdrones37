@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { AttendanceSheet, ProgressionSheet, Student, SatisfactionResponse } from "./store";
+import { getModulesForFormation } from "./formationModules";
 
 const COMPANY = {
   name: "DRONES37",
