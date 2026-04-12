@@ -78,7 +78,7 @@ export interface SatisfactionResponse {
 export interface Document {
   id: string;
   name: string;
-  category: "convention" | "attestation" | "programme" | "facture" | "emargement" | "questionnaire" | "veille" | "plan_action" | "autre";
+  category: "convention" | "attestation" | "programme" | "facture" | "emargement" | "questionnaire" | "veille" | "plan_action" | "prerequis" | "autre";
   studentId?: string;
   formationId?: string;
   createdAt: string;
@@ -244,6 +244,10 @@ export const store = {
   },
   closeAttendance: (id: string) => {
     attendance = attendance.map(a => a.id === id ? { ...a, status: "cloturee" as const } : a);
+    saveToStorage();
+  },
+  deleteAttendance: (id: string) => {
+    attendance = attendance.filter(a => a.id !== id);
     saveToStorage();
   },
 

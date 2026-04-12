@@ -36,27 +36,19 @@
 
     --radius: 0.625rem;
 
-    --sidebar-bg: 30 20% 12%;
-    --sidebar-fg: 40 15% 70%;
+    --sidebar-bg: 205 55% 92%;
+    --sidebar-fg: 205 30% 25%;
     --sidebar-active: 42 100% 50%;
     --sidebar-active-fg: 0 0% 100%;
-    --sidebar-hover: 30 20% 18%;
+    --sidebar-hover: 205 50% 86%;
 
-    --success: 152 60% 42%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --font-heading: 'Rajdhani', sans-serif;
-    --font-body: 'Inter', sans-serif;
-
-    --sidebar-background: 30 20% 12%;
-    --sidebar-foreground: 40 15% 70%;
+    --sidebar-background: 205 55% 92%;
+    --sidebar-foreground: 205 30% 25%;
     --sidebar-primary: 42 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 20% 18%;
-    --sidebar-accent-foreground: 40 15% 85%;
-    --sidebar-border: 30 20% 20%;
+    --sidebar-accent: 205 50% 86%;
+    --sidebar-accent-foreground: 205 30% 15%;
+    --sidebar-border: 205 40% 82%;
     --sidebar-ring: 42 100% 50%;
   }
 }
