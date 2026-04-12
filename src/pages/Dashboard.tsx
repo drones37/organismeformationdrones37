@@ -15,7 +15,8 @@ const Dashboard = () => {
   const sheets = store.getAttendance().filter(a => new Date(a.date).getFullYear() === yearNum);
   const invoices = store.getInvoices();
 
-  const globalSat = store.getGlobalSatisfaction(yearNum);
+  const satChaudGlobal = store.getSatisfactionByType("chaud");
+  const satFroidGlobal = store.getSatisfactionByType("froid");
   const satChaud = store.getSatisfactionByType("chaud", yearNum);
   const satFroid = store.getSatisfactionByType("froid", yearNum);
   const satCount = store.getSatisfactionCount(yearNum);
@@ -53,11 +54,12 @@ const Dashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Élèves" value={students.length} icon={Users} accent />
-        <StatCard title="Satisfaction globale" value={`${globalSat}%`} icon={Star} accent />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard title="Élèves (total)" value={allStudents.length} icon={Users} accent />
+        <StatCard title={`Élèves ${year}`} value={students.length} icon={Users} />
+        <StatCard title="Satisfaction à chaud" value={`${satChaudGlobal}%`} icon={Star} accent />
+        <StatCard title="Satisfaction à froid" value={`${satFroidGlobal}%`} icon={Star} />
         <StatCard title="Taux de réussite" value={`${tauxReussite}%`} icon={Award} />
-        <StatCard title="Taux d'abandon" value={`${tauxAbandon}%`} icon={UserX} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -125,21 +127,6 @@ const Dashboard = () => {
             <h2 className="text-lg font-heading font-semibold">Satisfaction {year}</h2>
           </div>
 
-          <div className="flex items-center justify-center mb-6">
-            <div className="relative w-32 h-32">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="8" />
-                <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--accent))" strokeWidth="8"
-                  strokeDasharray={`${globalSat * 2.64} ${264 - globalSat * 2.64}`}
-                  strokeLinecap="round" />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-heading font-bold">{globalSat}%</span>
-                <span className="text-xs text-muted-foreground">globale</span>
-              </div>
-            </div>
-          </div>
-
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <span className="text-sm">🔥 À chaud</span>
@@ -149,10 +136,14 @@ const Dashboard = () => {
               <span className="text-sm">❄️ À froid</span>
               <span className={`text-sm font-bold ${satFroid >= 80 ? "text-success" : satFroid >= 60 ? "text-warning" : "text-destructive"}`}>{satFroid}%</span>
             </div>
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <span className="text-sm">📊 Taux d'abandon</span>
+              <span className={`text-sm font-bold ${tauxAbandon <= 10 ? "text-success" : tauxAbandon <= 25 ? "text-warning" : "text-destructive"}`}>{tauxAbandon}%</span>
+            </div>
           </div>
 
           <p className="text-xs text-muted-foreground mt-4 text-center">
-            Basé sur {satCount} questionnaire(s) — tous élèves confondus
+            Basé sur {satCount} questionnaire(s) — {students.length} élève(s) en {year}
           </p>
         </div>
       </div>
