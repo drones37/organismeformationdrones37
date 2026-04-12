@@ -198,7 +198,10 @@ let students: Student[] = saved?.students || [...demoStudents];
 let attendance: AttendanceSheet[] = saved?.attendance || [...demoAttendance];
 let documents: Document[] = saved?.documents || [...demoDocuments];
 let progressions: ProgressionSheet[] = saved?.progressions || [...demoProgressions];
-let satisfactions: SatisfactionResponse[] = saved?.satisfactions || [...demoSatisfactions];
+const rawSatisfactions: SatisfactionResponse[] = saved?.satisfactions || [...demoSatisfactions];
+let satisfactions: SatisfactionResponse[] = rawSatisfactions.filter((s) =>
+  students.some((student) => student.id === s.studentId)
+);
 let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || {};
 let veilleEntries: VeilleEntry[] = saved?.veilleEntries || [];
 let planActionEntries: PlanActionEntry[] = saved?.planActionEntries || [];
