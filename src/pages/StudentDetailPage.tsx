@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import SignatureCanvas from "@/components/SignatureCanvas";
 import { generateAttestationPDF, generateProgressionPDF, generateAttendancePDF, generateConvocationPDF, generateConventionPDF, generateSatisfactionPDF } from "@/lib/pdfGenerator";
+import { generateLivretAccueilPDF } from "@/lib/livretAccueilGenerator";
 
 const statusLabels: Record<string, string> = {
   en_cours: "En cours",
@@ -183,7 +184,10 @@ const StudentDetailPage = () => {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => generateLivretAccueilPDF(student)}>
+            <FileDown className="w-3.5 h-3.5 mr-1" /> Livret d'accueil
+          </Button>
           <Button variant="outline" size="sm" onClick={() => generateConvocationPDF(student)}>
             <FileDown className="w-3.5 h-3.5 mr-1" /> Convocation
           </Button>
