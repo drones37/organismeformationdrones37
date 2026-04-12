@@ -15,7 +15,8 @@ const Dashboard = () => {
   const sheets = store.getAttendance().filter(a => new Date(a.date).getFullYear() === yearNum);
   const invoices = store.getInvoices();
 
-  const globalSat = store.getGlobalSatisfaction(yearNum);
+  const satChaudGlobal = store.getSatisfactionByType("chaud");
+  const satFroidGlobal = store.getSatisfactionByType("froid");
   const satChaud = store.getSatisfactionByType("chaud", yearNum);
   const satFroid = store.getSatisfactionByType("froid", yearNum);
   const satCount = store.getSatisfactionCount(yearNum);
@@ -53,11 +54,12 @@ const Dashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Élèves" value={students.length} icon={Users} accent />
-        <StatCard title="Satisfaction globale" value={`${globalSat}%`} icon={Star} accent />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <StatCard title="Élèves (total)" value={allStudents.length} icon={Users} accent />
+        <StatCard title={`Élèves ${year}`} value={students.length} icon={Users} />
+        <StatCard title="Satisfaction à chaud" value={`${satChaudGlobal}%`} icon={Star} accent />
+        <StatCard title="Satisfaction à froid" value={`${satFroidGlobal}%`} icon={Star} />
         <StatCard title="Taux de réussite" value={`${tauxReussite}%`} icon={Award} />
-        <StatCard title="Taux d'abandon" value={`${tauxAbandon}%`} icon={UserX} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
