@@ -390,4 +390,26 @@ export const store = {
     planActionEntries = planActionEntries.filter(e => e.id !== id);
     saveToStorage();
   },
+
+  // Export / Import JSON
+  exportData: () => {
+    return JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }, null, 2);
+  },
+  importData: (jsonString: string) => {
+    try {
+      const data = JSON.parse(jsonString);
+      if (data.students) students = data.students;
+      if (data.attendance) attendance = data.attendance;
+      if (data.documents) documents = data.documents;
+      if (data.progressions) progressions = data.progressions;
+      if (data.satisfactions) satisfactions = data.satisfactions;
+      if (data.invoiceStatuses) invoiceStatuses = data.invoiceStatuses;
+      if (data.veilleEntries) veilleEntries = data.veilleEntries;
+      if (data.planActionEntries) planActionEntries = data.planActionEntries;
+      saveToStorage();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
 };
