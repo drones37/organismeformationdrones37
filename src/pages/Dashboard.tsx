@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, ClipboardCheck, TrendingUp, CalendarDays, Star, MessageSquare, CreditCard } from "lucide-react";
+import { Users, ClipboardCheck, TrendingUp, CalendarDays, Star, MessageSquare, CreditCard, UserX, Award } from "lucide-react";
 import { store } from "@/lib/store";
 import StatCard from "@/components/StatCard";
 import { Link } from "react-router-dom";
@@ -23,10 +23,19 @@ const Dashboard = () => {
   const enCours = students.filter(s => s.status === "en_cours").length;
   const terminees = students.filter(s => s.status === "terminee").length;
   const aVenir = students.filter(s => s.status === "a_venir").length;
+  const abandonnes = students.filter(s => s.status === "abandonnee").length;
   const payes = students.filter(s => (invoices[s.id] || "en_attente") === "paye").length;
 
+  // Taux de réussite: terminées / (terminées + abandonnées)
+  const totalFinished = terminees + abandonnes;
+  const tauxReussite = totalFinished > 0 ? Math.round((terminees / totalFinished) * 100) : 100;
+  // Taux d'abandon
+  const tauxAbandon = students.length > 0 ? Math.round((abandonnes / students.length) * 100) : 0;
+
   const years = [...new Set(allStudents.map(s => new Date(s.startDate).getFullYear()))].sort((a, b) => b - a);
-  if (!years.includes(currentYear)) years.unshift(currentYear);
+  if (!years.includes(2025)) years.push(2025);
+  if (!years.includes(currentYear)) years.push(currentYear);
+  years.sort((a, b) => b - a);
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -44,12 +53,18 @@ const Dashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="Élèves" value={students.length} icon={Users} accent />
+        <StatCard title="Satisfaction globale" value={`${globalSat}%`} icon={Star} accent />
+        <StatCard title="Taux de réussite" value={`${tauxReussite}%`} icon={Award} />
+        <StatCard title="Taux d'abandon" value={`${tauxAbandon}%`} icon={UserX} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard title="En cours" value={enCours} icon={TrendingUp} />
         <StatCard title="Émargements" value={sheets.length} icon={ClipboardCheck} />
         <StatCard title="Payés" value={`${payes}/${students.length}`} icon={CreditCard} />
-        <StatCard title="Satisfaction" value={`${globalSat}%`} icon={Star} accent />
+        <StatCard title="Abandons" value={abandonnes} icon={UserX} />
       </div>
 
       {/* Recent activity */}
@@ -85,6 +100,7 @@ const Dashboard = () => {
               { label: "En cours", count: enCours, color: "bg-accent" },
               { label: "Terminées", count: terminees, color: "bg-success" },
               { label: "À venir", count: aVenir, color: "bg-primary" },
+              { label: "Abandonnées", count: abandonnes, color: "bg-destructive" },
             ].map(item => (
               <div key={item.label} className="space-y-1.5">
                 <div className="flex justify-between text-sm">
@@ -136,7 +152,7 @@ const Dashboard = () => {
           </div>
 
           <p className="text-xs text-muted-foreground mt-4 text-center">
-            Basé sur {satCount} questionnaire(s)
+            Basé sur {satCount} questionnaire(s) — tous élèves confondus
           </p>
         </div>
       </div>

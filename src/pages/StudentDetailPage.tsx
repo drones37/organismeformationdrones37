@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { store, ProgressionModule, Document, SatisfactionResponse } from "@/lib/store";
 import { FORMATION_TYPES } from "@/lib/formationModules";
-import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,12 +18,14 @@ const statusLabels: Record<string, string> = {
   en_cours: "En cours",
   terminee: "Terminée",
   a_venir: "À venir",
+  abandonnee: "Abandonnée",
 };
 
 const statusVariants: Record<string, string> = {
   en_cours: "bg-accent/15 text-accent border-accent/30",
   terminee: "bg-success/15 text-success border-success/30",
   a_venir: "bg-primary/15 text-primary border-primary/30",
+  abandonnee: "bg-destructive/15 text-destructive border-destructive/30",
 };
 
 const moduleStatusConfig: Record<ProgressionModule["status"], { label: string; icon: typeof CheckCircle2; color: string }> = {
@@ -40,6 +42,8 @@ const categoryLabels: Record<Document["category"], string> = {
   facture: "Facture / Devis",
   emargement: "Émargement",
   questionnaire: "Questionnaire",
+  veille: "Veille réglementaire",
+  plan_action: "Plan d'amélioration",
   autre: "Autre",
 };
 
@@ -50,6 +54,8 @@ const categoryColors: Record<Document["category"], string> = {
   facture: "bg-warning/10 text-warning",
   emargement: "bg-primary/10 text-primary",
   questionnaire: "bg-accent/10 text-accent",
+  veille: "bg-secondary text-secondary-foreground",
+  plan_action: "bg-secondary text-secondary-foreground",
   autre: "bg-muted text-muted-foreground",
 };
 
@@ -480,33 +486,76 @@ const StudentDetailPage = () => {
           </div>
         </TabsContent>
 
-        {/* DOCUMENTS TAB */}
         <TabsContent value="documents">
-          {studentDocuments.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground bg-card rounded-xl border border-border">
-              <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p>Aucun document associé à cet élève</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-heading font-semibold text-lg">Documents de l'élève</h3>
+              <label className="cursor-pointer">
+                <input type="file" className="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png" onChange={(e) => {
+                  const files = e.target.files;
+                  if (!files) return;
+                  Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const sizeKo = Math.round(file.size / 1024);
+                      store.addDocument({
+                        name: file.name,
+                        category: "autre",
+                        studentId: student.id,
+                        createdAt: new Date().toISOString().split("T")[0],
+                        size: sizeKo >= 1024 ? `${(sizeKo / 1024).toFixed(1)} Mo` : `${sizeKo} Ko`,
+                        fileData: reader.result as string,
+                      });
+                      forceUpdate(n => n + 1);
+                    };
+                    reader.readAsDataURL(file);
+                  });
+                  e.target.value = "";
+                }} />
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity">
+                  <Upload className="w-4 h-4" /> Importer
+                </span>
+              </label>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {studentDocuments.map(d => (
-                <div key={d.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-muted rounded-lg"><FileText className="w-5 h-5 text-muted-foreground" /></div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{d.name}</p>
-                      <p className="text-xs text-muted-foreground">{d.size} • {new Date(d.createdAt).toLocaleDateString("fr-FR")}</p>
+
+            {studentDocuments.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground bg-card rounded-xl border border-border">
+                <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                <p>Aucun document associé à cet élève</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {studentDocuments.map(d => (
+                  <div key={d.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow group">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="p-2.5 bg-muted rounded-lg shrink-0"><FileText className="w-5 h-5 text-muted-foreground" /></div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{d.name}</p>
+                          <p className="text-xs text-muted-foreground">{d.size} • {new Date(d.createdAt).toLocaleDateString("fr-FR")}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {d.fileData && (
+                          <button onClick={() => { const link = document.createElement("a"); link.href = d.fileData!; link.download = d.name; link.click(); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-accent hover:bg-accent/10 transition-all">
+                            <Download className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button onClick={() => { store.deleteDocument(d.id); forceUpdate(n => n + 1); }} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${categoryColors[d.category]}`}>
+                        {categoryLabels[d.category]}
+                      </span>
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${categoryColors[d.category]}`}>
-                      {categoryLabels[d.category]}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 

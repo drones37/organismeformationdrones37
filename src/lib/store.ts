@@ -8,7 +8,7 @@ export interface Student {
   formation: string;
   startDate: string;
   endDate: string;
-  status: "en_cours" | "terminee" | "a_venir";
+  status: "en_cours" | "terminee" | "a_venir" | "abandonnee";
 }
 
 export interface AttendanceStudent {
@@ -78,11 +78,12 @@ export interface SatisfactionResponse {
 export interface Document {
   id: string;
   name: string;
-  category: "convention" | "attestation" | "programme" | "facture" | "emargement" | "questionnaire" | "autre";
+  category: "convention" | "attestation" | "programme" | "facture" | "emargement" | "questionnaire" | "veille" | "plan_action" | "autre";
   studentId?: string;
   formationId?: string;
   createdAt: string;
   size: string;
+  fileData?: string;
 }
 
 // Demo data
