@@ -17,9 +17,6 @@ const Dashboard = () => {
 
   const satChaudGlobal = store.getSatisfactionByType("chaud");
   const satFroidGlobal = store.getSatisfactionByType("froid");
-  const satChaud = store.getSatisfactionByType("chaud", yearNum);
-  const satFroid = store.getSatisfactionByType("froid", yearNum);
-  const satCount = store.getSatisfactionCount(yearNum);
 
   const enCours = students.filter(s => s.status === "en_cours").length;
   const terminees = students.filter(s => s.status === "terminee").length;
