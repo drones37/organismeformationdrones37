@@ -111,7 +111,7 @@ const VeillePage = () => {
       <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="flex items-center gap-3 p-4 border-b border-border">
           <Shield className="w-5 h-5 text-accent" />
-          <h2 className="font-heading font-semibold text-lg">Tableau de veille – Qualiopi</h2>
+          <h2 className="font-heading font-semibold text-lg">Tableau de veille réglementaire</h2>
           <span className="text-xs text-muted-foreground ml-auto">DRONES37 – Responsable : PELARD Stéphane</span>
         </div>
 
