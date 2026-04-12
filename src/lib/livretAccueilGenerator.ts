@@ -214,7 +214,7 @@ export function generateLivretAccueilPDF(student: Student) {
     // Formation subtitle
     doc.setFillColor(...COLORS.accent);
     doc.roundedRect(20, 120, 170, 16, 3, 3, "F");
-    doc.setTextColor(...COLORS.primary);
+    doc.setTextColor(...COLORS.dark);
     doc.setFontSize(14);
     doc.text(config.title.toUpperCase(), 105, 130, { align: "center" });
 
