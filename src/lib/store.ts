@@ -202,9 +202,10 @@ export const store = {
   addStudent: (s: Omit<Student, "id">) => {
     const newStudent = { ...s, id: Date.now().toString() };
     students = [...students, newStudent];
+    saveToStorage();
     return newStudent;
   },
-  deleteStudent: (id: string) => { students = students.filter(s => s.id !== id); },
+  deleteStudent: (id: string) => { students = students.filter(s => s.id !== id); saveToStorage(); },
   
   getAttendance: () => attendance,
   addAttendance: (a: Omit<AttendanceSheet, "id">) => {
@@ -312,5 +313,12 @@ export const store = {
   getDefaultQuestions: (type: "chaud" | "froid") => {
     const qs = type === "chaud" ? QUESTIONS_CHAUD : QUESTIONS_FROID;
     return qs.map((q, i) => ({ ...q, id: `q${type[0]}${Date.now()}_${i}` }));
+  },
+
+  // Invoices
+  getInvoices: () => invoiceStatuses,
+  updateInvoiceStatus: (studentId: string, status: "paye" | "en_attente" | "impaye") => {
+    invoiceStatuses = { ...invoiceStatuses, [studentId]: status };
+    saveToStorage();
   },
 };
