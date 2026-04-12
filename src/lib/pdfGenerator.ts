@@ -76,8 +76,7 @@ function getFormationDocConfig(formation: string): FormationDocConfig {
     prerequis: "Être titulaire du CATT (Certificat d'Aptitude au Télépilotage Théorique) ou équivalent.",
   };
 }
-
-
+function addHeader(doc: jsPDF) {
   // Header bar
   doc.setFillColor(...COLORS.primary);
   doc.rect(0, 0, 210, 32, "F");
