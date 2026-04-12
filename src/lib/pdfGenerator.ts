@@ -338,8 +338,9 @@ export function generateAttestationPDF(student: Student) {
   });
   y += 4;
 
+  const config = getFormationDocConfig(student.formation);
+
   // Objectives
-  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text("Objectifs de la formation :", 20, y);
   y += 8;
