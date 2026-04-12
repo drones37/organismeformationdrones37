@@ -346,12 +346,7 @@ export function generateAttestationPDF(student: Student) {
   y += 8;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  const objectives = [
-    "Connaître et appliquer la réglementation en vigueur concernant l'usage professionnel de drone civil",
-    "Maîtriser le télépilotage d'un drone civil dans le cadre d'une activité professionnelle",
-    "Assurer le suivi administratif indissociable de l'activité",
-    "Maîtriser la préparation du vol mission dans le cadre des scénarios STS-01",
-  ];
+  const objectives = config.objectives;
   objectives.forEach(obj => {
     doc.text(`•  ${obj}`, 25, y, { maxWidth: 160 });
     y += 8;
