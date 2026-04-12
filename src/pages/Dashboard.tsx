@@ -94,7 +94,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Résumé statuts */}
+        {/* Résumé statuts + répartition par intitulé */}
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="text-lg font-heading font-semibold mb-4">Répartition des formations</h2>
           <div className="space-y-4">
@@ -118,33 +118,51 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
+          <div className="border-t border-border mt-4 pt-4">
+            <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Par intitulé</h3>
+            <div className="space-y-2">
+              {[
+                { label: "STS-01/STS-02", filter: (f: string) => f.toLowerCase().includes("sts") || f.toLowerCase().includes("télépilote") },
+                { label: "Pulvérisation", filter: (f: string) => f.toLowerCase().includes("pulvé") || f.toLowerCase().includes("bâtiment") },
+                { label: "Catégorie ouverte A1/A3", filter: (f: string) => f.toLowerCase().includes("a1") || f.toLowerCase().includes("ouverte") },
+              ].map(item => {
+                const count = students.filter(s => item.filter(s.formation)).length;
+                return (
+                  <div key={item.label} className="flex justify-between text-sm p-2 bg-muted/50 rounded-lg">
+                    <span>{item.label}</span>
+                    <span className="font-semibold">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        {/* Satisfaction card */}
+        {/* Satisfaction & taux */}
         <div className="bg-card rounded-xl border border-border p-6">
           <div className="flex items-center gap-2 mb-4">
             <MessageSquare className="w-5 h-5 text-accent" />
-            <h2 className="text-lg font-heading font-semibold">Satisfaction {year}</h2>
+            <h2 className="text-lg font-heading font-semibold">Satisfaction & indicateurs</h2>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <span className="text-sm">🔥 À chaud</span>
-              <span className={`text-sm font-bold ${satChaud >= 80 ? "text-success" : satChaud >= 60 ? "text-warning" : "text-destructive"}`}>{satChaud}%</span>
+              <span className={`text-sm font-bold ${satChaudGlobal >= 80 ? "text-success" : satChaudGlobal >= 60 ? "text-warning" : "text-destructive"}`}>{satChaudGlobal}%</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <span className="text-sm">❄️ À froid</span>
-              <span className={`text-sm font-bold ${satFroid >= 80 ? "text-success" : satFroid >= 60 ? "text-warning" : "text-destructive"}`}>{satFroid}%</span>
+              <span className={`text-sm font-bold ${satFroidGlobal >= 80 ? "text-success" : satFroidGlobal >= 60 ? "text-warning" : "text-destructive"}`}>{satFroidGlobal}%</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <span className="text-sm">📊 Taux d'abandon</span>
               <span className={`text-sm font-bold ${tauxAbandon <= 10 ? "text-success" : tauxAbandon <= 25 ? "text-warning" : "text-destructive"}`}>{tauxAbandon}%</span>
             </div>
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <span className="text-sm">🏆 Taux de réussite</span>
+              <span className={`text-sm font-bold ${tauxReussite >= 80 ? "text-success" : tauxReussite >= 60 ? "text-warning" : "text-destructive"}`}>{tauxReussite}%</span>
+            </div>
           </div>
-
-          <p className="text-xs text-muted-foreground mt-4 text-center">
-            Basé sur {satCount} questionnaire(s) — {students.length} élève(s) en {year}
-          </p>
         </div>
       </div>
     </div>
