@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { AttendanceSheet, ProgressionSheet, Student, SatisfactionResponse } from "./store";
+import { getModulesForFormation } from "./formationModules";
 
 const COMPANY = {
   name: "DRONES37",
@@ -23,6 +24,58 @@ const COLORS = {
   danger: [231, 76, 60] as [number, number, number],
 };
 
+// Formation-specific content for documents
+interface FormationDocConfig {
+  objectives: string[];
+  materiel: string;
+  dureeLabel: string;
+  prerequis: string;
+}
+
+function getFormationDocConfig(formation: string): FormationDocConfig {
+  const lower = formation.toLowerCase();
+  if (lower.includes("pulvé") || lower.includes("bâtiment")) {
+    return {
+      objectives: [
+        "Connaître et appliquer la réglementation en vigueur concernant l'usage professionnel de drone civil",
+        "Maîtriser le télépilotage d'un drone dans le cadre de missions de pulvérisation sur bâtiments",
+        "Connaître les produits de traitement et leurs utilisations",
+        "Maîtriser les équipements de protection individuelle et le matériel de pulvérisation",
+        "Réaliser des missions de pulvérisation par drone en conformité avec le cadre réglementaire",
+      ],
+      materiel: "Matériel pour écrire, tenue de travail adaptée au chantier, équipement de protection individuelle (EPI), matériel informatique.",
+      dureeLabel: "5 jours (35 heures)",
+      prerequis: "Être titulaire du CATT (Certificat d'Aptitude au Télépilotage Théorique) ou équivalent.",
+    };
+  }
+  if (lower.includes("a1") || lower.includes("a3") || lower.includes("ouverte")) {
+    return {
+      objectives: [
+        "Connaître la réglementation européenne applicable à la catégorie ouverte (A1, A2, A3)",
+        "Connaître les classes d'UAS et les limitations de masse et de vitesse",
+        "Préparer et effectuer un vol en catégorie ouverte en toute sécurité",
+        "Gérer les situations d'urgence et appliquer les règles de sécurité",
+        "Obtenir le BAPD (Brevet d'Aptitude de Pilote à Distance) A1/A3 via AlphaTango",
+      ],
+      materiel: "Matériel pour écrire, tenue décontractée, matériel informatique avec accès internet.",
+      dureeLabel: "2 jours (14 heures)",
+      prerequis: "Aucun prérequis spécifique.",
+    };
+  }
+  // Default: STS-01/STS-02
+  return {
+    objectives: [
+      "Connaître et appliquer la réglementation européenne et française concernant l'usage professionnel de drone civil",
+      "Maîtriser le télépilotage d'un drone civil dans le cadre des scénarios STS-01 et STS-02",
+      "Assurer le suivi administratif indissociable de l'activité (MANEX, AlphaTango, DGAC)",
+      "Maîtriser la préparation du vol mission et la lecture des cartes aéronautiques",
+      "Gérer les situations dégradées et appliquer les procédures d'urgence",
+    ],
+    materiel: "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD.",
+    dureeLabel: "5 jours (35 heures)",
+    prerequis: "Être titulaire du CATT (Certificat d'Aptitude au Télépilotage Théorique) ou équivalent.",
+  };
+}
 function addHeader(doc: jsPDF) {
   // Header bar
   doc.setFillColor(...COLORS.primary);
@@ -285,19 +338,15 @@ export function generateAttestationPDF(student: Student) {
   });
   y += 4;
 
+  const config = getFormationDocConfig(student.formation);
+
   // Objectives
-  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text("Objectifs de la formation :", 20, y);
   y += 8;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  const objectives = [
-    "Connaître et appliquer la réglementation en vigueur concernant l'usage professionnel de drone civil",
-    "Maîtriser le télépilotage d'un drone civil dans le cadre d'une activité professionnelle",
-    "Assurer le suivi administratif indissociable de l'activité",
-    "Maîtriser la préparation du vol mission dans le cadre des scénarios STS-01",
-  ];
+  const objectives = config.objectives;
   objectives.forEach(obj => {
     doc.text(`•  ${obj}`, 25, y, { maxWidth: 160 });
     y += 8;
@@ -666,6 +715,7 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
 export function generateConvocationPDF(student: Student) {
   const doc = new jsPDF();
   addHeader(doc);
+  const config = getFormationDocConfig(student.formation);
 
   let y = 50;
 
@@ -703,20 +753,20 @@ export function generateConvocationPDF(student: Student) {
   // Body text
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  const bodyText = `Vous êtes convoqué(e) à la formation "${student.formation}".`;
-  doc.text(bodyText, 20, y, { maxWidth: 170 });
+  doc.text(`Vous êtes convoqué(e) à la formation "${student.formation}".`, 20, y, { maxWidth: 170 });
   y += 14;
 
   // Details box
   doc.setFillColor(...COLORS.lightGray);
-  doc.roundedRect(20, y, 170, 50, 3, 3, "F");
+  doc.roundedRect(20, y, 170, 55, 3, 3, "F");
   y += 10;
 
   const details = [
-    ["Lieu :", `19 rue Madeleine Vernet, 37270 Montlouis sur Loire`],
-    ["Durée :", `du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`],
+    ["Lieu :", COMPANY.address],
+    ["Durée :", `${config.dureeLabel} — du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`],
     ["Horaire :", "09h00"],
-    ["Matériel demandé :", "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD."],
+    ["Prérequis :", config.prerequis],
+    ["Matériel demandé :", config.materiel],
   ];
 
   details.forEach(([label, val]) => {
@@ -724,11 +774,24 @@ export function generateConvocationPDF(student: Student) {
     doc.text(label, 25, y);
     doc.setFont("helvetica", "normal");
     const labelWidth = doc.getTextWidth(label) + 3;
-    doc.text(val, 25 + labelWidth, y, { maxWidth: 160 - labelWidth });
+    doc.text(val, 25 + labelWidth, y, { maxWidth: 155 - labelWidth });
     y += 10;
   });
 
-  y += 12;
+  y += 6;
+
+  // Objectives
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Objectifs de la formation :", 20, y);
+  y += 7;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  config.objectives.forEach(obj => {
+    doc.text(`•  ${obj}`, 25, y, { maxWidth: 160 });
+    y += 7;
+  });
+  y += 8;
 
   // Signature
   doc.setFont("helvetica", "normal");
@@ -749,6 +812,8 @@ export function generateConvocationPDF(student: Student) {
 export function generateConventionPDF(student: Student) {
   const doc = new jsPDF();
   addHeader(doc);
+  const config = getFormationDocConfig(student.formation);
+  const evaluationItems = getModulesForFormation(student.formation);
 
   let y = 48;
 
@@ -799,7 +864,7 @@ export function generateConventionPDF(student: Student) {
   if (student.phone) { y += 5; doc.text(`Tél : ${student.phone}`, 25, y); }
   y += 12;
 
-  // Article I
+  // Article I - Objet
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...COLORS.accent);
@@ -812,25 +877,65 @@ export function generateConventionPDF(student: Student) {
   y += 6;
   doc.setFont("helvetica", "bold");
   doc.text(student.formation, 20, y);
+  y += 4;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(`Durée : ${config.dureeLabel} — Prérequis : ${config.prerequis}`, 20, y);
   y += 10;
 
-  // Article II
+  // Article II - Objectifs
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...COLORS.accent);
-  doc.text("II — ENGAGEMENT DE PARTICIPATION", 20, y);
+  doc.text("II — OBJECTIFS DE LA FORMATION", 20, y);
   doc.setTextColor(...COLORS.text);
   y += 7;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`Le(s) participant(s) : ${student.firstName} ${student.lastName}`, 20, y);
-  y += 10;
+  config.objectives.forEach(obj => {
+    doc.text(`•  ${obj}`, 25, y, { maxWidth: 160 });
+    y += 7;
+  });
+  y += 4;
 
-  // Article III - Dates
+  // Article III - Programme / Items d'évaluation
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...COLORS.accent);
-  doc.text("III — MODALITÉS DE DÉROULEMENT", 20, y);
+  doc.text("III — PROGRAMME ET ITEMS D'ÉVALUATION", 20, y);
+  doc.setTextColor(...COLORS.text);
+  y += 7;
+
+  // Evaluation items table
+  const itemRows = evaluationItems.map((item, i) => [(i + 1).toString(), item.name]);
+
+  autoTable(doc, {
+    startY: y,
+    head: [["N°", "Compétence / Item évalué"]],
+    body: itemRows,
+    theme: "grid",
+    headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 8, halign: "center" },
+    bodyStyles: { fontSize: 7.5, cellPadding: 2.5 },
+    columnStyles: { 0: { halign: "center", cellWidth: 12 }, 1: { cellWidth: 155 } },
+    margin: { left: 20, right: 20 },
+    alternateRowStyles: { fillColor: [250, 248, 243] },
+  });
+
+  y = (doc as any).lastAutoTable?.finalY || y + 40;
+  y += 8;
+
+  // Check if we need a new page
+  if (y > 230) {
+    doc.addPage();
+    addHeader(doc);
+    y = 44;
+  }
+
+  // Article IV - Modalités
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.accent);
+  doc.text("IV — MODALITÉS DE DÉROULEMENT", 20, y);
   doc.setTextColor(...COLORS.text);
   y += 7;
   doc.setFontSize(9);
@@ -842,11 +947,11 @@ export function generateConventionPDF(student: Student) {
   doc.text("Modalité : Formation présentielle", 20, y);
   y += 10;
 
-  // Article IV
+  // Article V - Évaluation
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...COLORS.accent);
-  doc.text("IV — MOYENS D'ÉVALUATION", 20, y);
+  doc.text("V — MOYENS D'ÉVALUATION", 20, y);
   doc.setTextColor(...COLORS.text);
   y += 7;
   doc.setFontSize(9);
@@ -854,6 +959,8 @@ export function generateConventionPDF(student: Student) {
   doc.text("Feuilles de présence signées par les stagiaires et le formateur par demi-journée.", 20, y, { maxWidth: 170 });
   y += 6;
   doc.text("Mise en situation concrète et évaluation pratique en continu.", 20, y, { maxWidth: 170 });
+  y += 6;
+  doc.text("Livret de progression individuel avec notation des acquis (1 à 5).", 20, y, { maxWidth: 170 });
   y += 14;
 
   // Signatures
