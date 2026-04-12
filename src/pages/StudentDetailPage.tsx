@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import SignatureCanvas from "@/components/SignatureCanvas";
 import { generateAttestationPDF, generateProgressionPDF, generateAttendancePDF, generateConvocationPDF, generateConventionPDF, generateSatisfactionPDF } from "@/lib/pdfGenerator";
+import { generateLivretAccueilPDF } from "@/lib/livretAccueilGenerator";
 
 const statusLabels: Record<string, string> = {
   en_cours: "En cours",
