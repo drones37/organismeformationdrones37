@@ -172,11 +172,30 @@ const demoSatisfactions: SatisfactionResponse[] = [
   },
 ];
 
-let students = [...demoStudents];
-let attendance = [...demoAttendance];
-let documents = [...demoDocuments];
-let progressions = [...demoProgressions];
-let satisfactions = [...demoSatisfactions];
+// localStorage persistence helpers
+const STORAGE_KEY = "drones37_store";
+
+function loadFromStorage() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) return JSON.parse(data);
+  } catch (e) { /* ignore */ }
+  return null;
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses }));
+  } catch (e) { /* ignore */ }
+}
+
+const saved = loadFromStorage();
+let students: Student[] = saved?.students || [...demoStudents];
+let attendance: AttendanceSheet[] = saved?.attendance || [...demoAttendance];
+let documents: Document[] = saved?.documents || [...demoDocuments];
+let progressions: ProgressionSheet[] = saved?.progressions || [...demoProgressions];
+let satisfactions: SatisfactionResponse[] = saved?.satisfactions || [...demoSatisfactions];
+let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || {};
 
 export const store = {
   getStudents: () => students,
