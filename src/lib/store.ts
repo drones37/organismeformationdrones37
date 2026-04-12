@@ -260,6 +260,7 @@ export const store = {
   addProgression: (p: Omit<ProgressionSheet, "id">) => {
     const newP = { ...p, id: Date.now().toString() };
     progressions = [...progressions, newP];
+    saveToStorage();
     return newP;
   },
   updateModuleStatus: (progressionId: string, moduleId: string, status: ProgressionModule["status"], comment?: string) => {
@@ -269,6 +270,7 @@ export const store = {
         ...m, status, comment, evaluatedAt: new Date().toLocaleDateString("fr-FR"),
       } : m),
     } : p);
+    saveToStorage();
   },
   updateModuleRating: (progressionId: string, moduleId: string, ratingStart?: number, ratingEnd?: number) => {
     progressions = progressions.map(p => p.id === progressionId ? {
@@ -279,9 +281,11 @@ export const store = {
         ...(ratingEnd !== undefined && { ratingEnd }),
       } : m),
     } : p);
+    saveToStorage();
   },
   setGlobalResult: (progressionId: string, result: ProgressionSheet["globalResult"]) => {
     progressions = progressions.map(p => p.id === progressionId ? { ...p, globalResult: result } : p);
+    saveToStorage();
   },
   getDefaultModules: (formation?: string) => {
     const mods = formation ? buildModulesForFormation(formation) : buildModulesForFormation("Télépilote Drone STS-01/STS-02");
