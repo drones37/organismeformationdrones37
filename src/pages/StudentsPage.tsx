@@ -82,6 +82,7 @@ const StudentsPage = () => {
                     <SelectItem value="a_venir">À venir</SelectItem>
                     <SelectItem value="en_cours">En cours</SelectItem>
                     <SelectItem value="terminee">Terminée</SelectItem>
+                    <SelectItem value="abandonnee">Abandonnée</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
