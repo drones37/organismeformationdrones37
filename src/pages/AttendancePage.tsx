@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { store } from "@/lib/store";
-import { Plus, ClipboardCheck, CheckCircle2, Clock, Lock, Download, BookOpen } from "lucide-react";
+import { Plus, ClipboardCheck, CheckCircle2, Clock, Lock, Download, BookOpen, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +57,13 @@ const AttendancePage = () => {
   const handleClose = (id: string) => {
     store.closeAttendance(id);
     forceUpdate(n => n + 1);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm("Supprimer cette feuille d'émargement ?")) {
+      store.deleteAttendance(id);
+      forceUpdate(n => n + 1);
+    }
   };
 
   const toggleStudent = (id: string) => {
@@ -172,6 +179,9 @@ const AttendancePage = () => {
                   )}
                   <Button variant="outline" size="sm" onClick={() => generateAttendancePDF(sheet)}>
                     <Download className="w-3.5 h-3.5 mr-1" /> PDF
+                  </Button>
+                  <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(sheet.id)}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Supprimer
                   </Button>
                 </div>
               </div>
