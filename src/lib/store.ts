@@ -298,6 +298,7 @@ export const store = {
   addSatisfaction: (s: Omit<SatisfactionResponse, "id">) => {
     const newS = { ...s, id: Date.now().toString() };
     satisfactions = [...satisfactions, newS];
+    saveToStorage();
     return newS;
   },
   updateSatisfactionRating: (satisfactionId: string, questionId: string, rating: number) => {
@@ -305,9 +306,11 @@ export const store = {
       ...s,
       questions: s.questions.map(q => q.id === questionId ? { ...q, rating } : q),
     } : s);
+    saveToStorage();
   },
   updateSatisfactionComment: (satisfactionId: string, comment: string) => {
     satisfactions = satisfactions.map(s => s.id === satisfactionId ? { ...s, comment } : s);
+    saveToStorage();
   },
   getGlobalSatisfaction: () => {
     const allRatings = satisfactions.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
