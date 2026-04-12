@@ -174,25 +174,7 @@ const QUESTIONS_FROID: Omit<SatisfactionQuestion, "id">[] = [
   { text: "La formation a eu un impact professionnel positif", rating: 0 },
 ];
 
-const demoSatisfactions: SatisfactionResponse[] = [
-  {
-    id: "sat1", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone - Initiation",
-    type: "chaud", date: "2025-03-14",
-    questions: QUESTIONS_CHAUD.map((q, i) => ({ ...q, id: `qc${i}`, rating: [5, 5, 4, 5, 4, 5][i] })),
-    comment: "Excellente formation, très pratique !",
-  },
-  {
-    id: "sat2", studentId: "4", studentName: "Camille Petit", formation: "Télépilote Drone - Initiation",
-    type: "chaud", date: "2025-03-14",
-    questions: QUESTIONS_CHAUD.map((q, i) => ({ ...q, id: `qc${i}`, rating: [4, 5, 5, 4, 4, 4][i] })),
-  },
-  {
-    id: "sat3", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone - Initiation",
-    type: "froid", date: "2025-04-14",
-    questions: QUESTIONS_FROID.map((q, i) => ({ ...q, id: `qf${i}`, rating: [5, 4, 5, 4, 5][i] })),
-    comment: "J'utilise les acquis quotidiennement.",
-  },
-];
+const demoSatisfactions: SatisfactionResponse[] = [];
 
 // localStorage persistence helpers
 const STORAGE_KEY = "drones37_store";
