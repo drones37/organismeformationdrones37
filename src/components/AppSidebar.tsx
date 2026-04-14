@@ -4,6 +4,8 @@ import { useRef } from "react";
 import logo from "@/assets/drones37-logo.png";
 import { store } from "@/lib/store";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
@@ -79,7 +81,7 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      {/* Footer with export/import */}
+      {/* Footer with export/import/logout */}
       <div className="px-4 py-3 border-t border-sidebar-border space-y-2">
         <div className="flex gap-2">
           <button onClick={handleExport} className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium text-sidebar-foreground hover:bg-sidebar-accent transition-colors" title="Exporter les données">
@@ -90,6 +92,9 @@ const AppSidebar = () => {
           </button>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
         </div>
+        <button onClick={handleLogout} className="w-full flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors" title="Se déconnecter">
+          <LogOut className="w-3.5 h-3.5" /> Déconnexion
+        </button>
         <p className="text-[10px] text-sidebar-foreground opacity-50 text-center">v1.0 — Centre de formation</p>
       </div>
     </aside>
