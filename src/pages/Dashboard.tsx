@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, ClipboardCheck, TrendingUp, CalendarDays, Star, MessageSquare, CreditCard, UserX, Award } from "lucide-react";
+import { Users, ClipboardCheck, TrendingUp, CalendarDays, Star, MessageSquare, CreditCard, UserX, Award, Flame, Snowflake } from "lucide-react";
 import { store } from "@/lib/store";
 import StatCard from "@/components/StatCard";
 import { Link } from "react-router-dom";
@@ -151,19 +151,19 @@ const Dashboard = () => {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm">🔥 À chaud</span>
+              <span className="text-sm flex items-center gap-2"><Flame className="w-4 h-4 text-orange-500" /> À chaud</span>
               <span className={`text-sm font-bold ${satChaudGlobal >= 80 ? "text-success" : satChaudGlobal >= 60 ? "text-warning" : "text-destructive"}`}>{satChaudGlobal}%</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm">❄️ À froid</span>
+              <span className="text-sm flex items-center gap-2"><Snowflake className="w-4 h-4 text-blue-400" /> À froid</span>
               <span className={`text-sm font-bold ${satFroidGlobal >= 80 ? "text-success" : satFroidGlobal >= 60 ? "text-warning" : "text-destructive"}`}>{satFroidGlobal}%</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm">📊 Taux d'abandon</span>
+              <span className="text-sm flex items-center gap-2"><UserX className="w-4 h-4 text-destructive" /> Taux d'abandon</span>
               <span className={`text-sm font-bold ${tauxAbandon <= 10 ? "text-success" : tauxAbandon <= 25 ? "text-warning" : "text-destructive"}`}>{tauxAbandon}%</span>
             </div>
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm">🏆 Taux de réussite</span>
+              <span className="text-sm flex items-center gap-2"><Award className="w-4 h-4 text-yellow-500" /> Taux de réussite</span>
               <span className={`text-sm font-bold ${tauxReussite >= 80 ? "text-success" : tauxReussite >= 60 ? "text-warning" : "text-destructive"}`}>{tauxReussite}%</span>
             </div>
           </div>
