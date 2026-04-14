@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, CreditCard, Shield, ClipboardList, Download, Upload, FileCheck, ClipboardCheck } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, Shield, ClipboardList, Download, Upload, FileCheck, ClipboardCheck, LogOut } from "lucide-react";
 import { useRef } from "react";
 import logo from "@/assets/drones37-logo.png";
 import { store } from "@/lib/store";
