@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { store, Document, PlanActionEntry } from "@/lib/store";
+import { useStoreRefresh } from "@/hooks/useStoreData";
 import { ClipboardList, Upload, Download, Trash2, FileText, Plus, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ const STATUTS = [
 ];
 
 const PlanActionPage = () => {
+  useStoreRefresh();
   const [, forceUpdate] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<PlanActionEntry>>({});
