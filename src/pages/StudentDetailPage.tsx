@@ -310,12 +310,10 @@ const StudentDetailPage = () => {
               ...prereqs.obligations.map(o => ({ label: o, group: "obligation" })),
             ];
 
-            // Initialize prerequisites if not set
             const currentChecks: PrerequisiteCheck[] = student.prerequisites || allItems.map(item => ({ label: item.label, checked: false }));
 
             const handleToggle = (label: string) => {
               const updated = currentChecks.map(p => p.label === label ? { ...p, checked: !p.checked } : p);
-              // Add any missing items
               for (const item of allItems) {
                 if (!updated.find(u => u.label === item.label)) {
                   updated.push({ label: item.label, checked: false });
@@ -325,68 +323,32 @@ const StudentDetailPage = () => {
               forceUpdate(n => n + 1);
             };
 
-            const handleProofUpload = (label: string, file: File) => {
+            const handleProofUpload = (file: File) => {
               const reader = new FileReader();
               reader.onload = () => {
-                const updated = currentChecks.map(p => p.label === label ? { ...p, proofFileName: file.name, proofFileData: reader.result as string } : p);
-                store.updateStudent(student.id, { prerequisites: updated });
+                // Store proof as a document linked to the student
+                store.addDocument({
+                  name: file.name,
+                  category: "prerequis",
+                  studentId: student.id,
+                  createdAt: new Date().toISOString(),
+                  size: `${(file.size / 1024).toFixed(0)} Ko`,
+                  fileData: reader.result as string,
+                });
                 forceUpdate(n => n + 1);
               };
               reader.readAsDataURL(file);
             };
 
-            const handleProofDownload = (prereq: PrerequisiteCheck) => {
-              if (!prereq.proofFileData) return;
-              const a = document.createElement("a");
-              a.href = prereq.proofFileData;
-              a.download = prereq.proofFileName || "preuve";
-              a.click();
-            };
-
-            const handleProofDelete = (label: string) => {
-              const updated = currentChecks.map(p => p.label === label ? { ...p, proofFileName: undefined, proofFileData: undefined } : p);
-              store.updateStudent(student.id, { prerequisites: updated });
-              forceUpdate(n => n + 1);
-            };
-
+            const proofDocs = store.getDocuments().filter(d => d.studentId === student.id && d.category === "prerequis");
             const checkedCount = currentChecks.filter(p => p.checked && allItems.some(a => a.label === p.label)).length;
 
             const renderItem = (item: { label: string; group: string }) => {
               const check = currentChecks.find(p => p.label === item.label) || { label: item.label, checked: false };
               return (
-                <li key={item.label} className="flex items-start gap-3 py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={check.checked}
-                    onChange={() => handleToggle(item.label)}
-                    className="rounded mt-0.5"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <span className={`text-sm ${check.checked ? "line-through text-muted-foreground" : ""}`}>{item.label}</span>
-                    <div className="flex items-center gap-2 mt-1">
-                      {check.proofFileName ? (
-                        <div className="flex items-center gap-1.5">
-                          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-accent" onClick={() => handleProofDownload(check)}>
-                            <Download className="w-3 h-3 mr-1" /> {check.proofFileName}
-                          </Button>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" onClick={() => handleProofDelete(item.label)}>
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <label className="cursor-pointer">
-                          <input
-                            type="file"
-                            className="hidden"
-                            onChange={e => { if (e.target.files?.[0]) handleProofUpload(item.label, e.target.files[0]); }}
-                          />
-                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                            <Upload className="w-3 h-3" /> Ajouter une preuve
-                          </span>
-                        </label>
-                      )}
-                    </div>
-                  </div>
+                <li key={item.label} className="flex items-center gap-3 py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <input type="checkbox" checked={check.checked} onChange={() => handleToggle(item.label)} className="rounded" />
+                  <span className={`text-sm ${check.checked ? "line-through text-muted-foreground" : ""}`}>{item.label}</span>
                 </li>
               );
             };
@@ -403,16 +365,46 @@ const StudentDetailPage = () => {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground mb-2">Pré-requis théoriques</p>
-                    <ul className="space-y-1">
-                      {allItems.filter(i => i.group === "theorique").map(renderItem)}
-                    </ul>
+                    <ul className="space-y-0.5">{allItems.filter(i => i.group === "theorique").map(renderItem)}</ul>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-muted-foreground mb-2">Obligations supplémentaires</p>
-                    <ul className="space-y-1">
-                      {allItems.filter(i => i.group === "obligation").map(renderItem)}
-                    </ul>
+                    <ul className="space-y-0.5">{allItems.filter(i => i.group === "obligation").map(renderItem)}</ul>
                   </div>
+                </div>
+
+                {/* Zone unique pour les preuves */}
+                <div className="border-t border-border pt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-muted-foreground">Preuves jointes</p>
+                    <label className="cursor-pointer">
+                      <input type="file" className="hidden" onChange={e => { if (e.target.files?.[0]) handleProofUpload(e.target.files[0]); }} />
+                      <span className="inline-flex items-center gap-1.5 text-xs bg-accent/10 text-accent px-3 py-1.5 rounded-md hover:bg-accent/20 transition-colors">
+                        <Upload className="w-3.5 h-3.5" /> Ajouter une preuve
+                      </span>
+                    </label>
+                  </div>
+                  {proofDocs.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">Aucune preuve jointe</p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {proofDocs.map(doc => (
+                        <li key={doc.id} className="flex items-center gap-2 text-sm bg-muted/30 rounded-md px-3 py-2">
+                          <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <span className="flex-1 truncate">{doc.name}</span>
+                          <span className="text-xs text-muted-foreground">{doc.size}</span>
+                          {doc.fileData && (
+                            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => { const a = document.createElement("a"); a.href = doc.fileData!; a.download = doc.name; a.click(); }}>
+                              <Download className="w-3 h-3" />
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" onClick={() => { store.deleteDocument(doc.id); forceUpdate(n => n + 1); }}>
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             );
