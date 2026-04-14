@@ -148,6 +148,18 @@ const QUESTIONS_FROID: Omit<SatisfactionQuestion, "id">[] = [
   { text: "La formation a eu un impact professionnel positif", rating: 0 },
 ];
 
+function getTemplateQuestions(type: "chaud" | "froid") {
+  return type === "chaud" ? QUESTIONS_CHAUD : QUESTIONS_FROID;
+}
+
+function buildDefaultQuestions(type: "chaud" | "froid", satisfactionId: string): SatisfactionQuestion[] {
+  return getTemplateQuestions(type).map((q, i) => ({
+    id: `${satisfactionId}_${type}_${i}`,
+    text: q.text,
+    rating: q.rating,
+  }));
+}
+
 // In-memory cache
 let students: Student[] = [];
 let attendance: AttendanceSheet[] = [];
@@ -204,12 +216,14 @@ function dbToProgression(sheet: any, modules: any[]): ProgressionSheet {
 }
 
 function dbToSatisfaction(resp: any, questions: any[]): SatisfactionResponse {
+  const matchedQuestions = questions.filter((q: any) => q.satisfaction_id === resp.id)
+    .sort((a: any, b: any) => a.sort_order - b.sort_order)
+    .map((q: any) => ({ id: q.id, text: q.text, rating: q.rating }));
+
   return {
     id: resp.id, studentId: resp.student_id, studentName: resp.student_name,
     formation: resp.formation, type: resp.type, date: resp.date, comment: resp.comment,
-    questions: questions.filter((q: any) => q.satisfaction_id === resp.id)
-      .sort((a: any, b: any) => a.sort_order - b.sort_order)
-      .map((q: any) => ({ id: q.id, text: q.text, rating: q.rating })),
+    questions: matchedQuestions.length > 0 ? matchedQuestions : buildDefaultQuestions(resp.type, resp.id),
   };
 }
 
@@ -237,7 +251,25 @@ export async function initStore() {
   const allModules = pmRes.data || [];
   progressions = (pRes.data || []).map((s: any) => dbToProgression(s, allModules));
   const allQuestions = sqRes.data || [];
-  satisfactions = (srRes.data || []).map((s: any) => dbToSatisfaction(s, allQuestions));
+  const satisfactionRows = srRes.data || [];
+  const missingQuestionResponses = satisfactionRows.filter((resp: any) => !allQuestions.some((q: any) => q.satisfaction_id === resp.id));
+  if (missingQuestionResponses.length > 0) {
+    const fallbackQuestions = missingQuestionResponses.flatMap((resp: any) =>
+      buildDefaultQuestions(resp.type, resp.id).map((q, index) => ({
+        id: q.id,
+        satisfaction_id: resp.id,
+        text: q.text,
+        rating: q.rating,
+        sort_order: index,
+      }))
+    );
+
+    if (fallbackQuestions.length > 0) {
+      await supabase.from("satisfaction_questions").upsert(fallbackQuestions as any[], { onConflict: "id" });
+      allQuestions.push(...fallbackQuestions);
+    }
+  }
+  satisfactions = satisfactionRows.map((s: any) => dbToSatisfaction(s, allQuestions));
   invoiceStatuses = {};
   (iRes.data || []).forEach((r: any) => { invoiceStatuses[r.student_id] = r.status; });
   veilleEntries = (vRes.data || []).map((r: any) => ({
@@ -496,8 +528,8 @@ export const store = {
     return year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year).length : satisfactions.length;
   },
   getDefaultQuestions: (type: "chaud" | "froid") => {
-    const qs = type === "chaud" ? QUESTIONS_CHAUD : QUESTIONS_FROID;
-    return qs.map((q, i) => ({ ...q, id: `q${type[0]}${Date.now()}_${i}` }));
+    const baseId = Date.now().toString();
+    return buildDefaultQuestions(type, baseId);
   },
 
   // Invoices
@@ -660,8 +692,11 @@ export const store = {
       }
 
       if (data.satisfactions) {
-        satisfactions = data.satisfactions;
-        for (const s of data.satisfactions) {
+        satisfactions = data.satisfactions.map((s: SatisfactionResponse) => ({
+          ...s,
+          questions: s.questions && s.questions.length > 0 ? s.questions : buildDefaultQuestions(s.type, s.id),
+        }));
+        for (const s of satisfactions) {
           supabase.from("satisfaction_responses").upsert({
             id: s.id,
             student_id: s.studentId,
