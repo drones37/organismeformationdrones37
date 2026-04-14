@@ -36,6 +36,9 @@
 
     --radius: 0.625rem;
 
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
     --sidebar-bg: 205 55% 92%;
     --sidebar-fg: 205 30% 25%;
     --sidebar-active: 42 100% 50%;
