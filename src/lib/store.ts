@@ -261,6 +261,7 @@ export async function initStore() {
         text: q.text,
         rating: q.rating,
         sort_order: index,
+        created_at: new Date().toISOString(),
       }))
     );
 

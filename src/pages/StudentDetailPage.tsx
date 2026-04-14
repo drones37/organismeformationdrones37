@@ -300,6 +300,29 @@ const StudentDetailPage = () => {
             )}
           </div>
 
+          {/* Dossier administratif */}
+          <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-accent" />
+              <h3 className="font-heading font-semibold">Dossier administratif</h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={student.dossierComplet || false}
+                onChange={e => {
+                  store.updateStudent(student.id, { dossierComplet: e.target.checked });
+                  forceUpdate(n => n + 1);
+                }}
+                className="rounded"
+              />
+              <label className="text-sm">Dossier complet</label>
+              {student.dossierComplet && (
+                <Badge className="ml-2 text-xs bg-success/15 text-success border-success/30">✓ Complet</Badge>
+              )}
+            </div>
+          </div>
+
           {/* Section Pré-requis */}
           {(() => {
             const prereqs = getPrerequisitesForFormation(student.formation);
@@ -326,7 +349,6 @@ const StudentDetailPage = () => {
             const handleProofUpload = (file: File) => {
               const reader = new FileReader();
               reader.onload = () => {
-                // Store proof as a document linked to the student
                 store.addDocument({
                   name: file.name,
                   category: "prerequis",
@@ -342,24 +364,12 @@ const StudentDetailPage = () => {
 
             const proofDocs = store.getDocuments().filter(d => d.studentId === student.id && d.category === "prerequis");
             const checkedCount = currentChecks.filter(p => p.checked && allItems.some(a => a.label === p.label)).length;
-
-            const renderItem = (item: { label: string; group: string }) => {
-              const check = currentChecks.find(p => p.label === item.label) || { label: item.label, checked: false };
-              return (
-                <li key={item.label} className="flex items-center gap-3 py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <input type="checkbox" checked={check.checked} onChange={() => handleToggle(item.label)} className="rounded" />
-                  <span className={`text-sm ${check.checked ? "text-muted-foreground" : ""}`}>{item.label}</span>
-                  {check.checked && <CheckCircle2 className="w-4 h-4 text-success shrink-0 ml-auto" />}
-                </li>
-              );
-            };
-
             const allValidated = checkedCount === allItems.length;
 
             return (
-              <div className={`bg-card rounded-xl border p-6 space-y-4 transition-colors ${allValidated ? "border-success/50" : "border-border"}`}>
+              <div className="bg-card rounded-xl border border-border p-6 space-y-4">
                 <div className="flex items-center gap-2">
-                  {allValidated ? <CheckCircle2 className="w-5 h-5 text-success" /> : <ShieldCheck className="w-5 h-5 text-accent" />}
+                  <ShieldCheck className="w-5 h-5 text-accent" />
                   <h3 className="font-heading font-semibold">Pré-requis de la formation</h3>
                   {allValidated ? (
                     <Badge className="ml-2 text-xs bg-success/15 text-success border-success/30">✓ Tous validés</Badge>
@@ -369,16 +379,38 @@ const StudentDetailPage = () => {
                   <Badge variant="outline" className="ml-auto text-xs">{student.formation}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Objectif :</span> {prereqs.objectif}</p>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Pré-requis théoriques</p>
-                    <ul className="space-y-0.5">{allItems.filter(i => i.group === "theorique").map(renderItem)}</ul>
+                {allValidated && (
+                  <div className="flex items-center gap-2 text-success">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="text-sm font-medium">Tous les pré-requis sont validés</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Obligations supplémentaires</p>
-                    <ul className="space-y-0.5">{allItems.filter(i => i.group === "obligation").map(renderItem)}</ul>
-                  </div>
-                </div>
+                )}
+                {!allValidated && (() => {
+                  const renderItem = (item: { label: string; group: string }) => {
+                    const check = currentChecks.find(p => p.label === item.label) || { label: item.label, checked: false };
+                    return (
+                      <li key={item.label} className="flex items-center gap-3 py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <input type="checkbox" checked={check.checked} onChange={() => handleToggle(item.label)} className="rounded" />
+                        <span className={`text-sm ${check.checked ? "text-muted-foreground" : ""}`}>{item.label}</span>
+                        {check.checked && <CheckCircle2 className="w-4 h-4 text-success shrink-0 ml-auto" />}
+                      </li>
+                    );
+                  };
+                  return (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Pré-requis théoriques</p>
+                          <ul className="space-y-0.5">{allItems.filter(i => i.group === "theorique").map(renderItem)}</ul>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Obligations supplémentaires</p>
+                          <ul className="space-y-0.5">{allItems.filter(i => i.group === "obligation").map(renderItem)}</ul>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Zone unique pour les preuves */}
                 <div className="border-t border-border pt-4 space-y-3">
