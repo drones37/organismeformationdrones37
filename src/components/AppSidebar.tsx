@@ -5,7 +5,6 @@ import logo from "@/assets/drones37-logo.png";
 import { store } from "@/lib/store";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
@@ -20,6 +19,11 @@ const navItems = [
 const AppSidebar = () => {
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   const handleExport = () => {
     const data = store.exportData();
