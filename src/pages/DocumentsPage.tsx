@@ -17,6 +17,7 @@ const categoryLabels: Record<Document["category"], string> = {
   veille: "Veille réglementaire",
   plan_action: "Plan d'amélioration",
   prerequis: "Pré-requis",
+  procedure: "Procédure Qualiopi",
   autre: "Autre",
 };
 
@@ -30,6 +31,7 @@ const categoryColors: Record<Document["category"], string> = {
   veille: "bg-secondary text-secondary-foreground",
   plan_action: "bg-secondary text-secondary-foreground",
   prerequis: "bg-primary/10 text-primary",
+  procedure: "bg-warning/10 text-warning",
   autre: "bg-muted text-muted-foreground",
 };
 

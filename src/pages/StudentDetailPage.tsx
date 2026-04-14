@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { store, ProgressionModule, Document, SatisfactionResponse } from "@/lib/store";
 import { FORMATION_TYPES } from "@/lib/formationModules";
-import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -46,6 +46,7 @@ const categoryLabels: Record<Document["category"], string> = {
   veille: "Veille réglementaire",
   plan_action: "Plan d'amélioration",
   prerequis: "Pré-requis",
+  procedure: "Procédure Qualiopi",
   autre: "Autre",
 };
 
@@ -59,6 +60,7 @@ const categoryColors: Record<Document["category"], string> = {
   veille: "bg-secondary text-secondary-foreground",
   plan_action: "bg-secondary text-secondary-foreground",
   prerequis: "bg-primary/10 text-primary",
+  procedure: "bg-warning/10 text-warning",
   autre: "bg-muted text-muted-foreground",
 };
 
@@ -243,6 +245,57 @@ const StudentDetailPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Section Handicap / PSH */}
+          <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+            <div className="flex items-center gap-2">
+              <Accessibility className="w-5 h-5 text-accent" />
+              <h3 className="font-heading font-semibold">Situation de handicap (PSH)</h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={student.handicap || false}
+                onChange={e => {
+                  store.updateStudent(student.id, { handicap: e.target.checked });
+                  forceUpdate(n => n + 1);
+                }}
+                className="rounded"
+              />
+              <label className="text-sm">Personne en situation de handicap</label>
+            </div>
+            {student.handicap && (
+              <div className="space-y-3 pl-6 border-l-2 border-accent/30">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Nature du handicap / Besoin identifié</Label>
+                  <Textarea
+                    value={student.handicapDetails || ""}
+                    onChange={e => {
+                      store.updateStudent(student.id, { handicapDetails: e.target.value });
+                      forceUpdate(n => n + 1);
+                    }}
+                    placeholder="Ex: Déficience visuelle, troubles DYS..."
+                    className="mt-1 text-sm"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Adaptations mises en place</Label>
+                  <Textarea
+                    value={student.handicapAdaptations || ""}
+                    onChange={e => {
+                      store.updateStudent(student.id, { handicapAdaptations: e.target.value });
+                      forceUpdate(n => n + 1);
+                    }}
+                    placeholder="Ex: Supports agrandis, rythme adapté, pauses supplémentaires..."
+                    className="mt-1 text-sm"
+                    rows={2}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">Référent handicap : PELARD Stéphane — 06 51 11 27 02</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
