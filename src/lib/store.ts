@@ -253,6 +253,10 @@ export const store = {
     return newStudent;
   },
   deleteStudent: (id: string) => { students = students.filter(s => s.id !== id); saveToStorage(); },
+  updateStudent: (id: string, updates: Partial<Student>) => {
+    students = students.map(s => s.id === id ? { ...s, ...updates } : s);
+    saveToStorage();
+  },
   
   getAttendance: () => attendance,
   addAttendance: (a: Omit<AttendanceSheet, "id">) => {
