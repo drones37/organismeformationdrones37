@@ -9,7 +9,7 @@ const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Tableau de bord" },
   { to: "/eleves", icon: Users, label: "Élèves" },
   { to: "/facturation", icon: CreditCard, label: "Facturation" },
-  { to: "/procedures", icon: FileCheck, label: "Procédures Qualiopi" },
+  { to: "/procedures", icon: FileCheck, label: "Accompagnement PSH" },
   { to: "/veille", icon: Shield, label: "Veille réglementaire" },
   { to: "/plan-action", icon: ClipboardList, label: "Plan d'amélioration" },
 ];

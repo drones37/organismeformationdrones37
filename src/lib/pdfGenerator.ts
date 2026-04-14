@@ -1074,3 +1074,174 @@ export function generateSatisfactionPDF(response: SatisfactionResponse) {
   addFooter(doc);
   doc.save(`Questionnaire_${response.type}_${response.studentName.replace(/\s+/g, "_")}.pdf`);
 }
+
+// ===================== FICHE ORIENTATION PSH =====================
+
+export function generatePshOrientationPdf() {
+  const doc = new jsPDF();
+  addHeader(doc);
+
+  let y = 42;
+
+  // Title
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("FICHE D'ORIENTATION — PERSONNE EN SITUATION DE HANDICAP", 105, y, { align: "center" });
+  y += 8;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(...COLORS.text);
+  doc.text("Document remis au bénéficiaire pour faciliter son orientation vers les structures compétentes", 105, y, { align: "center" });
+  y += 10;
+
+  // Accent bar
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(15, y, 180, 1.5, "F");
+  y += 8;
+
+  // Référent handicap
+  doc.setFillColor(...COLORS.lightGray);
+  doc.roundedRect(15, y, 180, 28, 3, 3, "F");
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Votre référent handicap DRONES37", 20, y + 7);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text(`${COMPANY.owner}`, 20, y + 14);
+  doc.text(`Tél : ${COMPANY.phone}  |  Email : ${COMPANY.email}`, 20, y + 20);
+  doc.text(`Adresse : ${COMPANY.address}`, 20, y + 26);
+  y += 36;
+
+  // Introduction
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  const intro = "En tant qu'organisme de formation certifié Qualiopi, DRONES37 s'engage à vous accompagner dans votre parcours de formation. Si vous êtes en situation de handicap, plusieurs organismes spécialisés peuvent vous aider à identifier les aménagements nécessaires et vous orienter vers les interlocuteurs adaptés à votre situation.";
+  const introLines = doc.splitTextToSize(intro, 175);
+  doc.text(introLines, 18, y);
+  y += introLines.length * 4.5 + 6;
+
+  // Structures d'orientation
+  const structures = [
+    {
+      name: "AGEFIPH Centre-Val de Loire",
+      role: "Aides financières et techniques pour les travailleurs handicapés du secteur privé",
+      contact: "www.agefiph.fr — 0 800 11 10 09 (gratuit)",
+      what: "Financement d'aménagements, aides à la formation, accompagnement personnalisé",
+    },
+    {
+      name: "Cap Emploi 37 (Indre-et-Loire)",
+      role: "Accompagnement vers et dans l'emploi des personnes handicapées",
+      contact: "02 47 25 29 00 — Tours",
+      what: "Conseil, orientation professionnelle, aide au maintien dans l'emploi",
+    },
+    {
+      name: "MDPH d'Indre-et-Loire",
+      role: "Maison Départementale des Personnes Handicapées",
+      contact: "02 47 75 26 66 — 38 rue Edouard Vaillant, 37000 Tours",
+      what: "Reconnaissance du handicap (RQTH), orientation, droits et prestations",
+    },
+    {
+      name: "Ressource Handicap Formation (RHF)",
+      role: "Appui aux organismes de formation et aux stagiaires",
+      contact: "Contactez votre conseiller Pôle emploi ou Mission locale",
+      what: "Analyse des besoins de compensation, appui à la sécurisation du parcours de formation",
+    },
+    {
+      name: "Pôle France Travail — Référent handicap",
+      role: "Accompagnement spécifique des demandeurs d'emploi en situation de handicap",
+      contact: "3949 — www.francetravail.fr",
+      what: "Orientation vers les dispositifs adaptés, financement de formation",
+    },
+    {
+      name: "APF France Handicap — Délégation 37",
+      role: "Défense des droits et accompagnement des personnes handicapées",
+      contact: "02 47 27 64 44 — Tours",
+      what: "Écoute, information, défense des droits, orientation sociale",
+    },
+  ];
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Structures compétentes pour vous accompagner", 18, y);
+  y += 8;
+
+  structures.forEach((s) => {
+    // Check page break
+    if (y > 250) {
+      doc.addPage();
+      addHeader(doc);
+      y = 42;
+    }
+
+    doc.setFillColor(...COLORS.lightGray);
+    doc.roundedRect(15, y, 180, 26, 2, 2, "F");
+
+    // Accent left bar
+    doc.setFillColor(...COLORS.accent);
+    doc.rect(15, y, 2, 26, "F");
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.primary);
+    doc.text(s.name, 21, y + 6);
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(100, 100, 100);
+    doc.text(s.role, 21, y + 11);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.text);
+    doc.text(`Ce qu'ils font pour vous : ${s.what}`, 21, y + 17);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Contact : ${s.contact}`, 21, y + 23);
+
+    y += 30;
+  });
+
+  // Encadré démarche
+  if (y > 235) {
+    doc.addPage();
+    addHeader(doc);
+    y = 42;
+  }
+
+  y += 4;
+  doc.setFillColor(255, 248, 230);
+  doc.roundedRect(15, y, 180, 32, 3, 3, "F");
+  doc.setDrawColor(...COLORS.accent);
+  doc.roundedRect(15, y, 180, 32, 3, 3, "S");
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.accent);
+  doc.text("Comment faire ?", 20, y + 7);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  const steps = [
+    "1. Signalez votre situation à votre référent handicap DRONES37 (confidentiel)",
+    "2. Contactez la structure la plus adaptée ci-dessus selon votre besoin",
+    "3. Ensemble, nous identifierons les aménagements possibles pour votre formation",
+    "4. Un suivi individualisé sera mis en place tout au long de votre parcours",
+  ];
+  steps.forEach((step, i) => {
+    doc.text(step, 20, y + 13 + i * 5);
+  });
+
+  y += 40;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(130, 130, 130);
+  doc.text("Document établi dans le cadre de la certification Qualiopi n°211201_74 — Indicateur 26", 105, y, { align: "center" });
+  doc.text(`Édité le ${new Date().toLocaleDateString("fr-FR")} — DRONES37, organisme de formation`, 105, y + 4, { align: "center" });
+
+  addFooter(doc);
+  doc.save("Fiche_Orientation_PSH_DRONES37.pdf");
+}
