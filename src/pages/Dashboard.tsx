@@ -37,7 +37,7 @@ const Dashboard = () => {
   // Taux d'abandon
   const tauxAbandon = students.length > 0 ? Math.round((abandonnes / students.length) * 100) : 0;
 
-  const years = [...new Set(allStudents.map(s => new Date(s.startDate).getFullYear()))].sort((a, b) => b - a);
+  const years = [...new Set(allStudents.map(s => getYear(s.startDate)))].filter(y => y > 0).sort((a, b) => b - a);
   if (!years.includes(2025)) years.push(2025);
   if (!years.includes(currentYear)) years.push(currentYear);
   years.sort((a, b) => b - a);
