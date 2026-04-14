@@ -1,17 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Mail } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
-  const { signIn } = useAuth();
+  const { signIn, session } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (session) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
