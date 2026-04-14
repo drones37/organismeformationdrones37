@@ -115,13 +115,7 @@ const demoStudents: Student[] = [
   { id: "1775982623553", firstName: "Grégoire", lastName: "Derolez", email: "gregoire.derolez@gmail.com", phone: "0783244245", formation: "STS", startDate: "2026-03-16", endDate: "2026-03-18", status: "terminee" },
   { id: "s-subileau", firstName: "Julien", lastName: "Subileau", email: "julien.lim@hotmail.fr", phone: "0677775424", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
   { id: "s-audebert", firstName: "Alain", lastName: "Audebert", email: "aaudebert@moethennessy.com", phone: "0683268381", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-simeoni", firstName: "Alban", lastName: "Simeoni", email: "alban.simeoni@hotmail.fr", phone: "0632023416", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-lemoal", firstName: "Mathieu", lastName: "Lemoal", email: "mathieu@drone-immobilier.fr", phone: "0673821257", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-leleu", firstName: "Hugo", lastName: "Leleu de Sainte Croix", email: "hugo.41200@gmail.com", phone: "0650632875", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-konte", firstName: "Mamadou", lastName: "Konte", email: "photographemk@gmail.com", phone: "0768218306", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-chadoutaud", firstName: "Cédric", lastName: "Chadoutaud", email: "cedric.chadoutaud@gmail.com", phone: "0679951125", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
   { id: "s-desbourdes", firstName: "Florian", lastName: "Desbourdes", email: "flodesb@gmail.com", phone: "0648065312", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-dauber", firstName: "Nicolas", lastName: "Dauber de Peyrelongue", email: "depeyrelongue@live.fr", phone: "0633742035", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
 ];
 
 const demoAttendance: AttendanceSheet[] = [
