@@ -1,4 +1,11 @@
 // Simple in-memory store (will be replaced by database later)
+export interface PrerequisiteCheck {
+  label: string;
+  checked: boolean;
+  proofFileName?: string;
+  proofFileData?: string; // base64
+}
+
 export interface Student {
   id: string;
   firstName: string;
@@ -12,6 +19,7 @@ export interface Student {
   handicap?: boolean;
   handicapDetails?: string;
   handicapAdaptations?: string;
+  prerequisites?: PrerequisiteCheck[];
 }
 
 export interface AttendanceStudent {
