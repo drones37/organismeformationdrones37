@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { store, Student } from "@/lib/store";
+import { useStoreRefresh } from "@/hooks/useStoreData";
 import { Plus, Trash2, Search, User, Download, BookOpen } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ const statusVariants: Record<Student["status"], string> = {
 
 const StudentsPage = () => {
   const navigate = useNavigate();
+  useStoreRefresh();
   const [, forceUpdate] = useState(0);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
