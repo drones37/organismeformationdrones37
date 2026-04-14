@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
 import { store, Document } from "@/lib/store";
-import { FileText, Upload, Download, Trash2, Plus, Phone, User, Shield, BookOpen } from "lucide-react";
+import { FileText, Upload, Download, Trash2, Plus, Phone, User, Shield, BookOpen, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { generatePshOrientationPdf } from "@/lib/pdfGenerator";
 import { Label } from "@/components/ui/label";
 
 // Procédures Qualiopi pré-définies
@@ -112,10 +113,13 @@ const ProceduresPage = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-heading font-bold">Procédures Qualiopi</h1>
-          <p className="text-muted-foreground mt-1">Documents et procédures réglementaires — Certification n°211201_74</p>
+          <h1 className="text-3xl font-heading font-bold">Accompagnement PSH</h1>
+          <p className="text-muted-foreground mt-1">Accueil et orientation des personnes en situation de handicap — Certification Qualiopi n°211201_74</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => generatePshOrientationPdf()}>
+            <FileDown className="w-4 h-4 mr-2" /> Fiche orientation PSH
+          </Button>
           <input ref={uploadInputRef} type="file" className="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png" onChange={handleQuickUpload} />
           <Button variant="outline" onClick={() => uploadInputRef.current?.click()}>
             <Upload className="w-4 h-4 mr-2" /> Importer
@@ -128,12 +132,12 @@ const ProceduresPage = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle className="font-heading text-xl">Ajouter une procédure</DialogTitle>
+                <DialogTitle className="font-heading text-xl">Ajouter un document PSH</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>
                   <Label>Nom du document</Label>
-                  <Input value={uploadName} onChange={e => setUploadName(e.target.value)} placeholder="Ex: Procédure Handicap PSH" />
+                  <Input value={uploadName} onChange={e => setUploadName(e.target.value)} placeholder="Ex: Attestation d'adaptation PSH" />
                 </div>
                 <div>
                   <Label>Fichier</Label>
