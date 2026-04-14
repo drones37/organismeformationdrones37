@@ -719,12 +719,13 @@ export const store = {
 
       if (data.invoiceStatuses) {
         invoiceStatuses = data.invoiceStatuses;
-        Object.entries(data.invoiceStatuses).forEach(([studentId, status]) => {
+        for (const studentId of Object.keys(data.invoiceStatuses)) {
+          const status = data.invoiceStatuses[studentId] as "paye" | "en_attente" | "impaye";
           supabase.from("invoice_statuses").upsert({
             student_id: studentId,
             status,
           }, { onConflict: "student_id" }).then();
-        });
+        }
       }
 
       notifyStoreChange();
