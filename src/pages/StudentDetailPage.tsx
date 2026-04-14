@@ -348,17 +348,24 @@ const StudentDetailPage = () => {
               return (
                 <li key={item.label} className="flex items-center gap-3 py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <input type="checkbox" checked={check.checked} onChange={() => handleToggle(item.label)} className="rounded" />
-                  <span className={`text-sm ${check.checked ? "line-through text-muted-foreground" : ""}`}>{item.label}</span>
+                  <span className={`text-sm ${check.checked ? "text-muted-foreground" : ""}`}>{item.label}</span>
+                  {check.checked && <CheckCircle2 className="w-4 h-4 text-success shrink-0 ml-auto" />}
                 </li>
               );
             };
 
+            const allValidated = checkedCount === allItems.length;
+
             return (
-              <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+              <div className={`bg-card rounded-xl border p-6 space-y-4 transition-colors ${allValidated ? "border-success/50" : "border-border"}`}>
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-accent" />
+                  {allValidated ? <CheckCircle2 className="w-5 h-5 text-success" /> : <ShieldCheck className="w-5 h-5 text-accent" />}
                   <h3 className="font-heading font-semibold">Pré-requis de la formation</h3>
-                  <Badge variant="outline" className="ml-2 text-xs">{checkedCount}/{allItems.length} validés</Badge>
+                  {allValidated ? (
+                    <Badge className="ml-2 text-xs bg-success/15 text-success border-success/30">✓ Tous validés</Badge>
+                  ) : (
+                    <Badge variant="outline" className="ml-2 text-xs">{checkedCount}/{allItems.length} validés</Badge>
+                  )}
                   <Badge variant="outline" className="ml-auto text-xs">{student.formation}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Objectif :</span> {prereqs.objectif}</p>
