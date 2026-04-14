@@ -223,15 +223,19 @@ function loadFromStorage() {
 
 function saveToStorage() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }));
-  } catch (e) { /* ignore */ }
+    // Exclude large fileData from localStorage to avoid hitting the ~5MB limit
+    const docsWithoutFiles = documents.map(d => ({ ...d, fileData: undefined }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents: docsWithoutFiles, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }));
+  } catch (e) {
+    console.warn("⚠️ localStorage plein — utilisez l'export JSON pour sauvegarder vos données.");
+  }
   notifyStoreChange();
 }
 
 const saved = loadFromStorage();
 
-// Merge: ensure all hardcoded students are always present, even if localStorage has old data
-function mergeStudents(saved: Student[] | undefined, defaults: Student[]): Student[] {
+// Merge: ensure all hardcoded entries are always present, even if localStorage has old data
+function mergeById<T extends { id: string }>(saved: T[] | undefined, defaults: T[]): T[] {
   const merged = [...(saved || [])];
   for (const def of defaults) {
     if (!merged.find(s => s.id === def.id)) {
@@ -241,11 +245,11 @@ function mergeStudents(saved: Student[] | undefined, defaults: Student[]): Stude
   return merged;
 }
 
-let students: Student[] = mergeStudents(saved?.students, demoStudents);
-let attendance: AttendanceSheet[] = saved?.attendance || [...demoAttendance];
+let students: Student[] = mergeById(saved?.students, demoStudents);
+let attendance: AttendanceSheet[] = mergeById(saved?.attendance, demoAttendance);
 let documents: Document[] = saved?.documents || [...demoDocuments];
-let progressions: ProgressionSheet[] = saved?.progressions || [...demoProgressions];
-const rawSatisfactions: SatisfactionResponse[] = saved?.satisfactions || [...demoSatisfactions];
+let progressions: ProgressionSheet[] = mergeById(saved?.progressions, demoProgressions);
+const rawSatisfactions: SatisfactionResponse[] = mergeById(saved?.satisfactions, demoSatisfactions);
 let satisfactions: SatisfactionResponse[] = rawSatisfactions.filter((s) =>
   students.some((student) => student.id === s.studentId)
 );
@@ -258,8 +262,8 @@ const demoPlanActionEntries: PlanActionEntry[] = [
   { id: "1776007569948", date: "2026-04-12", origine: "satisfaction_chaud", constat: "1 seul élève suite annulation", action: "Anticiper pour trouver un télépilote faissant office d'observateur pour le travail en binôme", responsable: "Stéphane PELARD", echeance: "2026-12-31", statut: "en_cours", commentaire: "" },
 ];
 let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || { ...demoInvoiceStatuses };
-let veilleEntries: VeilleEntry[] = saved?.veilleEntries || [...demoVeilleEntries];
-let planActionEntries: PlanActionEntry[] = saved?.planActionEntries || [...demoPlanActionEntries];
+let veilleEntries: VeilleEntry[] = mergeById(saved?.veilleEntries, demoVeilleEntries);
+let planActionEntries: PlanActionEntry[] = mergeById(saved?.planActionEntries, demoPlanActionEntries);
 
 export const store = {
   getStudents: () => students,
