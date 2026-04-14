@@ -122,9 +122,6 @@ export interface PlanActionEntry {
 // Données réelles
 const demoStudents: Student[] = [
   { id: "1775982623553", firstName: "Grégoire", lastName: "Derolez", email: "gregoire.derolez@gmail.com", phone: "0783244245", formation: "STS", startDate: "2026-03-16", endDate: "2026-03-18", status: "terminee" },
-  { id: "s-subileau", firstName: "Julien", lastName: "Subileau", email: "julien.lim@hotmail.fr", phone: "0677775424", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-audebert", firstName: "Alain", lastName: "Audebert", email: "aaudebert@moethennessy.com", phone: "0683268381", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
-  { id: "s-desbourdes", firstName: "Florian", lastName: "Desbourdes", email: "flodesb@gmail.com", phone: "0648065312", formation: "STS", startDate: "2025-01-01", endDate: "2025-01-03", status: "terminee" },
 ];
 
 const demoAttendance: AttendanceSheet[] = [
