@@ -121,8 +121,8 @@ const StudentsPage = () => {
               <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/eleves/${s.id}`)}>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="w-4 h-4 text-primary" />
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center ${s.dossierComplet ? 'bg-success/15' : 'bg-primary/10'}`}>
+                      <User className={`w-4 h-4 ${s.dossierComplet ? 'text-success' : 'text-primary'}`} />
                     </div>
                     <div>
                       <p className="font-medium">{s.firstName} {s.lastName}</p>
