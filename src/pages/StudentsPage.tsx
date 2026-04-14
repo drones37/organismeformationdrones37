@@ -152,6 +152,7 @@ const StudentsPage = () => {
                     />
                     {s.dossierComplet && <CheckCircle2 className="w-4 h-4 text-success" />}
                   </div>
+                </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <button
