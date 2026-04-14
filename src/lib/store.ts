@@ -562,42 +562,171 @@ export const store = {
   importData: (jsonString: string) => {
     try {
       const data = JSON.parse(jsonString);
+
       if (data.students) {
         students = data.students;
         for (const s of data.students) {
           supabase.from("students").upsert({
-            id: s.id, first_name: s.firstName, last_name: s.lastName,
-            email: s.email, phone: s.phone, formation: s.formation,
-            start_date: s.startDate, end_date: s.endDate, status: s.status,
-            dossier_complet: s.dossierComplet || false, handicap: s.handicap || false,
+            id: s.id,
+            first_name: s.firstName,
+            last_name: s.lastName,
+            email: s.email,
+            phone: s.phone,
+            formation: s.formation,
+            start_date: s.startDate,
+            end_date: s.endDate,
+            status: s.status,
+            dossier_complet: s.dossierComplet || false,
+            handicap: s.handicap || false,
+            handicap_details: s.handicapDetails,
+            handicap_adaptations: s.handicapAdaptations,
             prerequisites: (s.prerequisites || []) as any,
           }, { onConflict: "id" }).then();
         }
       }
+
+      if (data.attendance) {
+        attendance = data.attendance;
+        for (const sheet of data.attendance) {
+          supabase.from("attendance_sheets").upsert({
+            id: sheet.id,
+            title: sheet.title,
+            date: sheet.date,
+            formation: sheet.formation,
+            days: sheet.days,
+            status: sheet.status,
+          }, { onConflict: "id" }).then(async () => {
+            await supabase.from("attendance_students").delete().eq("sheet_id", sheet.id);
+            for (const student of sheet.students || []) {
+              await supabase.from("attendance_students").insert({
+                sheet_id: sheet.id,
+                student_id: student.studentId,
+                student_name: student.studentName,
+                grade: student.grade,
+                livret_vu: student.livretVu,
+                signatures: student.signatures as any,
+              });
+            }
+          });
+        }
+      }
+
+      if (data.documents) {
+        documents = data.documents;
+        for (const d of data.documents) {
+          supabase.from("documents").upsert({
+            id: d.id,
+            name: d.name,
+            category: d.category,
+            student_id: d.studentId,
+            formation_id: d.formationId,
+            size: d.size,
+            file_data: d.fileData,
+          }, { onConflict: "id" }).then();
+        }
+      }
+
+      if (data.progressions) {
+        progressions = data.progressions;
+        for (const p of data.progressions) {
+          supabase.from("progression_sheets").upsert({
+            id: p.id,
+            student_id: p.studentId,
+            student_name: p.studentName,
+            formation: p.formation,
+            start_date: p.startDate,
+            end_date: p.endDate,
+            instructor_name: p.instructorName,
+            global_result: p.globalResult,
+          }, { onConflict: "id" }).then(async () => {
+            await supabase.from("progression_modules").delete().eq("progression_id", p.id);
+            for (let i = 0; i < (p.modules || []).length; i++) {
+              const m = p.modules[i];
+              await supabase.from("progression_modules").insert({
+                id: m.id,
+                progression_id: p.id,
+                name: m.name,
+                objectives: (m.objectives || []) as any,
+                status: m.status,
+                rating_start: m.ratingStart,
+                rating_end: m.ratingEnd,
+                comment: m.comment,
+                evaluated_at: m.evaluatedAt,
+                sort_order: i,
+              });
+            }
+          });
+        }
+      }
+
+      if (data.satisfactions) {
+        satisfactions = data.satisfactions;
+        for (const s of data.satisfactions) {
+          supabase.from("satisfaction_responses").upsert({
+            id: s.id,
+            student_id: s.studentId,
+            student_name: s.studentName,
+            formation: s.formation,
+            type: s.type,
+            date: s.date,
+            comment: s.comment,
+          }, { onConflict: "id" }).then(async () => {
+            await supabase.from("satisfaction_questions").delete().eq("satisfaction_id", s.id);
+            for (let i = 0; i < (s.questions || []).length; i++) {
+              const q = s.questions[i];
+              await supabase.from("satisfaction_questions").insert({
+                id: q.id,
+                satisfaction_id: s.id,
+                text: q.text,
+                rating: q.rating,
+                sort_order: i,
+              });
+            }
+          });
+        }
+      }
+
       if (data.veilleEntries) {
         veilleEntries = data.veilleEntries;
         for (const e of data.veilleEntries) {
           supabase.from("veille_entries").upsert({
-            id: e.id, date: e.date, type: e.type, contenu: e.contenu,
-            exploitation: e.exploitation, preuves: e.preuves,
+            id: e.id,
+            date: e.date,
+            type: e.type,
+            contenu: e.contenu,
+            exploitation: e.exploitation,
+            preuves: e.preuves,
           }, { onConflict: "id" }).then();
         }
       }
+
       if (data.planActionEntries) {
         planActionEntries = data.planActionEntries;
         for (const e of data.planActionEntries) {
           supabase.from("plan_action_entries").upsert({
-            id: e.id, date: e.date, origine: e.origine, constat: e.constat,
-            action: e.action, responsable: e.responsable, echeance: e.echeance,
-            statut: e.statut, commentaire: e.commentaire,
+            id: e.id,
+            date: e.date,
+            origine: e.origine,
+            constat: e.constat,
+            action: e.action,
+            responsable: e.responsable,
+            echeance: e.echeance,
+            statut: e.statut,
+            commentaire: e.commentaire,
           }, { onConflict: "id" }).then();
         }
       }
-      if (data.invoiceStatuses) invoiceStatuses = data.invoiceStatuses;
-      if (data.attendance) attendance = data.attendance;
-      if (data.documents) documents = data.documents;
-      if (data.progressions) progressions = data.progressions;
-      if (data.satisfactions) satisfactions = data.satisfactions;
+
+      if (data.invoiceStatuses) {
+        invoiceStatuses = data.invoiceStatuses;
+        Object.entries(data.invoiceStatuses).forEach(([studentId, status]) => {
+          supabase.from("invoice_statuses").upsert({
+            student_id: studentId,
+            status,
+          }, { onConflict: "student_id" }).then();
+        });
+      }
+
       notifyStoreChange();
       return true;
     } catch (e) {
