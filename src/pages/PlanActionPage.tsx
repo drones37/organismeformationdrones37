@@ -25,7 +25,7 @@ const PlanActionPage = () => {
   const [editData, setEditData] = useState<Partial<PlanActionEntry>>({});
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const entries = store.getPlanActionEntries();
+  const entries = [...store.getPlanActionEntries()].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   const docs = store.getDocuments().filter(d => d.category === "plan_action");
 
   // Stats satisfaction pour contexte

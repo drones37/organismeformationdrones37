@@ -20,7 +20,7 @@ const VeillePage = () => {
   const [editData, setEditData] = useState<Partial<VeilleEntry>>({});
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const entries = store.getVeilleEntries();
+  const entries = [...store.getVeilleEntries()].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   const docs = store.getDocuments().filter(d => d.category === "veille");
 
   const handleAdd = () => {
