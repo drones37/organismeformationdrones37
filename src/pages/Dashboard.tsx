@@ -5,14 +5,21 @@ import StatCard from "@/components/StatCard";
 import { Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+// Parse YYYY from an ISO date string without timezone shift
+const getYear = (dateStr: string): number => {
+  if (!dateStr) return 0;
+  const match = dateStr.match(/^(\d{4})/);
+  return match ? parseInt(match[1], 10) : new Date(dateStr).getFullYear();
+};
+
 const Dashboard = () => {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear.toString());
   const yearNum = Number(year);
 
   const allStudents = store.getStudents();
-  const students = allStudents.filter(s => new Date(s.startDate).getFullYear() === yearNum);
-  const sheets = store.getAttendance().filter(a => new Date(a.date).getFullYear() === yearNum);
+  const students = allStudents.filter(s => getYear(s.startDate) === yearNum);
+  const sheets = store.getAttendance().filter(a => getYear(a.date) === yearNum);
   const invoices = store.getInvoices();
 
   const satChaudGlobal = store.getSatisfactionByType("chaud");
@@ -30,7 +37,7 @@ const Dashboard = () => {
   // Taux d'abandon
   const tauxAbandon = students.length > 0 ? Math.round((abandonnes / students.length) * 100) : 0;
 
-  const years = [...new Set(allStudents.map(s => new Date(s.startDate).getFullYear()))].sort((a, b) => b - a);
+  const years = [...new Set(allStudents.map(s => getYear(s.startDate)))].filter(y => y > 0).sort((a, b) => b - a);
   if (!years.includes(2025)) years.push(2025);
   if (!years.includes(currentYear)) years.push(currentYear);
   years.sort((a, b) => b - a);
