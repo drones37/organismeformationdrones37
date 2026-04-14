@@ -79,6 +79,30 @@ const OPEN_A1A3_ITEMS: EvaluationItem[] = [
   { name: "QCM A1/A3 - BAPD AlphaTango" },
 ];
 
+export interface FormationPrerequisites {
+  theoriques: string[];
+  obligations: string[];
+  objectif: string;
+}
+
+export const FORMATION_PREREQUISITES: Record<FormationType, FormationPrerequisites> = {
+  "Télépilote Drone STS-01/STS-02": {
+    objectif: "Télépiloter un drone de moins de 25 kg",
+    theoriques: ["Attestation A1/A3 (QCM en ligne)", "CATS (Certificate for remote pilots of UAS in the Specific category)"],
+    obligations: ["MANEX (Manuel d'exploitation)", "Déclaration d'activité d'exploitant UAS", "Drone de classe C5 ou C6"],
+  },
+  "Pulvérisation sur bâtiments par drone": {
+    objectif: "Télépiloter un drone pour la pulvérisation sur tous types de bâtiments",
+    theoriques: ["Attestation A1/A3 (QCM en ligne)", "CATS obligatoire"],
+    obligations: ["Autorisations spécifiques", "Cadre réglementaire pulvérisation"],
+  },
+  "Catégorie ouverte A1/A3": {
+    objectif: "Télépiloter un drone de moins de 900 g",
+    theoriques: ["Attestation A1/A3 (QCM en ligne via DGAC)"],
+    obligations: ["Enregistrement exploitant sur AlphaTango", "Respect des règles : 120 m max, vol à vue (VLOS)"],
+  },
+};
+
 export const FORMATION_MODULES: Record<FormationType, EvaluationItem[]> = {
   "Télépilote Drone STS-01/STS-02": STS_ITEMS,
   "Pulvérisation sur bâtiments par drone": PULVERISATION_ITEMS,
@@ -86,14 +110,23 @@ export const FORMATION_MODULES: Record<FormationType, EvaluationItem[]> = {
 };
 
 export function getModulesForFormation(formation: string): EvaluationItem[] {
-  // Try exact match first
   if (formation in FORMATION_MODULES) {
     return FORMATION_MODULES[formation as FormationType];
   }
-  // Fuzzy match
   const lower = formation.toLowerCase();
   if (lower.includes("sts") || lower.includes("télépilote")) return STS_ITEMS;
   if (lower.includes("pulvé") || lower.includes("bâtiment")) return PULVERISATION_ITEMS;
   if (lower.includes("a1") || lower.includes("a3") || lower.includes("ouverte")) return OPEN_A1A3_ITEMS;
-  return STS_ITEMS; // default
+  return STS_ITEMS;
+}
+
+export function getPrerequisitesForFormation(formation: string): FormationPrerequisites | null {
+  if (formation in FORMATION_PREREQUISITES) {
+    return FORMATION_PREREQUISITES[formation as FormationType];
+  }
+  const lower = formation.toLowerCase();
+  if (lower.includes("sts") || lower.includes("télépilote")) return FORMATION_PREREQUISITES["Télépilote Drone STS-01/STS-02"];
+  if (lower.includes("pulvé") || lower.includes("bâtiment")) return FORMATION_PREREQUISITES["Pulvérisation sur bâtiments par drone"];
+  if (lower.includes("a1") || lower.includes("a3") || lower.includes("ouverte")) return FORMATION_PREREQUISITES["Catégorie ouverte A1/A3"];
+  return FORMATION_PREREQUISITES["Télépilote Drone STS-01/STS-02"];
 }

@@ -2,8 +2,8 @@ import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { store, ProgressionModule, Document, SatisfactionResponse } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
-import { FORMATION_TYPES } from "@/lib/formationModules";
-import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility } from "lucide-react";
+import { FORMATION_TYPES, getPrerequisitesForFormation } from "@/lib/formationModules";
+import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -299,6 +299,46 @@ const StudentDetailPage = () => {
               </div>
             )}
           </div>
+
+          {/* Section Pré-requis */}
+          {(() => {
+            const prereqs = getPrerequisitesForFormation(student.formation);
+            if (!prereqs) return null;
+            return (
+              <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-accent" />
+                  <h3 className="font-heading font-semibold">Pré-requis de la formation</h3>
+                  <Badge variant="outline" className="ml-auto text-xs">{student.formation}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground"><span className="font-medium text-foreground">Objectif :</span> {prereqs.objectif}</p>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Pré-requis théoriques</p>
+                    <ul className="space-y-1.5">
+                      {prereqs.theoriques.map((t, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-success mt-0.5 shrink-0" />
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Obligations supplémentaires</p>
+                    <ul className="space-y-1.5">
+                      {prereqs.obligations.map((o, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <AlertCircle className="w-3.5 h-3.5 text-warning mt-0.5 shrink-0" />
+                          {o}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </TabsContent>
 
         {/* EMARGEMENT TAB */}
