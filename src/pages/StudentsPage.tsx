@@ -34,9 +34,13 @@ const StudentsPage = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", formation: "", startDate: "", endDate: "", status: "a_venir" as Student["status"] });
 
-  const students = store.getStudents().filter(s =>
-    `${s.firstName} ${s.lastName} ${s.email} ${s.formation}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const students = store.getStudents()
+    .filter(s => `${s.firstName} ${s.lastName} ${s.email} ${s.formation}`.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+      const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+      return dateB - dateA;
+    });
 
   const handleAdd = () => {
     if (!form.firstName || !form.lastName) return;
