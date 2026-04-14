@@ -11,6 +11,7 @@ import AttendancePage from "./pages/AttendancePage";
 import FacturationPage from "./pages/FacturationPage";
 import VeillePage from "./pages/VeillePage";
 import PlanActionPage from "./pages/PlanActionPage";
+import ProceduresPage from "./pages/ProceduresPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/eleves/:id" element={<StudentDetailPage />} />
             <Route path="/emargement" element={<AttendancePage />} />
             <Route path="/facturation" element={<FacturationPage />} />
+            <Route path="/procedures" element={<ProceduresPage />} />
             <Route path="/veille" element={<VeillePage />} />
             <Route path="/plan-action" element={<PlanActionPage />} />
           </Route>
