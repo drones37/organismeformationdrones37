@@ -385,17 +385,32 @@ const StudentDetailPage = () => {
                     <span className="text-sm font-medium">Tous les pré-requis sont validés</span>
                   </div>
                 )}
-                {!allValidated && (
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Pré-requis théoriques</p>
-                    <ul className="space-y-0.5">{allItems.filter(i => i.group === "theorique").map(renderItem)}</ul>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Obligations supplémentaires</p>
-                    <ul className="space-y-0.5">{allItems.filter(i => i.group === "obligation").map(renderItem)}</ul>
-                  </div>
-                </div>
+                {!allValidated && (() => {
+                  const renderItem = (item: { label: string; group: string }) => {
+                    const check = currentChecks.find(p => p.label === item.label) || { label: item.label, checked: false };
+                    return (
+                      <li key={item.label} className="flex items-center gap-3 py-1.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
+                        <input type="checkbox" checked={check.checked} onChange={() => handleToggle(item.label)} className="rounded" />
+                        <span className={`text-sm ${check.checked ? "text-muted-foreground" : ""}`}>{item.label}</span>
+                        {check.checked && <CheckCircle2 className="w-4 h-4 text-success shrink-0 ml-auto" />}
+                      </li>
+                    );
+                  };
+                  return (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Pré-requis théoriques</p>
+                          <ul className="space-y-0.5">{allItems.filter(i => i.group === "theorique").map(renderItem)}</ul>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Obligations supplémentaires</p>
+                          <ul className="space-y-0.5">{allItems.filter(i => i.group === "obligation").map(renderItem)}</ul>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Zone unique pour les preuves */}
                 <div className="border-t border-border pt-4 space-y-3">
