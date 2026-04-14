@@ -16,6 +16,7 @@ export interface Student {
   startDate: string;
   endDate: string;
   status: "en_cours" | "terminee" | "a_venir" | "abandonnee";
+  dossierComplet?: boolean;
   handicap?: boolean;
   handicapDetails?: string;
   handicapAdaptations?: string;

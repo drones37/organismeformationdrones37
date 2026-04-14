@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { store, Student } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
-import { Plus, Trash2, Search, User, Download, BookOpen } from "lucide-react";
+import { Plus, Trash2, Search, User, Download, BookOpen, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -111,6 +112,7 @@ const StudentsPage = () => {
               <th className="text-left px-6 py-3 font-medium text-muted-foreground">Formation</th>
               <th className="text-left px-6 py-3 font-medium text-muted-foreground">Période</th>
               <th className="text-left px-6 py-3 font-medium text-muted-foreground">Statut</th>
+              <th className="text-center px-6 py-3 font-medium text-muted-foreground">Dossier</th>
               <th className="px-6 py-3"></th>
             </tr>
           </thead>
@@ -136,6 +138,20 @@ const StudentsPage = () => {
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusVariants[s.status]}`}>
                     {statusLabels[s.status]}
                   </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <div className="flex items-center justify-center gap-1.5">
+                    <Checkbox
+                      checked={!!s.dossierComplet}
+                      onCheckedChange={(checked) => {
+                        store.updateStudent(s.id, { dossierComplet: !!checked });
+                        forceUpdate(n => n + 1);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="data-[state=checked]:bg-success data-[state=checked]:border-success"
+                    />
+                    {s.dossierComplet && <CheckCircle2 className="w-4 h-4 text-success" />}
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-1">
