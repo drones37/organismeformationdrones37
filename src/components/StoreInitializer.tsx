@@ -5,6 +5,10 @@ const StoreInitializer = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
     initStore().then(() => setReady(true)).catch(() => setReady(true));
   }, []);
 
