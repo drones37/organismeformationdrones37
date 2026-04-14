@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import StudentsPage from "./pages/StudentsPage";
@@ -12,6 +14,7 @@ import FacturationPage from "./pages/FacturationPage";
 import VeillePage from "./pages/VeillePage";
 import PlanActionPage from "./pages/PlanActionPage";
 import ProceduresPage from "./pages/ProceduresPage";
+import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,21 +24,30 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/eleves" element={<StudentsPage />} />
-            <Route path="/eleves/:id" element={<StudentDetailPage />} />
-            <Route path="/emargement" element={<AttendancePage />} />
-            <Route path="/facturation" element={<FacturationPage />} />
-            <Route path="/procedures" element={<ProceduresPage />} />
-            <Route path="/veille" element={<VeillePage />} />
-            <Route path="/plan-action" element={<PlanActionPage />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/eleves" element={<StudentsPage />} />
+              <Route path="/eleves/:id" element={<StudentDetailPage />} />
+              <Route path="/emargement" element={<AttendancePage />} />
+              <Route path="/facturation" element={<FacturationPage />} />
+              <Route path="/procedures" element={<ProceduresPage />} />
+              <Route path="/veille" element={<VeillePage />} />
+              <Route path="/plan-action" element={<PlanActionPage />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
