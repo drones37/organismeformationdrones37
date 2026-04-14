@@ -61,8 +61,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard title="Élèves (total)" value={allStudents.length} icon={Users} accent />
         <StatCard title={`Élèves ${year}`} value={students.length} icon={Users} />
-        <StatCard title="Satisfaction à chaud" value={`${satChaudGlobal}%`} icon={Star} accent />
-        <StatCard title="Satisfaction à froid" value={`${satFroidGlobal}%`} icon={Star} />
+        <StatCard title="Satisfaction à chaud" value={`${satChaudGlobal}%`} icon={Flame} accent />
+        <StatCard title="Satisfaction à froid" value={`${satFroidGlobal}%`} icon={Snowflake} />
         <StatCard title="Taux de réussite" value={`${tauxReussite}%`} icon={Award} />
       </div>
 
