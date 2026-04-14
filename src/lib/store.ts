@@ -233,7 +233,19 @@ function saveToStorage() {
 }
 
 const saved = loadFromStorage();
-let students: Student[] = saved?.students || [...demoStudents];
+
+// Merge: ensure all hardcoded students are always present, even if localStorage has old data
+function mergeStudents(saved: Student[] | undefined, defaults: Student[]): Student[] {
+  const merged = [...(saved || [])];
+  for (const def of defaults) {
+    if (!merged.find(s => s.id === def.id)) {
+      merged.push(def);
+    }
+  }
+  return merged;
+}
+
+let students: Student[] = mergeStudents(saved?.students, demoStudents);
 let attendance: AttendanceSheet[] = saved?.attendance || [...demoAttendance];
 let documents: Document[] = saved?.documents || [...demoDocuments];
 let progressions: ProgressionSheet[] = saved?.progressions || [...demoProgressions];
