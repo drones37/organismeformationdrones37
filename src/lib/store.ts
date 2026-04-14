@@ -107,31 +107,21 @@ export interface PlanActionEntry {
   commentaire: string;
 }
 
-// Demo data
+// Données réelles
 const demoStudents: Student[] = [
-  { id: "1", firstName: "Lucas", lastName: "Martin", email: "lucas.martin@email.com", phone: "06 12 34 56 78", formation: "Télépilote Drone - Initiation", startDate: "2025-03-10", endDate: "2025-03-14", status: "terminee" },
-  { id: "2", firstName: "Sophie", lastName: "Durand", email: "sophie.durand@email.com", phone: "06 23 45 67 89", formation: "Scénarios S1/S2/S3", startDate: "2025-04-01", endDate: "2025-04-05", status: "en_cours" },
-  { id: "3", firstName: "Antoine", lastName: "Bernard", email: "antoine.b@email.com", phone: "06 34 56 78 90", formation: "Photogrammétrie Drone", startDate: "2025-04-15", endDate: "2025-04-18", status: "a_venir" },
-  { id: "4", firstName: "Camille", lastName: "Petit", email: "camille.petit@email.com", phone: "06 45 67 89 01", formation: "Télépilote Drone - Initiation", startDate: "2025-03-10", endDate: "2025-03-14", status: "terminee" },
-  { id: "5", firstName: "Maxime", lastName: "Robert", email: "maxime.r@email.com", phone: "06 56 78 90 12", formation: "Scénarios S1/S2/S3", startDate: "2025-04-01", endDate: "2025-04-05", status: "en_cours" },
+  { id: "1775982623553", firstName: "Grégoire", lastName: "Derolez", email: "gregoire.derolez@gmail.com", phone: "0783244245", formation: "STS", startDate: "2026-03-16", endDate: "2026-03-18", status: "terminee" },
 ];
 
 const demoAttendance: AttendanceSheet[] = [
   {
-    id: "1", title: "Émargement - Session Avril", date: "2025-04-01", formation: "Scénarios S1/S2/S3", status: "en_cours", days: 3,
+    id: "1775982701602", title: "STS", date: "2026-03-16", formation: "STS", status: "en_cours", days: 3,
     students: [
-      { studentId: "2", studentName: "Sophie Durand", grade: "Technicienne", livretVu: true, signatures: { J1: { signed: true, signedAt: "2025-04-01 09:02" }, J2: { signed: false }, J3: { signed: false } } },
-      { studentId: "5", studentName: "Maxime Robert", grade: "Ingénieur", livretVu: false, signatures: { J1: { signed: false }, J2: { signed: false }, J3: { signed: false } } },
+      { studentId: "1775982623553", studentName: "Grégoire Derolez", grade: "", livretVu: true, signatures: { J1: { signed: false }, J2: { signed: false }, J3: { signed: false } } },
     ],
   },
 ];
 
-const demoDocuments: Document[] = [
-  { id: "1", name: "Convention - Initiation Mars 2025.pdf", category: "convention", createdAt: "2025-02-15", size: "245 Ko" },
-  { id: "2", name: "Programme Scénarios S1-S2-S3.pdf", category: "programme", createdAt: "2025-03-01", size: "1.2 Mo" },
-  { id: "3", name: "Attestation Lucas Martin.pdf", category: "attestation", studentId: "1", createdAt: "2025-03-14", size: "180 Ko" },
-  { id: "4", name: "Facture Formation Mars.pdf", category: "facture", createdAt: "2025-03-20", size: "95 Ko" },
-];
+const demoDocuments: Document[] = [];
 
 import { getModulesForFormation } from "./formationModules";
 
@@ -145,15 +135,29 @@ function buildModulesForFormation(formation: string): Omit<ProgressionModule, "i
 
 const demoProgressions: ProgressionSheet[] = [
   {
-    id: "1", studentId: "1", studentName: "Lucas Martin", formation: "Télépilote Drone STS-01/STS-02",
-    startDate: "2025-03-10", endDate: "2025-03-14", instructorName: "Stéphane PELARD",
+    id: "1775982849878", studentId: "1775982623553", studentName: "Grégoire Derolez", formation: "Télépilote Drone STS-01/STS-02",
+    startDate: "2026-03-16", endDate: "2026-03-18", instructorName: "Stéphane PELARD",
     globalResult: "acquis",
-    modules: buildModulesForFormation("Télépilote Drone STS-01/STS-02").map((m, i) => ({ ...m, id: `m${i}`, status: "acquis" as const, ratingStart: 2, ratingEnd: 5, evaluatedAt: "2025-03-14" })),
-  },
-  {
-    id: "2", studentId: "2", studentName: "Sophie Durand", formation: "Pulvérisation sur bâtiments par drone",
-    startDate: "2025-04-01", endDate: "2025-04-05", instructorName: "Stéphane PELARD",
-    modules: buildModulesForFormation("Pulvérisation sur bâtiments par drone").map((m, i) => ({ ...m, id: `m${i}`, status: i < 5 ? "acquis" as const : "en_cours" as const, ratingStart: 1 })),
+    modules: [
+      { id: "m1775982849877_0", name: "Connaître la réglementation européenne et française UAS", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 4, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_1", name: "Connaître les catégories d'exploitation (Ouverte, Spécifique, Certifiée)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_2", name: "Créer et actualiser un MANEX", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 4, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_3", name: "Déclarer une activité d'exploitant UAS auprès des autorités", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_4", name: "Intégrer un UAS auprès d'un exploitant", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_5", name: "Préparer un vol Mission en STS-01", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_6", name: "Préparer un vol Mission en STS-02", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_7", name: "Lire et interpréter les cartes aéronautiques (OACI, NOTAM, SUP AIP)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 4, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_8", name: "Effectuer les déclarations sur AlphaTango / DGAC", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849877_9", name: "Télépiloter un UAS avec assistance GPS", objectives: [], status: "acquis", ratingStart: 4, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_10", name: "Télépiloter un UAS en mode ATTI (sans GPS)", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_11", name: "Télépiloter un UAS en vol à vue (VLOS)", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_12", name: "Télépiloter un UAS hors vue (BVLOS) avec observateur", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_13", name: "Télépiloter un UAS en Situations dégradées", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_14", name: "Appliquer des procédures d'urgences adaptées à la mission et l'UAS", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_15", name: "Gérer les situations anormales (perte GPS, FlyAway, intrusion)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_16", name: "Analyser des risques et déclarer un incident (CRESUS)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+      { id: "m1775982849878_17", name: "Entretenir un UAS", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
+    ],
   },
 ];
 
@@ -174,7 +178,30 @@ const QUESTIONS_FROID: Omit<SatisfactionQuestion, "id">[] = [
   { text: "La formation a eu un impact professionnel positif", rating: 0 },
 ];
 
-const demoSatisfactions: SatisfactionResponse[] = [];
+const demoSatisfactions: SatisfactionResponse[] = [
+  {
+    id: "1775983044054", studentId: "1775982623553", studentName: "Grégoire Derolez", formation: "STS", type: "chaud", date: "2026-04-12",
+    comment: "Une formation riche en connaissances et en pratiques qui permet d'enrichir le savoir faire et savoir être dans ce domaine qui n'autorise pas les erreurs aussi bien de vol que dans dans la partie administrative. Un formateur avec une expérience et une écoute qui permet de s'adapter sur les besoins et les questions. 3 jours de formation en autonomie qui fait la différence sur le déroulé de formation et les scénarios de vols. je recommande. merci Stéphane",
+    questions: [
+      { id: "qc1775983044053_0", text: "Qualité du contenu pédagogique", rating: 5 },
+      { id: "qc1775983044053_1", text: "Compétence du formateur", rating: 5 },
+      { id: "qc1775983044053_2", text: "Clarté des explications", rating: 5 },
+      { id: "qc1775983044053_3", text: "Adéquation de la formation avec vos attentes", rating: 5 },
+      { id: "qc1775983044053_4", text: "Qualité du matériel utilisé", rating: 5 },
+      { id: "qc1775983044053_5", text: "Organisation générale", rating: 5 },
+    ],
+  },
+  {
+    id: "1776005898051", studentId: "1775982623553", studentName: "Grégoire Derolez", formation: "STS", type: "froid", date: "2026-04-12",
+    questions: [
+      { id: "qf1776005898051_0", text: "J'utilise les compétences acquises dans mon activité professionnelle", rating: 0 },
+      { id: "qf1776005898051_1", text: "Je me sens autonome dans l'utilisation du drone en conditions professionnelles", rating: 0 },
+      { id: "qf1776005898051_2", text: "J'applique correctement la réglementation et les règles de sécurité", rating: 0 },
+      { id: "qf1776005898051_3", text: "La formation a amélioré mon efficacité professionnelle", rating: 0 },
+      { id: "qf1776005898051_4", text: "La formation a eu un impact professionnel positif", rating: 0 },
+    ],
+  },
+];
 
 // localStorage persistence helpers
 const STORAGE_KEY = "drones37_store";
@@ -202,9 +229,17 @@ const rawSatisfactions: SatisfactionResponse[] = saved?.satisfactions || [...dem
 let satisfactions: SatisfactionResponse[] = rawSatisfactions.filter((s) =>
   students.some((student) => student.id === s.studentId)
 );
-let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || {};
-let veilleEntries: VeilleEntry[] = saved?.veilleEntries || [];
-let planActionEntries: PlanActionEntry[] = saved?.planActionEntries || [];
+const demoInvoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = { "1775982623553": "paye" };
+const demoVeilleEntries: VeilleEntry[] = [
+  { id: "1776005937992", date: "2026-04-03", type: "Réglementaire", contenu: "application météorologique", exploitation: "Test application", preuves: "Helico micro https://www.helicomicro.com/2026/04/03/skygo-drone/" },
+  { id: "1776006372811", date: "2026-03-13", type: "Réglementaire", contenu: "Fiches reflexes", exploitation: "En attente de validation", preuves: "https://www.helicomicro.com/2026/03/13/fiches-reflexe-drones/" },
+];
+const demoPlanActionEntries: PlanActionEntry[] = [
+  { id: "1776007569948", date: "2026-04-12", origine: "satisfaction_chaud", constat: "1 seul élève suite annulation", action: "Anticiper pour trouver un télépilote faissant office d'observateur pour le travail en binôme", responsable: "Stéphane PELARD", echeance: "2026-12-31", statut: "en_cours", commentaire: "" },
+];
+let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || { ...demoInvoiceStatuses };
+let veilleEntries: VeilleEntry[] = saved?.veilleEntries || [...demoVeilleEntries];
+let planActionEntries: PlanActionEntry[] = saved?.planActionEntries || [...demoPlanActionEntries];
 
 export const store = {
   getStudents: () => students,
