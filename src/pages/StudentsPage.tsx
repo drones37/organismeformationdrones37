@@ -4,12 +4,12 @@ import { store, Student } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
 import { Plus, Trash2, Search, User, Download, BookOpen, CheckCircle2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { generateAttestationPDF, generateProgressionPDF } from "@/lib/pdfGenerator";
 
 const statusLabels: Record<Student["status"], string> = {
@@ -49,6 +49,11 @@ const StudentsPage = () => {
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     store.deleteStudent(id);
+    forceUpdate(n => n + 1);
+  };
+
+  const handleToggleDossier = (studentId: string, checked: boolean) => {
+    store.updateStudent(studentId, { dossierComplet: checked });
     forceUpdate(n => n + 1);
   };
 
@@ -97,13 +102,11 @@ const StudentsPage = () => {
         </Dialog>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input placeholder="Rechercher un élève..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
       </div>
 
-      {/* Table */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -121,8 +124,8 @@ const StudentsPage = () => {
               <tr key={s.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/eleves/${s.id}`)}>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center ${s.dossierComplet ? 'bg-success/15' : 'bg-primary/10'}`}>
-                      <User className={`w-4 h-4 ${s.dossierComplet ? 'text-success' : 'text-primary'}`} />
+                    <div className={`w-9 h-9 rounded-full ring-2 flex items-center justify-center ${s.dossierComplet ? "bg-success/15 ring-success/30" : "bg-primary/10 ring-primary/10"}`}>
+                      <User className={`w-4 h-4 ${s.dossierComplet ? "text-success" : "text-primary"}`} />
                     </div>
                     <div>
                       <p className="font-medium">{s.firstName} {s.lastName}</p>
@@ -139,17 +142,26 @@ const StudentsPage = () => {
                     {statusLabels[s.status]}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-center">
-                  <div className="flex items-center justify-center gap-1.5">
+                <td
+                  className="px-6 py-4 text-center cursor-default"
+                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-center gap-2">
                     <Checkbox
-                      checked={!!s.dossierComplet}
-                      onCheckedChange={(checked) => {
-                        store.updateStudent(s.id, { dossierComplet: !!checked });
-                        forceUpdate(n => n + 1);
-                      }}
+                      checked={Boolean(s.dossierComplet)}
+                      onCheckedChange={(checked) => handleToggleDossier(s.id, checked === true)}
                       onClick={(e) => e.stopPropagation()}
-                      className="data-[state=checked]:bg-success data-[state=checked]:border-success"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      aria-label={`Marquer le dossier de ${s.firstName} ${s.lastName} comme complet`}
+                      className="border-border data-[state=checked]:border-success data-[state=checked]:bg-success data-[state=checked]:text-success-foreground"
                     />
+                    <Badge
+                      variant="outline"
+                      className={s.dossierComplet ? "border-success/30 bg-success/15 text-success" : "border-border text-muted-foreground"}
+                    >
+                      {s.dossierComplet ? "Complet" : "À vérifier"}
+                    </Badge>
                     {s.dossierComplet && <CheckCircle2 className="w-4 h-4 text-success" />}
                   </div>
                 </td>
