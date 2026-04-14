@@ -211,6 +211,7 @@ const demoSatisfactions: SatisfactionResponse[] = [
 
 // localStorage persistence helpers
 const STORAGE_KEY = "drones37_store";
+import { notifyStoreChange } from "@/hooks/useStoreData";
 
 function loadFromStorage() {
   try {
@@ -224,6 +225,7 @@ function saveToStorage() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }));
   } catch (e) { /* ignore */ }
+  notifyStoreChange();
 }
 
 const saved = loadFromStorage();
