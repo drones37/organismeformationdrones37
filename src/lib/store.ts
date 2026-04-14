@@ -223,8 +223,12 @@ function loadFromStorage() {
 
 function saveToStorage() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }));
-  } catch (e) { /* ignore */ }
+    // Exclude large fileData from localStorage to avoid hitting the ~5MB limit
+    const docsWithoutFiles = documents.map(d => ({ ...d, fileData: undefined }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents: docsWithoutFiles, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }));
+  } catch (e) {
+    console.warn("⚠️ localStorage plein — utilisez l'export JSON pour sauvegarder vos données.");
+  }
   notifyStoreChange();
 }
 
