@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Users, ClipboardCheck, TrendingUp, CalendarDays, Star, MessageSquare, CreditCard, UserX, Award, Flame, Snowflake } from "lucide-react";
 import { store } from "@/lib/store";
+import { useStoreRefresh } from "@/hooks/useStoreData";
 import StatCard from "@/components/StatCard";
 import { Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +14,7 @@ const getYear = (dateStr: string): number => {
 };
 
 const Dashboard = () => {
+  useStoreRefresh();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear.toString());
   const yearNum = Number(year);

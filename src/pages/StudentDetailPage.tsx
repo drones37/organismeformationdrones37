@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { store, ProgressionModule, Document, SatisfactionResponse } from "@/lib/store";
+import { useStoreRefresh } from "@/hooks/useStoreData";
 import { FORMATION_TYPES } from "@/lib/formationModules";
 import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,7 @@ const RatingStars = ({ value, onChange, size = "sm" }: { value?: number; onChang
 const StudentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  useStoreRefresh();
   const [, forceUpdate] = useState(0);
   const [signingFor, setSigningFor] = useState<{ sheetId: string; studentId: string; day: string } | null>(null);
   const [openCreateProgression, setOpenCreateProgression] = useState(false);

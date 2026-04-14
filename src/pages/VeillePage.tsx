@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { store, Document, VeilleEntry } from "@/lib/store";
+import { useStoreRefresh } from "@/hooks/useStoreData";
 import { Shield, Upload, Download, Trash2, FileText, Plus, Pencil, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ const TYPES_VEILLE = [
 ];
 
 const VeillePage = () => {
+  useStoreRefresh();
   const [, forceUpdate] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<VeilleEntry>>({});

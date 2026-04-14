@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { store } from "@/lib/store";
+import { useStoreRefresh } from "@/hooks/useStoreData";
 import { CreditCard, Check, Clock, AlertTriangle, Upload, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ const statusConfig = {
 
 const FacturationPage = () => {
   const navigate = useNavigate();
+  useStoreRefresh();
   const [, forceUpdate] = useState(0);
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear().toString());
   const students = store.getStudents();
