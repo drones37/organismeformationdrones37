@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import StoreInitializer from "@/components/StoreInitializer";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import StudentsPage from "./pages/StudentsPage";
@@ -31,7 +32,9 @@ const App = () => (
             <Route
               element={
                 <ProtectedRoute>
-                  <AppLayout />
+                  <StoreInitializer>
+                    <AppLayout />
+                  </StoreInitializer>
                 </ProtectedRoute>
               }
             >
