@@ -1,9 +1,13 @@
-// Simple in-memory store (will be replaced by database later)
+// Supabase-backed store with in-memory cache
+import { supabase } from "@/integrations/supabase/client";
+import { notifyStoreChange } from "@/hooks/useStoreData";
+import { getModulesForFormation } from "./formationModules";
+
 export interface PrerequisiteCheck {
   label: string;
   checked: boolean;
   proofFileName?: string;
-  proofFileData?: string; // base64
+  proofFileData?: string;
 }
 
 export interface Student {
@@ -26,10 +30,10 @@ export interface Student {
 export interface AttendanceStudent {
   studentId: string;
   studentName: string;
-  grade: string; // Grade / Fonction
+  grade: string;
   livretVu: boolean;
   signatures: {
-    [day: string]: { // "J1", "J2", "J3"
+    [day: string]: {
       signed: boolean;
       signatureData?: string;
       signedAt?: string;
@@ -42,7 +46,7 @@ export interface AttendanceSheet {
   title: string;
   date: string;
   formation: string;
-  days: number; // nombre de jours (1-5)
+  days: number;
   students: AttendanceStudent[];
   status: "brouillon" | "en_cours" | "cloturee";
 }
@@ -52,8 +56,8 @@ export interface ProgressionModule {
   name: string;
   objectives: string[];
   status: "non_evalue" | "en_cours" | "acquis" | "non_acquis";
-  ratingStart?: number; // 1-5, évaluation début de formation
-  ratingEnd?: number;   // 1-5, évaluation fin de formation
+  ratingStart?: number;
+  ratingEnd?: number;
   comment?: string;
   evaluatedAt?: string;
 }
@@ -73,7 +77,7 @@ export interface ProgressionSheet {
 export interface SatisfactionQuestion {
   id: string;
   text: string;
-  rating: number; // 1-5
+  rating: number;
 }
 
 export interface SatisfactionResponse {
@@ -110,7 +114,7 @@ export interface VeilleEntry {
 export interface PlanActionEntry {
   id: string;
   date: string;
-  origine: string; // "satisfaction_chaud" | "satisfaction_froid" | "reclamation" | "audit" | "autre"
+  origine: string;
   constat: string;
   action: string;
   responsable: string;
@@ -119,24 +123,6 @@ export interface PlanActionEntry {
   commentaire: string;
 }
 
-// Données réelles
-const demoStudents: Student[] = [
-  { id: "1775982623553", firstName: "Grégoire", lastName: "Derolez", email: "gregoire.derolez@gmail.com", phone: "0783244245", formation: "STS", startDate: "2026-03-16", endDate: "2026-03-18", status: "terminee" },
-];
-
-const demoAttendance: AttendanceSheet[] = [
-  {
-    id: "1775982701602", title: "STS", date: "2026-03-16", formation: "STS", status: "en_cours", days: 3,
-    students: [
-      { studentId: "1775982623553", studentName: "Grégoire Derolez", grade: "", livretVu: true, signatures: { J1: { signed: false }, J2: { signed: false }, J3: { signed: false } } },
-    ],
-  },
-];
-
-const demoDocuments: Document[] = [];
-
-import { getModulesForFormation } from "./formationModules";
-
 function buildModulesForFormation(formation: string): Omit<ProgressionModule, "id">[] {
   return getModulesForFormation(formation).map(item => ({
     name: item.name,
@@ -144,34 +130,6 @@ function buildModulesForFormation(formation: string): Omit<ProgressionModule, "i
     status: "non_evalue" as const,
   }));
 }
-
-const demoProgressions: ProgressionSheet[] = [
-  {
-    id: "1775982849878", studentId: "1775982623553", studentName: "Grégoire Derolez", formation: "Télépilote Drone STS-01/STS-02",
-    startDate: "2026-03-16", endDate: "2026-03-18", instructorName: "Stéphane PELARD",
-    globalResult: "acquis",
-    modules: [
-      { id: "m1775982849877_0", name: "Connaître la réglementation européenne et française UAS", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 4, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_1", name: "Connaître les catégories d'exploitation (Ouverte, Spécifique, Certifiée)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_2", name: "Créer et actualiser un MANEX", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 4, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_3", name: "Déclarer une activité d'exploitant UAS auprès des autorités", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_4", name: "Intégrer un UAS auprès d'un exploitant", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_5", name: "Préparer un vol Mission en STS-01", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_6", name: "Préparer un vol Mission en STS-02", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_7", name: "Lire et interpréter les cartes aéronautiques (OACI, NOTAM, SUP AIP)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 4, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_8", name: "Effectuer les déclarations sur AlphaTango / DGAC", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849877_9", name: "Télépiloter un UAS avec assistance GPS", objectives: [], status: "acquis", ratingStart: 4, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_10", name: "Télépiloter un UAS en mode ATTI (sans GPS)", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_11", name: "Télépiloter un UAS en vol à vue (VLOS)", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_12", name: "Télépiloter un UAS hors vue (BVLOS) avec observateur", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_13", name: "Télépiloter un UAS en Situations dégradées", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_14", name: "Appliquer des procédures d'urgences adaptées à la mission et l'UAS", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_15", name: "Gérer les situations anormales (perte GPS, FlyAway, intrusion)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_16", name: "Analyser des risques et déclarer un incident (CRESUS)", objectives: [], status: "acquis", ratingStart: 2, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-      { id: "m1775982849878_17", name: "Entretenir un UAS", objectives: [], status: "acquis", ratingStart: 3, ratingEnd: 5, evaluatedAt: "12/04/2026" },
-    ],
-  },
-];
 
 const QUESTIONS_CHAUD: Omit<SatisfactionQuestion, "id">[] = [
   { text: "Qualité du contenu pédagogique", rating: 0 },
@@ -190,184 +148,294 @@ const QUESTIONS_FROID: Omit<SatisfactionQuestion, "id">[] = [
   { text: "La formation a eu un impact professionnel positif", rating: 0 },
 ];
 
-const demoSatisfactions: SatisfactionResponse[] = [
-  {
-    id: "1775983044054", studentId: "1775982623553", studentName: "Grégoire Derolez", formation: "STS", type: "chaud", date: "2026-04-12",
-    comment: "Une formation riche en connaissances et en pratiques qui permet d'enrichir le savoir faire et savoir être dans ce domaine qui n'autorise pas les erreurs aussi bien de vol que dans dans la partie administrative. Un formateur avec une expérience et une écoute qui permet de s'adapter sur les besoins et les questions. 3 jours de formation en autonomie qui fait la différence sur le déroulé de formation et les scénarios de vols. je recommande. merci Stéphane",
-    questions: [
-      { id: "qc1775983044053_0", text: "Qualité du contenu pédagogique", rating: 5 },
-      { id: "qc1775983044053_1", text: "Compétence du formateur", rating: 5 },
-      { id: "qc1775983044053_2", text: "Clarté des explications", rating: 5 },
-      { id: "qc1775983044053_3", text: "Adéquation de la formation avec vos attentes", rating: 5 },
-      { id: "qc1775983044053_4", text: "Qualité du matériel utilisé", rating: 5 },
-      { id: "qc1775983044053_5", text: "Organisation générale", rating: 5 },
-    ],
-  },
-  {
-    id: "1776005898051", studentId: "1775982623553", studentName: "Grégoire Derolez", formation: "STS", type: "froid", date: "2026-04-12",
-    questions: [
-      { id: "qf1776005898051_0", text: "J'utilise les compétences acquises dans mon activité professionnelle", rating: 0 },
-      { id: "qf1776005898051_1", text: "Je me sens autonome dans l'utilisation du drone en conditions professionnelles", rating: 0 },
-      { id: "qf1776005898051_2", text: "J'applique correctement la réglementation et les règles de sécurité", rating: 0 },
-      { id: "qf1776005898051_3", text: "La formation a amélioré mon efficacité professionnelle", rating: 0 },
-      { id: "qf1776005898051_4", text: "La formation a eu un impact professionnel positif", rating: 0 },
-    ],
-  },
-];
+// In-memory cache
+let students: Student[] = [];
+let attendance: AttendanceSheet[] = [];
+let documents: Document[] = [];
+let progressions: ProgressionSheet[] = [];
+let satisfactions: SatisfactionResponse[] = [];
+let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = {};
+let veilleEntries: VeilleEntry[] = [];
+let planActionEntries: PlanActionEntry[] = [];
+let _initialized = false;
 
-// localStorage persistence helpers
-const STORAGE_KEY = "drones37_store";
-import { notifyStoreChange } from "@/hooks/useStoreData";
-
-function loadFromStorage() {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (data) return JSON.parse(data);
-  } catch (e) { /* ignore */ }
-  return null;
+// ── DB → App type converters ──
+function dbToStudent(r: any): Student {
+  return {
+    id: r.id, firstName: r.first_name, lastName: r.last_name, email: r.email,
+    phone: r.phone, formation: r.formation, startDate: r.start_date, endDate: r.end_date,
+    status: r.status, dossierComplet: r.dossier_complet, handicap: r.handicap,
+    handicapDetails: r.handicap_details, handicapAdaptations: r.handicap_adaptations,
+    prerequisites: r.prerequisites || [],
+  };
 }
 
-function saveToStorage() {
-  try {
-    // Exclude large fileData from localStorage to avoid hitting the ~5MB limit
-    const docsWithoutFiles = documents.map(d => ({ ...d, fileData: undefined }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ students, attendance, documents: docsWithoutFiles, progressions, satisfactions, invoiceStatuses, veilleEntries, planActionEntries }));
-  } catch (e) {
-    console.warn("⚠️ localStorage plein — utilisez l'export JSON pour sauvegarder vos données.");
-  }
+function dbToAttendanceSheet(sheet: any, attStudents: any[]): AttendanceSheet {
+  return {
+    id: sheet.id, title: sheet.title, date: sheet.date, formation: sheet.formation,
+    days: sheet.days, status: sheet.status,
+    students: attStudents.filter(s => s.sheet_id === sheet.id).map(s => ({
+      studentId: s.student_id, studentName: s.student_name, grade: s.grade,
+      livretVu: s.livret_vu, signatures: s.signatures || {},
+    })),
+  };
+}
+
+function dbToDocument(r: any): Document {
+  return {
+    id: r.id, name: r.name, category: r.category, studentId: r.student_id,
+    formationId: r.formation_id, createdAt: r.created_at, size: r.size, fileData: r.file_data,
+  };
+}
+
+function dbToProgression(sheet: any, modules: any[]): ProgressionSheet {
+  return {
+    id: sheet.id, studentId: sheet.student_id, studentName: sheet.student_name,
+    formation: sheet.formation, startDate: sheet.start_date, endDate: sheet.end_date,
+    instructorName: sheet.instructor_name, globalResult: sheet.global_result,
+    modules: modules.filter(m => m.progression_id === sheet.id)
+      .sort((a: any, b: any) => a.sort_order - b.sort_order)
+      .map((m: any) => ({
+        id: m.id, name: m.name, objectives: m.objectives || [],
+        status: m.status, ratingStart: m.rating_start, ratingEnd: m.rating_end,
+        comment: m.comment, evaluatedAt: m.evaluated_at,
+      })),
+  };
+}
+
+function dbToSatisfaction(resp: any, questions: any[]): SatisfactionResponse {
+  return {
+    id: resp.id, studentId: resp.student_id, studentName: resp.student_name,
+    formation: resp.formation, type: resp.type, date: resp.date, comment: resp.comment,
+    questions: questions.filter((q: any) => q.satisfaction_id === resp.id)
+      .sort((a: any, b: any) => a.sort_order - b.sort_order)
+      .map((q: any) => ({ id: q.id, text: q.text, rating: q.rating })),
+  };
+}
+
+// ── Init: load everything from Supabase ──
+export async function initStore() {
+  if (_initialized) return;
+  const [sRes, aRes, asRes, dRes, pRes, pmRes, srRes, sqRes, vRes, paRes, iRes] = await Promise.all([
+    supabase.from("students").select("*"),
+    supabase.from("attendance_sheets").select("*"),
+    supabase.from("attendance_students").select("*"),
+    supabase.from("documents").select("*"),
+    supabase.from("progression_sheets").select("*"),
+    supabase.from("progression_modules").select("*"),
+    supabase.from("satisfaction_responses").select("*"),
+    supabase.from("satisfaction_questions").select("*"),
+    supabase.from("veille_entries").select("*"),
+    supabase.from("plan_action_entries").select("*"),
+    supabase.from("invoice_statuses").select("*"),
+  ]);
+
+  students = (sRes.data || []).map(dbToStudent);
+  const attStudents = asRes.data || [];
+  attendance = (aRes.data || []).map((s: any) => dbToAttendanceSheet(s, attStudents));
+  documents = (dRes.data || []).map(dbToDocument);
+  const allModules = pmRes.data || [];
+  progressions = (pRes.data || []).map((s: any) => dbToProgression(s, allModules));
+  const allQuestions = sqRes.data || [];
+  satisfactions = (srRes.data || []).map((s: any) => dbToSatisfaction(s, allQuestions));
+  invoiceStatuses = {};
+  (iRes.data || []).forEach((r: any) => { invoiceStatuses[r.student_id] = r.status; });
+  veilleEntries = (vRes.data || []).map((r: any) => ({
+    id: r.id, date: r.date, type: r.type, contenu: r.contenu,
+    exploitation: r.exploitation, preuves: r.preuves,
+  }));
+  planActionEntries = (paRes.data || []).map((r: any) => ({
+    id: r.id, date: r.date, origine: r.origine, constat: r.constat,
+    action: r.action, responsable: r.responsable, echeance: r.echeance,
+    statut: r.statut as PlanActionEntry["statut"], commentaire: r.commentaire,
+  }));
+
+  _initialized = true;
   notifyStoreChange();
 }
 
-const saved = loadFromStorage();
-
-// Merge: ensure all hardcoded entries are always present, even if localStorage has old data
-function mergeById<T extends { id: string }>(saved: T[] | undefined, defaults: T[]): T[] {
-  const merged = [...(saved || [])];
-  for (const def of defaults) {
-    if (!merged.find(s => s.id === def.id)) {
-      merged.push(def);
-    }
-  }
-  return merged;
-}
-
-let students: Student[] = mergeById(saved?.students, demoStudents);
-let attendance: AttendanceSheet[] = mergeById(saved?.attendance, demoAttendance);
-let documents: Document[] = saved?.documents || [...demoDocuments];
-let progressions: ProgressionSheet[] = mergeById(saved?.progressions, demoProgressions);
-const rawSatisfactions: SatisfactionResponse[] = mergeById(saved?.satisfactions, demoSatisfactions);
-let satisfactions: SatisfactionResponse[] = rawSatisfactions.filter((s) =>
-  students.some((student) => student.id === s.studentId)
-);
-const demoInvoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = { "1775982623553": "paye" };
-const demoVeilleEntries: VeilleEntry[] = [
-  { id: "1776005937992", date: "2026-04-03", type: "Réglementaire", contenu: "application météorologique", exploitation: "Test application", preuves: "Helico micro https://www.helicomicro.com/2026/04/03/skygo-drone/" },
-  { id: "1776006372811", date: "2026-03-13", type: "Réglementaire", contenu: "Fiches reflexes", exploitation: "En attente de validation", preuves: "https://www.helicomicro.com/2026/03/13/fiches-reflexe-drones/" },
-];
-const demoPlanActionEntries: PlanActionEntry[] = [
-  { id: "1776007569948", date: "2026-04-12", origine: "satisfaction_chaud", constat: "1 seul élève suite annulation", action: "Anticiper pour trouver un télépilote faissant office d'observateur pour le travail en binôme", responsable: "Stéphane PELARD", echeance: "2026-12-31", statut: "en_cours", commentaire: "" },
-];
-let invoiceStatuses: Record<string, "paye" | "en_attente" | "impaye"> = saved?.invoiceStatuses || { ...demoInvoiceStatuses };
-let veilleEntries: VeilleEntry[] = mergeById(saved?.veilleEntries, demoVeilleEntries);
-let planActionEntries: PlanActionEntry[] = mergeById(saved?.planActionEntries, demoPlanActionEntries);
-
 export const store = {
+  isInitialized: () => _initialized,
+
+  // Students
   getStudents: () => students,
   addStudent: (s: Omit<Student, "id">) => {
     const newStudent = { ...s, id: Date.now().toString() };
     students = [...students, newStudent];
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("students").insert({
+      id: newStudent.id, first_name: newStudent.firstName, last_name: newStudent.lastName,
+      email: newStudent.email, phone: newStudent.phone, formation: newStudent.formation,
+      start_date: newStudent.startDate, end_date: newStudent.endDate, status: newStudent.status,
+      dossier_complet: newStudent.dossierComplet || false, handicap: newStudent.handicap || false,
+      handicap_details: newStudent.handicapDetails, handicap_adaptations: newStudent.handicapAdaptations,
+      prerequisites: (newStudent.prerequisites || []) as any,
+    }).then();
     return newStudent;
   },
-  deleteStudent: (id: string) => { students = students.filter(s => s.id !== id); saveToStorage(); },
+  deleteStudent: (id: string) => {
+    students = students.filter(s => s.id !== id);
+    notifyStoreChange();
+    supabase.from("students").delete().eq("id", id).then();
+  },
   updateStudent: (id: string, updates: Partial<Student>) => {
     students = students.map(s => s.id === id ? { ...s, ...updates } : s);
-    saveToStorage();
+    notifyStoreChange();
+    const db: any = {};
+    if (updates.firstName !== undefined) db.first_name = updates.firstName;
+    if (updates.lastName !== undefined) db.last_name = updates.lastName;
+    if (updates.email !== undefined) db.email = updates.email;
+    if (updates.phone !== undefined) db.phone = updates.phone;
+    if (updates.formation !== undefined) db.formation = updates.formation;
+    if (updates.startDate !== undefined) db.start_date = updates.startDate;
+    if (updates.endDate !== undefined) db.end_date = updates.endDate;
+    if (updates.status !== undefined) db.status = updates.status;
+    if (updates.dossierComplet !== undefined) db.dossier_complet = updates.dossierComplet;
+    if (updates.handicap !== undefined) db.handicap = updates.handicap;
+    if (updates.handicapDetails !== undefined) db.handicap_details = updates.handicapDetails;
+    if (updates.handicapAdaptations !== undefined) db.handicap_adaptations = updates.handicapAdaptations;
+    if (updates.prerequisites !== undefined) db.prerequisites = updates.prerequisites as any;
+    supabase.from("students").update(db).eq("id", id).then();
   },
-  
+
+  // Attendance
   getAttendance: () => attendance,
   addAttendance: (a: Omit<AttendanceSheet, "id">) => {
     const newSheet = { ...a, id: Date.now().toString() };
     attendance = [...attendance, newSheet];
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("attendance_sheets").insert({
+      id: newSheet.id, title: newSheet.title, date: newSheet.date,
+      formation: newSheet.formation, days: newSheet.days, status: newSheet.status,
+    }).then(async () => {
+      for (const s of newSheet.students) {
+        await supabase.from("attendance_students").insert({
+          sheet_id: newSheet.id, student_id: s.studentId, student_name: s.studentName,
+          grade: s.grade, livret_vu: s.livretVu, signatures: s.signatures as any,
+        });
+      }
+    });
     return newSheet;
   },
   signAttendance: (sheetId: string, studentId: string, day: string, signatureData: string) => {
-    attendance = attendance.map(a => a.id === sheetId ? {
-      ...a,
-      students: a.students.map(s => s.studentId === studentId ? {
-        ...s,
-        signatures: {
-          ...s.signatures,
-          [day]: { signed: true, signatureData, signedAt: new Date().toLocaleString("fr-FR") },
-        },
-      } : s),
-    } : a);
-    saveToStorage();
+    let updatedSigs: any = {};
+    attendance = attendance.map(a => {
+      if (a.id !== sheetId) return a;
+      return {
+        ...a,
+        students: a.students.map(s => {
+          if (s.studentId !== studentId) return s;
+          const newSigs = { ...s.signatures, [day]: { signed: true, signatureData, signedAt: new Date().toLocaleString("fr-FR") } };
+          updatedSigs = newSigs;
+          return { ...s, signatures: newSigs };
+        }),
+      };
+    });
+    notifyStoreChange();
+    supabase.from("attendance_students").update({ signatures: updatedSigs as any })
+      .eq("sheet_id", sheetId).eq("student_id", studentId).then();
   },
   updateStudentGrade: (sheetId: string, studentId: string, grade: string) => {
     attendance = attendance.map(a => a.id === sheetId ? {
-      ...a,
-      students: a.students.map(s => s.studentId === studentId ? { ...s, grade } : s),
+      ...a, students: a.students.map(s => s.studentId === studentId ? { ...s, grade } : s),
     } : a);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("attendance_students").update({ grade })
+      .eq("sheet_id", sheetId).eq("student_id", studentId).then();
   },
   toggleLivretVu: (sheetId: string, studentId: string) => {
+    let newVal = false;
     attendance = attendance.map(a => a.id === sheetId ? {
-      ...a,
-      students: a.students.map(s => s.studentId === studentId ? { ...s, livretVu: !s.livretVu } : s),
+      ...a, students: a.students.map(s => {
+        if (s.studentId !== studentId) return s;
+        newVal = !s.livretVu;
+        return { ...s, livretVu: newVal };
+      }),
     } : a);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("attendance_students").update({ livret_vu: newVal })
+      .eq("sheet_id", sheetId).eq("student_id", studentId).then();
   },
   closeAttendance: (id: string) => {
     attendance = attendance.map(a => a.id === id ? { ...a, status: "cloturee" as const } : a);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("attendance_sheets").update({ status: "cloturee" }).eq("id", id).then();
   },
   deleteAttendance: (id: string) => {
     attendance = attendance.filter(a => a.id !== id);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("attendance_sheets").delete().eq("id", id).then();
   },
 
+  // Documents
   getDocuments: () => documents,
   addDocument: (d: Omit<Document, "id">) => {
     const newDoc = { ...d, id: Date.now().toString() };
     documents = [...documents, newDoc];
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("documents").insert({
+      id: newDoc.id, name: newDoc.name, category: newDoc.category,
+      student_id: newDoc.studentId, formation_id: newDoc.formationId,
+      size: newDoc.size, file_data: newDoc.fileData,
+    }).then();
     return newDoc;
   },
-  deleteDocument: (id: string) => { documents = documents.filter(d => d.id !== id); saveToStorage(); },
+  deleteDocument: (id: string) => {
+    documents = documents.filter(d => d.id !== id);
+    notifyStoreChange();
+    supabase.from("documents").delete().eq("id", id).then();
+  },
 
+  // Progressions
   getProgressions: () => progressions,
   getProgressionByStudent: (studentId: string) => progressions.find(p => p.studentId === studentId),
   addProgression: (p: Omit<ProgressionSheet, "id">) => {
     const newP = { ...p, id: Date.now().toString() };
     progressions = [...progressions, newP];
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("progression_sheets").insert({
+      id: newP.id, student_id: newP.studentId, student_name: newP.studentName,
+      formation: newP.formation, start_date: newP.startDate, end_date: newP.endDate,
+      instructor_name: newP.instructorName, global_result: newP.globalResult,
+    }).then(async () => {
+      for (let i = 0; i < newP.modules.length; i++) {
+        const m = newP.modules[i];
+        await supabase.from("progression_modules").insert({
+          id: m.id, progression_id: newP.id, name: m.name,
+          objectives: (m.objectives || []) as any, status: m.status,
+          rating_start: m.ratingStart, rating_end: m.ratingEnd,
+          comment: m.comment, evaluated_at: m.evaluatedAt, sort_order: i,
+        });
+      }
+    });
     return newP;
   },
   updateModuleStatus: (progressionId: string, moduleId: string, status: ProgressionModule["status"], comment?: string) => {
+    const evaluatedAt = new Date().toLocaleDateString("fr-FR");
     progressions = progressions.map(p => p.id === progressionId ? {
-      ...p,
-      modules: p.modules.map(m => m.id === moduleId ? {
-        ...m, status, comment, evaluatedAt: new Date().toLocaleDateString("fr-FR"),
-      } : m),
+      ...p, modules: p.modules.map(m => m.id === moduleId ? { ...m, status, comment, evaluatedAt } : m),
     } : p);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("progression_modules").update({ status, comment, evaluated_at: evaluatedAt }).eq("id", moduleId).then();
   },
   updateModuleRating: (progressionId: string, moduleId: string, ratingStart?: number, ratingEnd?: number) => {
     progressions = progressions.map(p => p.id === progressionId ? {
-      ...p,
-      modules: p.modules.map(m => m.id === moduleId ? {
+      ...p, modules: p.modules.map(m => m.id === moduleId ? {
         ...m,
         ...(ratingStart !== undefined && { ratingStart }),
         ...(ratingEnd !== undefined && { ratingEnd }),
       } : m),
     } : p);
-    saveToStorage();
+    notifyStoreChange();
+    const upd: any = {};
+    if (ratingStart !== undefined) upd.rating_start = ratingStart;
+    if (ratingEnd !== undefined) upd.rating_end = ratingEnd;
+    supabase.from("progression_modules").update(upd).eq("id", moduleId).then();
   },
   setGlobalResult: (progressionId: string, result: ProgressionSheet["globalResult"]) => {
     progressions = progressions.map(p => p.id === progressionId ? { ...p, globalResult: result } : p);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("progression_sheets").update({ global_result: result }).eq("id", progressionId).then();
   },
   getDefaultModules: (formation?: string) => {
     const mods = formation ? buildModulesForFormation(formation) : buildModulesForFormation("Télépilote Drone STS-01/STS-02");
@@ -380,23 +448,36 @@ export const store = {
   addSatisfaction: (s: Omit<SatisfactionResponse, "id">) => {
     const newS = { ...s, id: Date.now().toString() };
     satisfactions = [...satisfactions, newS];
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("satisfaction_responses").insert({
+      id: newS.id, student_id: newS.studentId, student_name: newS.studentName,
+      formation: newS.formation, type: newS.type, date: newS.date, comment: newS.comment,
+    }).then(async () => {
+      for (let i = 0; i < newS.questions.length; i++) {
+        const q = newS.questions[i];
+        await supabase.from("satisfaction_questions").insert({
+          id: q.id, satisfaction_id: newS.id, text: q.text, rating: q.rating, sort_order: i,
+        });
+      }
+    });
     return newS;
   },
   updateSatisfactionRating: (satisfactionId: string, questionId: string, rating: number) => {
     satisfactions = satisfactions.map(s => s.id === satisfactionId ? {
-      ...s,
-      questions: s.questions.map(q => q.id === questionId ? { ...q, rating } : q),
+      ...s, questions: s.questions.map(q => q.id === questionId ? { ...q, rating } : q),
     } : s);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("satisfaction_questions").update({ rating }).eq("id", questionId).then();
   },
   updateSatisfactionComment: (satisfactionId: string, comment: string) => {
     satisfactions = satisfactions.map(s => s.id === satisfactionId ? { ...s, comment } : s);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("satisfaction_responses").update({ comment }).eq("id", satisfactionId).then();
   },
   deleteSatisfaction: (satisfactionId: string) => {
     satisfactions = satisfactions.filter(s => s.id !== satisfactionId);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("satisfaction_responses").delete().eq("id", satisfactionId).then();
   },
   getGlobalSatisfaction: (year?: number) => {
     const filtered = year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year) : satisfactions;
@@ -423,7 +504,8 @@ export const store = {
   getInvoices: () => invoiceStatuses,
   updateInvoiceStatus: (studentId: string, status: "paye" | "en_attente" | "impaye") => {
     invoiceStatuses = { ...invoiceStatuses, [studentId]: status };
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("invoice_statuses").upsert({ student_id: studentId, status }, { onConflict: "student_id" }).then();
   },
 
   // Veille réglementaire
@@ -431,16 +513,22 @@ export const store = {
   addVeilleEntry: (entry: Omit<VeilleEntry, "id">) => {
     const newEntry = { ...entry, id: Date.now().toString() };
     veilleEntries = [...veilleEntries, newEntry];
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("veille_entries").insert({
+      id: newEntry.id, date: newEntry.date, type: newEntry.type,
+      contenu: newEntry.contenu, exploitation: newEntry.exploitation, preuves: newEntry.preuves,
+    }).then();
     return newEntry;
   },
   updateVeilleEntry: (id: string, updates: Partial<VeilleEntry>) => {
     veilleEntries = veilleEntries.map(e => e.id === id ? { ...e, ...updates } : e);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("veille_entries").update(updates).eq("id", id).then();
   },
   deleteVeilleEntry: (id: string) => {
     veilleEntries = veilleEntries.filter(e => e.id !== id);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("veille_entries").delete().eq("id", id).then();
   },
 
   // Plan d'amélioration
@@ -448,16 +536,23 @@ export const store = {
   addPlanActionEntry: (entry: Omit<PlanActionEntry, "id">) => {
     const newEntry = { ...entry, id: Date.now().toString() };
     planActionEntries = [...planActionEntries, newEntry];
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("plan_action_entries").insert({
+      id: newEntry.id, date: newEntry.date, origine: newEntry.origine,
+      constat: newEntry.constat, action: newEntry.action, responsable: newEntry.responsable,
+      echeance: newEntry.echeance, statut: newEntry.statut, commentaire: newEntry.commentaire,
+    }).then();
     return newEntry;
   },
   updatePlanActionEntry: (id: string, updates: Partial<PlanActionEntry>) => {
     planActionEntries = planActionEntries.map(e => e.id === id ? { ...e, ...updates } : e);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("plan_action_entries").update(updates).eq("id", id).then();
   },
   deletePlanActionEntry: (id: string) => {
     planActionEntries = planActionEntries.filter(e => e.id !== id);
-    saveToStorage();
+    notifyStoreChange();
+    supabase.from("plan_action_entries").delete().eq("id", id).then();
   },
 
   // Export / Import JSON
@@ -467,15 +562,43 @@ export const store = {
   importData: (jsonString: string) => {
     try {
       const data = JSON.parse(jsonString);
-      if (data.students) students = data.students;
+      if (data.students) {
+        students = data.students;
+        for (const s of data.students) {
+          supabase.from("students").upsert({
+            id: s.id, first_name: s.firstName, last_name: s.lastName,
+            email: s.email, phone: s.phone, formation: s.formation,
+            start_date: s.startDate, end_date: s.endDate, status: s.status,
+            dossier_complet: s.dossierComplet || false, handicap: s.handicap || false,
+            prerequisites: (s.prerequisites || []) as any,
+          }, { onConflict: "id" }).then();
+        }
+      }
+      if (data.veilleEntries) {
+        veilleEntries = data.veilleEntries;
+        for (const e of data.veilleEntries) {
+          supabase.from("veille_entries").upsert({
+            id: e.id, date: e.date, type: e.type, contenu: e.contenu,
+            exploitation: e.exploitation, preuves: e.preuves,
+          }, { onConflict: "id" }).then();
+        }
+      }
+      if (data.planActionEntries) {
+        planActionEntries = data.planActionEntries;
+        for (const e of data.planActionEntries) {
+          supabase.from("plan_action_entries").upsert({
+            id: e.id, date: e.date, origine: e.origine, constat: e.constat,
+            action: e.action, responsable: e.responsable, echeance: e.echeance,
+            statut: e.statut, commentaire: e.commentaire,
+          }, { onConflict: "id" }).then();
+        }
+      }
+      if (data.invoiceStatuses) invoiceStatuses = data.invoiceStatuses;
       if (data.attendance) attendance = data.attendance;
       if (data.documents) documents = data.documents;
       if (data.progressions) progressions = data.progressions;
       if (data.satisfactions) satisfactions = data.satisfactions;
-      if (data.invoiceStatuses) invoiceStatuses = data.invoiceStatuses;
-      if (data.veilleEntries) veilleEntries = data.veilleEntries;
-      if (data.planActionEntries) planActionEntries = data.planActionEntries;
-      saveToStorage();
+      notifyStoreChange();
       return true;
     } catch (e) {
       return false;
