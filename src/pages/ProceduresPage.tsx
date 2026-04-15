@@ -153,11 +153,14 @@ const ProceduresPage = () => {
 
             <div className="mt-4 space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Étapes clés</p>
-              <ol className="space-y-1.5">
-                {pshProcedure.content.map((step, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="bg-accent/15 text-accent text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                    {step}
+              <ol className="space-y-3">
+                {pshProcedure.content.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="bg-accent/15 text-accent text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                    <div>
+                      <p className="font-medium text-sm">{item.step}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                    </div>
                   </li>
                 ))}
               </ol>
