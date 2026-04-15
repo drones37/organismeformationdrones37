@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, CreditCard, Shield, ClipboardList, Download, Upload, FileCheck, ClipboardCheck, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, Shield, ClipboardList, Download, Upload, FileCheck, ClipboardCheck, LogOut, MessageSquareWarning } from "lucide-react";
 import { useRef } from "react";
 import logo from "@/assets/drones37-logo.png";
 import { store } from "@/lib/store";
@@ -12,6 +12,7 @@ const navItems = [
   { to: "/emargement", icon: ClipboardCheck, label: "Émargement" },
   { to: "/facturation", icon: CreditCard, label: "Facturation" },
   { to: "/procedures", icon: FileCheck, label: "Accompagnement PSH" },
+  { to: "/reclamations", icon: MessageSquareWarning, label: "Réclamations" },
   { to: "/veille", icon: Shield, label: "Veille réglementaire" },
   { to: "/plan-action", icon: ClipboardList, label: "Plan d'amélioration" },
 ];
