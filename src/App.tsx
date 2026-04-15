@@ -16,6 +16,7 @@ import FacturationPage from "./pages/FacturationPage";
 import VeillePage from "./pages/VeillePage";
 import PlanActionPage from "./pages/PlanActionPage";
 import ProceduresPage from "./pages/ProceduresPage";
+import ReclamationsPage from "./pages/ReclamationsPage";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/emargement" element={<AttendancePage />} />
               <Route path="/facturation" element={<FacturationPage />} />
               <Route path="/procedures" element={<ProceduresPage />} />
+              <Route path="/reclamations" element={<ReclamationsPage />} />
               <Route path="/veille" element={<VeillePage />} />
               <Route path="/plan-action" element={<PlanActionPage />} />
             </Route>

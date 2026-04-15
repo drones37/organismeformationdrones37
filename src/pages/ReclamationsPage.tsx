@@ -1,40 +1,28 @@
 import { useState, useRef } from "react";
 import { store, Document } from "@/lib/store";
-import { FileText, Upload, Download, Trash2, Plus, Phone, User, Shield, FileDown } from "lucide-react";
+import { FileText, Upload, Download, Trash2, Plus, MessageSquareWarning, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { generatePshOrientationPdf } from "@/lib/pdfGenerator";
 import { Label } from "@/components/ui/label";
+import { generateReclamationPdf } from "@/lib/pdfGenerator";
 
-const pshProcedure = {
-  title: "Procédure Handicap (PSH)",
-  description: "Accueil et accompagnement des personnes en situation de handicap",
-  referent: "PELARD Stéphane — 06 51 11 27 02",
-  content: [
-    "Garantir l'accueil et l'adaptation des formations pour les PSH",
-    "Identification du besoin lors de l'inscription ou sur demande",
-    "Supports adaptés, rythme personnalisé, accompagnement individualisé",
-    "Suivi individualisé et ajustement des adaptations",
-  ],
-  partners: [
-    "AGEFIPH Centre-Val de Loire – Aides financières et techniques",
-    "Cap Emploi 37 – Accompagnement vers l'emploi",
-    "MDPH Indre-et-Loire – Orientation et reconnaissance handicap",
-    "Ressource Handicap Formation (RHF) – Appui aux organismes de formation",
-    "Pôle emploi – Référent handicap",
-    "APF France Handicap – Accompagnement des personnes",
-  ],
-};
+const reclamationSteps = [
+  "Réception et enregistrement de la réclamation (fiche dédiée)",
+  "Analyse et qualification de la réclamation sous 48h",
+  "Mise en place d'actions correctives avec le responsable concerné",
+  "Suivi, retour au réclamant et clôture de la réclamation",
+];
 
-const ProceduresPage = () => {
+const ReclamationsPage = () => {
   const [, forceUpdate] = useState(0);
   const [openUpload, setOpenUpload] = useState(false);
   const [uploadName, setUploadName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
-  const procedureDocs = store.getDocuments().filter(d => d.category === "procedure");
+  // Filter documents with a "reclamation" category, or fallback to procedure-tagged ones
+  const reclamationDocs = store.getDocuments().filter(d => d.category === "procedure" && d.name.toLowerCase().includes("réclamation"));
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,12 +86,12 @@ const ProceduresPage = () => {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-heading font-bold">Accompagnement PSH</h1>
-          <p className="text-muted-foreground mt-1">Accueil et orientation des personnes en situation de handicap — Certification Qualiopi n°211201_74</p>
+          <h1 className="text-3xl font-heading font-bold">Réclamations</h1>
+          <p className="text-muted-foreground mt-1">Procédure de traitement des réclamations — Qualiopi indicateur 31</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => generatePshOrientationPdf()}>
-            <FileDown className="w-4 h-4 mr-2" /> Fiche orientation PSH
+          <Button variant="outline" onClick={() => generateReclamationPdf()}>
+            <FileDown className="w-4 h-4 mr-2" /> Fiche de réclamation
           </Button>
           <input ref={uploadInputRef} type="file" className="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png" onChange={handleQuickUpload} />
           <Button variant="outline" onClick={() => uploadInputRef.current?.click()}>
@@ -117,12 +105,12 @@ const ProceduresPage = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle className="font-heading text-xl">Ajouter un document PSH</DialogTitle>
+                <DialogTitle className="font-heading text-xl">Ajouter un document</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div>
                   <Label>Nom du document</Label>
-                  <Input value={uploadName} onChange={e => setUploadName(e.target.value)} placeholder="Ex: Attestation d'adaptation PSH" />
+                  <Input value={uploadName} onChange={e => setUploadName(e.target.value)} placeholder="Ex: Réclamation traitée — Mars 2025" />
                 </div>
                 <div>
                   <Label>Fichier</Label>
@@ -134,55 +122,43 @@ const ProceduresPage = () => {
         </div>
       </div>
 
-      {/* Procédure PSH */}
+      {/* Procédure */}
       <div className="bg-card rounded-xl border border-border p-6">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-accent/10 rounded-lg shrink-0">
-            <Shield className="w-6 h-6 text-accent" />
+          <div className="p-3 bg-warning/10 rounded-lg shrink-0">
+            <MessageSquareWarning className="w-6 h-6 text-warning" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-heading font-semibold">{pshProcedure.title}</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">{pshProcedure.description}</p>
-
-            <div className="flex items-center gap-2 mt-3 text-sm">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <span className="font-medium">Référent :</span>
-              <span>{pshProcedure.referent}</span>
-            </div>
+            <h2 className="text-lg font-heading font-semibold">Procédure de traitement des réclamations</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Réception, analyse et suivi des réclamations stagiaires et parties prenantes</p>
 
             <div className="mt-4 space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Étapes clés</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Étapes du traitement</p>
               <ol className="space-y-1.5">
-                {pshProcedure.content.map((step, i) => (
+                {reclamationSteps.map((step, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="bg-accent/15 text-accent text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                    <span className="bg-warning/15 text-warning text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                     {step}
                   </li>
                 ))}
               </ol>
             </div>
 
-            <div className="mt-4 space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Annuaire partenaires — Indre-et-Loire</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                {pshProcedure.partners.map((p, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm bg-muted/50 rounded-lg px-3 py-2">
-                    <Phone className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    {p}
-                  </div>
-                ))}
-              </div>
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">💡 Utilisation :</span> Téléchargez la fiche de réclamation ci-dessus, faites-la compléter par le stagiaire, puis analysez et traitez la demande. Le document inclut les sections d'identification, description, et traitement avec signatures.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Documents uploadés */}
-      {procedureDocs.length > 0 && (
+      {reclamationDocs.length > 0 && (
         <div>
           <h2 className="text-lg font-heading font-semibold mb-3">Documents importés</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {procedureDocs.map(d => (
+            {reclamationDocs.map(d => (
               <div key={d.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow group">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -214,4 +190,4 @@ const ProceduresPage = () => {
   );
 };
 
-export default ProceduresPage;
+export default ReclamationsPage;
