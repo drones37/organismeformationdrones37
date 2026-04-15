@@ -12,10 +12,11 @@ const pshProcedure = {
   description: "Accueil et accompagnement des personnes en situation de handicap",
   referent: "PELARD Stéphane — 06 51 11 27 02",
   content: [
-    "Garantir l'accueil et l'adaptation des formations pour les PSH",
-    "Identification du besoin lors de l'inscription ou sur demande",
-    "Supports adaptés, rythme personnalisé, accompagnement individualisé",
-    "Suivi individualisé et ajustement des adaptations",
+    { step: "Le stagiaire nous informe de son besoin", detail: "Au moment de l'inscription ou avant l'entrée en formation, le stagiaire peut nous faire part d'une situation de handicap ou d'une difficulté particulière." },
+    { step: "Nous échangeons avec lui", detail: "Nous analysons ensemble les conséquences possibles sur le déroulement de la formation, notamment sur l'organisation, les supports et la pratique." },
+    { step: "Nous adaptons dans la mesure du possible", detail: "Selon les besoins, nous pouvons prévoir un accompagnement plus individualisé, adapter le rythme, reformuler les consignes, transmettre les supports en amont ou ajuster l'organisation." },
+    { step: "Nous faisons appel à des partenaires si besoin", detail: "Si la situation le nécessite, nous nous appuyons sur notre réseau de partenaires handicap pour orienter ou compléter l'accompagnement." },
+    { step: "Nous assurons un suivi", detail: "Un échange est maintenu pendant la formation pour vérifier que les adaptations mises en place restent adaptées." },
   ],
   partners: [
     "AGEFIPH Centre-Val de Loire – Aides financières et techniques",
@@ -152,11 +153,14 @@ const ProceduresPage = () => {
 
             <div className="mt-4 space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Étapes clés</p>
-              <ol className="space-y-1.5">
-                {pshProcedure.content.map((step, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="bg-accent/15 text-accent text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
-                    {step}
+              <ol className="space-y-3">
+                {pshProcedure.content.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="bg-accent/15 text-accent text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                    <div>
+                      <p className="font-medium text-sm">{item.step}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>
+                    </div>
                   </li>
                 ))}
               </ol>
