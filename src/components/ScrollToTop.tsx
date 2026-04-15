@@ -10,6 +10,11 @@ const ScrollToTop = () => {
     }
 
     const resetScroll = () => {
+      const appContent = document.getElementById("app-content");
+      if (appContent) {
+        appContent.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      }
+
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
