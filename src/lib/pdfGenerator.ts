@@ -1245,3 +1245,168 @@ export function generatePshOrientationPdf() {
   addFooter(doc);
   doc.save("Fiche_Orientation_PSH_DRONES37.pdf");
 }
+
+// ===================== FICHE DE RÉCLAMATION =====================
+
+export function generateReclamationPdf() {
+  const doc = new jsPDF();
+  addHeader(doc);
+
+  let y = 42;
+
+  // Title
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("FICHE DE RÉCLAMATION", 105, y, { align: "center" });
+  y += 8;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(...COLORS.text);
+  doc.text("Document à compléter et à retourner au responsable qualité pour traitement", 105, y, { align: "center" });
+  y += 10;
+
+  // Accent bar
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(15, y, 180, 1.5, "F");
+  y += 10;
+
+  // Section 1 — Identification
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("1. Identification du réclamant", 15, y);
+  y += 8;
+
+  const fieldHeight = 10;
+  const fields1 = [
+    "Nom et prénom :",
+    "Formation suivie :",
+    "Date de la réclamation :",
+    "Email / Téléphone :",
+  ];
+
+  fields1.forEach((label) => {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.text);
+    doc.text(label, 18, y + 3);
+    doc.setDrawColor(200, 200, 200);
+    doc.line(70, y + 4, 195, y + 4);
+    y += fieldHeight;
+  });
+
+  y += 6;
+
+  // Section 2 — Objet
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("2. Objet de la réclamation", 15, y);
+  y += 8;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text("Cochez la catégorie concernée :", 18, y);
+  y += 6;
+
+  const categories = [
+    "Contenu pédagogique",
+    "Organisation / logistique",
+    "Formateur / intervenant",
+    "Conditions matérielles",
+    "Évaluation / certification",
+    "Autre (précisez ci-dessous)",
+  ];
+
+  categories.forEach((cat) => {
+    doc.rect(20, y - 3, 3, 3);
+    doc.setFontSize(9);
+    doc.text(cat, 26, y);
+    y += 6;
+  });
+
+  y += 4;
+
+  // Section 3 — Description
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("3. Description détaillée", 15, y);
+  y += 8;
+
+  doc.setFillColor(...COLORS.lightGray);
+  doc.roundedRect(15, y, 180, 40, 2, 2, "F");
+  doc.setDrawColor(200, 200, 200);
+  doc.roundedRect(15, y, 180, 40, 2, 2, "S");
+  // Lines inside the box
+  for (let i = 1; i <= 5; i++) {
+    doc.setDrawColor(220, 220, 220);
+    doc.line(18, y + i * 7, 192, y + i * 7);
+  }
+  y += 48;
+
+  // Section 4 — Traitement (réservé à l'organisme)
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("4. Traitement de la réclamation (réservé à l'organisme)", 15, y);
+  y += 8;
+
+  const fields2 = [
+    "Date de réception :",
+    "Analyse de la réclamation :",
+  ];
+
+  fields2.forEach((label) => {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.text);
+    doc.text(label, 18, y + 3);
+    doc.setDrawColor(200, 200, 200);
+    doc.line(70, y + 4, 195, y + 4);
+    y += fieldHeight;
+  });
+
+  y += 2;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text("Actions correctives mises en place :", 18, y + 3);
+  y += 6;
+
+  doc.setFillColor(...COLORS.lightGray);
+  doc.roundedRect(15, y, 180, 25, 2, 2, "F");
+  doc.setDrawColor(200, 200, 200);
+  doc.roundedRect(15, y, 180, 25, 2, 2, "S");
+  for (let i = 1; i <= 3; i++) {
+    doc.setDrawColor(220, 220, 220);
+    doc.line(18, y + i * 6, 192, y + i * 6);
+  }
+  y += 30;
+
+  // Signatures
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.text);
+  doc.text("Date de clôture : ____/____/________", 18, y + 3);
+  y += 10;
+
+  doc.text("Signature du réclamant :", 18, y);
+  doc.text("Signature du responsable :", 115, y);
+  y += 4;
+  doc.setDrawColor(200, 200, 200);
+  doc.rect(18, y, 70, 20);
+  doc.rect(115, y, 70, 20);
+
+  y += 28;
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(130, 130, 130);
+  doc.text("Document établi dans le cadre de la certification Qualiopi — Procédure de traitement des réclamations", 105, y, { align: "center" });
+  doc.text(`Édité le ${new Date().toLocaleDateString("fr-FR")} — DRONES37, organisme de formation`, 105, y + 4, { align: "center" });
+
+  addFooter(doc);
+  doc.save("Fiche_Reclamation_DRONES37.pdf");
+}
