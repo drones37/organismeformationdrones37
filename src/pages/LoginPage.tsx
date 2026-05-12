@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const LoginPage = () => {
   const { signIn, session } = useAuth();
@@ -13,6 +15,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,6 +34,27 @@ const LoginPage = () => {
       setError("Email ou mot de passe incorrect");
     }
     setLoading(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError("Saisis ton email puis clique sur « Mot de passe oublié »");
+      return;
+    }
+    setError("");
+    setResetting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    setResetting(false);
+    if (error) {
+      setError("Impossible d'envoyer l'email de réinitialisation");
+    } else {
+      toast({
+        title: "Email envoyé",
+        description: "Vérifie ta boîte de réception pour réinitialiser ton mot de passe.",
+      });
+    }
   };
 
   return (
@@ -84,6 +108,15 @@ const LoginPage = () => {
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Connexion..." : "Se connecter"}
+            </Button>
+            <Button
+              type="button"
+              variant="link"
+              className="w-full"
+              onClick={handleResetPassword}
+              disabled={resetting}
+            >
+              {resetting ? "Envoi..." : "Mot de passe oublié ?"}
             </Button>
           </form>
         </CardContent>
