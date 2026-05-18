@@ -244,6 +244,15 @@ export async function initStore() {
     supabase.from("invoice_statuses").select("*"),
   ]);
 
+  // If the critical query (students) failed (e.g. no/invalid session),
+  // do NOT mark the store as initialized — otherwise the in-memory cache
+  // stays empty and every subsequent call short-circuits, forcing the
+  // user to refresh the page to see anything.
+  if (sRes.error) {
+    console.warn("[store] initStore aborted — students query failed:", sRes.error.message);
+    return;
+  }
+
   students = (sRes.data || []).map(dbToStudent);
   const attStudents = asRes.data || [];
   attendance = (aRes.data || []).map((s: any) => dbToAttendanceSheet(s, attStudents));
@@ -285,6 +294,12 @@ export async function initStore() {
 
   _initialized = true;
   notifyStoreChange();
+}
+
+// Force re-init from Supabase (after login / session change / manual refresh).
+export async function reloadStore() {
+  _initialized = false;
+  await initStore();
 }
 
 export const store = {

@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { store, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
+import { store, reloadStore, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
 import { FORMATION_TYPES, getPrerequisitesForFormation } from "@/lib/formationModules";
 import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck } from "lucide-react";
@@ -88,8 +88,28 @@ const StudentDetailPage = () => {
   const [selectedFormation, setSelectedFormation] = useState("");
   const [openCreateSatisfaction, setOpenCreateSatisfaction] = useState(false);
   const [satType, setSatType] = useState<"chaud" | "froid">("chaud");
+  const [refetchTried, setRefetchTried] = useState(false);
 
   const student = store.getStudents().find(s => s.id === id);
+
+  // If the student isn't in the in-memory cache yet, try a fresh reload
+  // from the database once before declaring it "not found". This avoids
+  // the "il faut rafraîchir la page" symptom when the cache is stale.
+  useEffect(() => {
+    if (!student && !refetchTried) {
+      setRefetchTried(true);
+      reloadStore().finally(() => forceUpdate(n => n + 1));
+    }
+  }, [student, refetchTried]);
+
+  if (!student && !refetchTried) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
   if (!student) {
     return (
       <div className="text-center py-16">

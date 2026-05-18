@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { initStore } from "@/lib/store";
+import { initStore, reloadStore } from "@/lib/store";
+import { useAuth } from "@/hooks/useAuth";
 
 const StoreInitializer = ({ children }: { children: React.ReactNode }) => {
   const [ready, setReady] = useState(false);
+  const { user } = useAuth();
+  const userId = user?.id;
 
   useEffect(() => {
     if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
@@ -11,6 +14,13 @@ const StoreInitializer = ({ children }: { children: React.ReactNode }) => {
 
     initStore().then(() => setReady(true)).catch(() => setReady(true));
   }, []);
+
+  // Reload data whenever the authenticated user changes (e.g. fresh login
+  // after the previous session's refresh token was invalidated).
+  useEffect(() => {
+    if (!userId || !ready) return;
+    reloadStore().catch(() => {});
+  }, [userId, ready]);
 
   if (!ready) {
     return (
