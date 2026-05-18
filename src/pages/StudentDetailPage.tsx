@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { store, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
-import { reloadStore } from "@/lib/store";
+import { store, reloadStore, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
 import { FORMATION_TYPES, getPrerequisitesForFormation } from "@/lib/formationModules";
 import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck } from "lucide-react";
