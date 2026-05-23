@@ -678,12 +678,21 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   doc.setFont("helvetica", "bold");
   doc.text("Observations du formateur :", 20, y);
   y += 5;
-  doc.setDrawColor(...COLORS.lightGray);
-  for (let i = 0; i < 5; i++) {
-    y += 8;
-    doc.line(20, y, 190, y);
+  if (progression.observations && progression.observations.trim()) {
+    y += 6;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    const lines = doc.splitTextToSize(progression.observations, 170);
+    doc.text(lines, 20, y);
+    y += lines.length * 5 + 8;
+  } else {
+    doc.setDrawColor(...COLORS.lightGray);
+    for (let i = 0; i < 5; i++) {
+      y += 8;
+      doc.line(20, y, 190, y);
+    }
+    y += 16;
   }
-  y += 16;
 
   // Signatures
   doc.setFontSize(10);
@@ -704,6 +713,12 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   doc.setDrawColor(...COLORS.lightGray);
   doc.rect(20, y, 70, 30);
   doc.rect(120, y, 70, 30);
+  if (progression.instructorSignature) {
+    try { doc.addImage(progression.instructorSignature, "PNG", 22, y + 2, 66, 26); } catch { /* skip */ }
+  }
+  if (progression.studentSignature) {
+    try { doc.addImage(progression.studentSignature, "PNG", 122, y + 2, 66, 26); } catch { /* skip */ }
+  }
 
   addFooter(doc, 4, 4);
 
