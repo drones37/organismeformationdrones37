@@ -94,6 +94,7 @@ const StudentDetailPage = () => {
   const [savedInstructorSig, setSavedInstructorSig] = useState<string | null>(null);
   const [openSetDefaultSig, setOpenSetDefaultSig] = useState(false);
   const [qrToken, setQrToken] = useState<{ progId: string; url: string } | null>(null);
+  const [docQrToken, setDocQrToken] = useState<{ docType: "livret" | "convention" | "attestation"; url: string } | null>(null);
 
   useEffect(() => {
     setSavedInstructorSig(localStorage.getItem("instructorSignature"));
@@ -116,6 +117,26 @@ const StudentDetailPage = () => {
     }, 3000);
     return () => clearInterval(interval);
   }, [qrToken]);
+
+  // Poll for student doc signature
+  useEffect(() => {
+    if (!docQrToken || !student) return;
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("students")
+        .select("doc_signatures")
+        .eq("id", student.id)
+        .maybeSingle();
+      const sigs: any = data?.doc_signatures || {};
+      if (sigs[docQrToken.docType]?.student) {
+        toast.success("Le stagiaire a signé !");
+        store.updateStudent(student.id, { docSignatures: sigs });
+        setDocQrToken(null);
+        forceUpdate(n => n + 1);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [docQrToken, student]);
 
   const student = store.getStudents().find(s => s.id === id);
 
@@ -195,6 +216,33 @@ const StudentDetailPage = () => {
     }
     const url = `${window.location.origin}/progression/${data.token}`;
     setQrToken({ progId, url });
+  };
+
+  const handleGenerateDocQR = async (docType: "livret" | "convention" | "attestation") => {
+    if (!student) return;
+    await supabase.from("doc_sign_tokens").update({ used: true })
+      .eq("student_id", student.id).eq("doc_type", docType).eq("used", false);
+    const { data, error } = await supabase
+      .from("doc_sign_tokens")
+      .insert({
+        student_id: student.id,
+        student_name: `${student.firstName} ${student.lastName}`,
+        doc_type: docType,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Erreur lors de la génération du lien");
+      return;
+    }
+    const url = `${window.location.origin}/sign-doc/${data.token}`;
+    setDocQrToken({ docType, url });
+  };
+
+  const handleAttestationResultChange = (value: "acquis" | "en_cours" | "non_acquis") => {
+    if (!student) return;
+    store.updateStudent(student.id, { attestationResult: value });
+    forceUpdate(n => n + 1);
   };
 
   const handleCreateProgression = () => {
