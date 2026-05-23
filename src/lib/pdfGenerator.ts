@@ -1008,6 +1008,16 @@ export function generateConventionPDF(student: Student) {
   doc.rect(15, y, 70, 30);
   doc.rect(125, y, 70, 30);
 
+  // Embed signatures (student left box, instructor right box)
+  try {
+    const sSig = student.docSignatures?.convention?.student;
+    if (sSig) doc.addImage(sSig, "PNG", 17, y + 2, 66, 26);
+  } catch { /* ignore */ }
+  try {
+    const iSig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
+    if (iSig) doc.addImage(iSig, "PNG", 127, y + 2, 66, 26);
+  } catch { /* ignore */ }
+
   addFooter(doc);
   doc.save(`Convention_${student.firstName}_${student.lastName}.pdf`);
 }
