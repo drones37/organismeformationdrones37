@@ -85,6 +85,42 @@ export type Database = {
           },
         ]
       }
+      doc_sign_tokens: {
+        Row: {
+          created_at: string
+          doc_type: string
+          expires_at: string
+          id: string
+          student_id: string
+          student_name: string
+          token: string
+          used: boolean
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          expires_at?: string
+          id?: string
+          student_id: string
+          student_name: string
+          token?: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          expires_at?: string
+          id?: string
+          student_id?: string
+          student_name?: string
+          token?: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           category: string
@@ -477,7 +513,9 @@ export type Database = {
       }
       students: {
         Row: {
+          attestation_result: string | null
           created_at: string
+          doc_signatures: Json
           dossier_complet: boolean
           email: string
           end_date: string
@@ -494,7 +532,9 @@ export type Database = {
           status: string
         }
         Insert: {
+          attestation_result?: string | null
           created_at?: string
+          doc_signatures?: Json
           dossier_complet?: boolean
           email?: string
           end_date?: string
@@ -511,7 +551,9 @@ export type Database = {
           status?: string
         }
         Update: {
+          attestation_result?: string | null
           created_at?: string
+          doc_signatures?: Json
           dossier_complet?: boolean
           email?: string
           end_date?: string
