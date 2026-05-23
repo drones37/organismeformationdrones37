@@ -973,6 +973,44 @@ const StudentDetailPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal: enregistrer la signature formateur par défaut */}
+      <Dialog open={openSetDefaultSig} onOpenChange={setOpenSetDefaultSig}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enregistrer ma signature formateur</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-3">
+            Cette signature sera réutilisée automatiquement sur tous vos livrets de progression.
+          </p>
+          <SignatureCanvas onSave={handleSaveDefaultSignature} onCancel={() => setOpenSetDefaultSig(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: QR code pour signature stagiaire */}
+      <Dialog open={!!qrToken} onOpenChange={(o) => !o && setQrToken(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Signature du stagiaire</DialogTitle>
+          </DialogHeader>
+          {qrToken && (
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Le stagiaire scanne ce QR avec son téléphone pour signer le livret.
+              </p>
+              <div className="flex justify-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(qrToken.url)}`}
+                  alt="QR code"
+                  className="rounded-lg border border-border"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground break-all">{qrToken.url}</p>
+              <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
