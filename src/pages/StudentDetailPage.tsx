@@ -118,27 +118,28 @@ const StudentDetailPage = () => {
     return () => clearInterval(interval);
   }, [qrToken]);
 
+  const student = store.getStudents().find(s => s.id === id);
+
   // Poll for student doc signature
   useEffect(() => {
     if (!docQrToken || !student) return;
+    const sid = student.id;
     const interval = setInterval(async () => {
       const { data } = await supabase
         .from("students")
         .select("doc_signatures")
-        .eq("id", student.id)
+        .eq("id", sid)
         .maybeSingle();
       const sigs: any = data?.doc_signatures || {};
       if (sigs[docQrToken.docType]?.student) {
         toast.success("Le stagiaire a signé !");
-        store.updateStudent(student.id, { docSignatures: sigs });
+        store.updateStudent(sid, { docSignatures: sigs });
         setDocQrToken(null);
         forceUpdate(n => n + 1);
       }
     }, 3000);
     return () => clearInterval(interval);
   }, [docQrToken, student]);
-
-  const student = store.getStudents().find(s => s.id === id);
 
   // If the student isn't in the in-memory cache yet, try a fresh reload
   // from the database once before declaring it "not found". This avoids
