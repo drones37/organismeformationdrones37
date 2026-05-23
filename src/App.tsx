@@ -18,6 +18,7 @@ import PlanActionPage from "./pages/PlanActionPage";
 import ProceduresPage from "./pages/ProceduresPage";
 import ReclamationsPage from "./pages/ReclamationsPage";
 import LoginPage from "./pages/LoginPage";
+import QRSignPage from "./pages/QRSignPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <ScrollToTop />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signer/:token" element={<QRSignPage />} />
             <Route
               element={
                 <ProtectedRoute>
