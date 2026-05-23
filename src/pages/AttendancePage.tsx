@@ -29,6 +29,7 @@ const getPublicOrigin = () => {
   }
   return PUBLIC_ORIGIN;
 };
+const getSigningUrl = (token: string) => `${getPublicOrigin()}/signer/${encodeURIComponent(token)}`;
 
 // ─── Types ────────────────────────────────────────────────────────
 interface QRModal {
@@ -153,7 +154,7 @@ const AttendancePage = () => {
       token = newToken.token;
     }
 
-    const signingUrl = `${getPublicOrigin()}/signer/${token}`;
+    const signingUrl = getSigningUrl(token);
     setQrToken(token);
     setQrUrl(getQRUrl(signingUrl));
     setQrLoading(false);
@@ -189,7 +190,7 @@ const AttendancePage = () => {
 
     if (error || !newToken) { setQrLoading(false); return; }
 
-    const signingUrl = `${getPublicOrigin()}/signer/${newToken.token}`;
+    const signingUrl = getSigningUrl(newToken.token);
     setQrToken(newToken.token);
     setQrUrl(getQRUrl(signingUrl));
     setQrLoading(false);
@@ -237,7 +238,7 @@ const AttendancePage = () => {
     return { signedSigs, totalSigs };
   };
 
-  const signingUrl = qrToken ? `${getPublicOrigin()}/signer/${qrToken}` : "";
+  const signingUrl = qrToken ? getSigningUrl(qrToken) : "";
 
   return (
     <div className="space-y-6 animate-fade-in">
