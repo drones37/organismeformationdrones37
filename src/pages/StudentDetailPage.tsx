@@ -160,6 +160,43 @@ const StudentDetailPage = () => {
     forceUpdate(n => n + 1);
   };
 
+  const handleSaveDefaultSignature = (dataUrl: string) => {
+    localStorage.setItem("instructorSignature", dataUrl);
+    setSavedInstructorSig(dataUrl);
+    setOpenSetDefaultSig(false);
+    toast.success("Signature formateur enregistrée");
+  };
+
+  const handleApplyInstructorSignature = (progId: string) => {
+    if (!savedInstructorSig) {
+      setOpenSetDefaultSig(true);
+      return;
+    }
+    store.setProgressionInstructorSignature(progId, savedInstructorSig);
+    toast.success("Signature formateur apposée");
+    forceUpdate(n => n + 1);
+  };
+
+  const handleObservationsChange = (progId: string, value: string) => {
+    store.setProgressionObservations(progId, value);
+    forceUpdate(n => n + 1);
+  };
+
+  const handleGenerateProgressionQR = async (progId: string, studentName: string) => {
+    await supabase.from("progression_tokens").update({ used: true }).eq("progression_id", progId).eq("used", false);
+    const { data, error } = await supabase
+      .from("progression_tokens")
+      .insert({ progression_id: progId, student_name: studentName })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Erreur lors de la génération du lien");
+      return;
+    }
+    const url = `${window.location.origin}/progression/${data.token}`;
+    setQrToken({ progId, url });
+  };
+
   const handleCreateProgression = () => {
     if (!selectedFormation) return;
     store.addProgression({
