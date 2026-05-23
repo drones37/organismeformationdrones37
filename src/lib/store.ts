@@ -493,8 +493,10 @@ export const store = {
   // Satisfaction
   getSatisfactions: () => satisfactions,
   getSatisfactionsByStudent: (studentId: string) => satisfactions.filter(s => s.studentId === studentId),
-  addSatisfaction: (s: Omit<SatisfactionResponse, "id">) => {
-    const newS = { ...s, id: Date.now().toString() };
+  addSatisfaction: (s: Omit<SatisfactionResponse, "id" | "questions"> & { questions?: SatisfactionQuestion[] }) => {
+    const id = Date.now().toString();
+    const questions = s.questions && s.questions.length > 0 ? s.questions : buildDefaultQuestions(s.type, id);
+    const newS: SatisfactionResponse = { ...s, id, questions };
     satisfactions = [...satisfactions, newS];
     notifyStoreChange();
     supabase.from("satisfaction_responses").insert({
