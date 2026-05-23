@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { store } from "@/lib/store";
-import { Plus, ClipboardCheck, CheckCircle2, Clock, Lock, Download, BookOpen, Trash2 } from "lucide-react";
+import { reloadStore } from "@/lib/store";
+import { Plus, ClipboardCheck, CheckCircle2, Clock, Lock, Download, BookOpen, Trash2, QrCode, X, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +9,23 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import SignatureCanvas from "@/components/SignatureCanvas";
 import { generateAttendancePDF } from "@/lib/pdfGenerator";
+import { supabase } from "@/integrations/supabase/client";
+
+// ─── QR Code generator (pure SVG, no lib needed) ─────────────────
+// We use the qrcode package via CDN-style dynamic import fallback,
+// but for simplicity we generate the URL and display it via a Google Charts QR API
+const getQRUrl = (text: string) =>
+  `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(text)}`;
+
+// ─── Types ────────────────────────────────────────────────────────
+interface QRModal {
+  sheetId: string;
+  sheetTitle: string;
+  studentId: string;
+  studentName: string;
+  formation: string;
+  day: string;
+}
 
 const AttendancePage = () => {
   const [, forceUpdate] = useState(0);
@@ -15,6 +33,12 @@ const AttendancePage = () => {
   const [signingFor, setSigningFor] = useState<{ sheetId: string; studentId: string; day: string } | null>(null);
   const [form, setForm] = useState({ title: "", date: "", formation: "", days: "3" });
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+
+  // QR modal state
+  const [qrModal, setQrModal] = useState<QRModal | null>(null);
+  const [qrUrl, setQrUrl] = useState<string>("");
+  const [qrLoading, setQrLoading] = useState(false);
+  const [qrToken, setQrToken] = useState<string>("");
 
   const sheets = store.getAttendance();
   const allStudents = store.getStudents();
@@ -70,29 +94,128 @@ const AttendancePage = () => {
     setSelectedStudents(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
   };
 
+  // ─── QR Code generation ────────────────────────────────────────
+  const generateQR = async (info: QRModal) => {
+    setQrModal(info);
+    setQrUrl("");
+    setQrToken("");
+    setQrLoading(true);
+
+    // Check if a valid (unused, non-expired) token already exists
+    const { data: existing } = await supabase
+      .from("qr_tokens")
+      .select("*")
+      .eq("sheet_id", info.sheetId)
+      .eq("student_id", info.studentId)
+      .eq("day", info.day)
+      .eq("used", false)
+      .gte("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    let token: string;
+
+    if (existing && existing.length > 0) {
+      token = existing[0].token;
+    } else {
+      // Create new token
+      const { data: newToken, error } = await supabase
+        .from("qr_tokens")
+        .insert({
+          sheet_id: info.sheetId,
+          student_id: info.studentId,
+          student_name: info.studentName,
+          sheet_title: info.sheetTitle,
+          formation: info.formation,
+          day: info.day,
+        })
+        .select("token")
+        .single();
+
+      if (error || !newToken) {
+        setQrLoading(false);
+        alert("Erreur lors de la génération du QR code. Vérifiez que la migration SQL a été appliquée.");
+        return;
+      }
+      token = newToken.token;
+    }
+
+    const signingUrl = `${window.location.origin}/signer/${token}`;
+    setQrToken(token);
+    setQrUrl(getQRUrl(signingUrl));
+    setQrLoading(false);
+  };
+
+  const regenerateQR = async () => {
+    if (!qrModal) return;
+    // Expire old tokens
+    await supabase
+      .from("qr_tokens")
+      .update({ used: true })
+      .eq("sheet_id", qrModal.sheetId)
+      .eq("student_id", qrModal.studentId)
+      .eq("day", qrModal.day)
+      .eq("used", false);
+
+    setQrUrl("");
+    setQrToken("");
+    setQrLoading(true);
+
+    const { data: newToken, error } = await supabase
+      .from("qr_tokens")
+      .insert({
+        sheet_id: qrModal.sheetId,
+        student_id: qrModal.studentId,
+        student_name: qrModal.studentName,
+        sheet_title: qrModal.sheetTitle,
+        formation: qrModal.formation,
+        day: qrModal.day,
+      })
+      .select("token")
+      .single();
+
+    if (error || !newToken) { setQrLoading(false); return; }
+
+    const signingUrl = `${window.location.origin}/signer/${newToken.token}`;
+    setQrToken(newToken.token);
+    setQrUrl(getQRUrl(signingUrl));
+    setQrLoading(false);
+  };
+
+  // Poll for signature when QR modal is open
+  useEffect(() => {
+    if (!qrModal || !qrToken) return;
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("qr_tokens")
+        .select("used")
+        .eq("token", qrToken)
+        .single();
+      if (data?.used) {
+        clearInterval(interval);
+        // Refresh store
+        await reloadStore();
+        forceUpdate(n => n + 1);
+        setQrModal(null);
+        setQrUrl("");
+        setQrToken("");
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [qrModal, qrToken]);
+
+  // ─── UI helpers ───────────────────────────────────────────────
   const statusIcons = {
     brouillon: <Clock className="w-4 h-4" />,
     en_cours: <ClipboardCheck className="w-4 h-4" />,
     cloturee: <Lock className="w-4 h-4" />,
   };
-
-  const statusLabels = {
-    brouillon: "Brouillon",
-    en_cours: "En cours",
-    cloturee: "Clôturée",
-  };
-
-  const statusColors = {
-    brouillon: "text-muted-foreground",
-    en_cours: "text-accent",
-    cloturee: "text-success",
-  };
-
+  const statusLabels = { brouillon: "Brouillon", en_cours: "En cours", cloturee: "Clôturée" };
+  const statusColors = { brouillon: "text-muted-foreground", en_cours: "text-accent", cloturee: "text-success" };
   const getDayLabels = (days: number) => Array.from({ length: days }, (_, i) => `J${i + 1}`);
 
-  const isStudentFullySigned = (s: typeof sheets[0]["students"][0]) => {
-    return Object.values(s.signatures).every(sig => sig.signed);
-  };
+  const isStudentFullySigned = (s: typeof sheets[0]["students"][0]) =>
+    Object.values(s.signatures).every(sig => sig.signed);
 
   const getSignedCount = (sheet: typeof sheets[0]) => {
     const totalSigs = sheet.students.length * sheet.days;
@@ -100,6 +223,8 @@ const AttendancePage = () => {
       acc + Object.values(s.signatures).filter(sig => sig.signed).length, 0);
     return { signedSigs, totalSigs };
   };
+
+  const signingUrl = qrToken ? `${window.location.origin}/signer/${qrToken}` : "";
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -186,7 +311,7 @@ const AttendancePage = () => {
                 </div>
               </div>
 
-              {/* Table view */}
+              {/* Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -258,14 +383,33 @@ const AttendancePage = () => {
                                   <span className="text-[10px] text-muted-foreground">{sig.signedAt}</span>
                                 </div>
                               ) : sheet.status === "en_cours" ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs h-7 px-2"
-                                  onClick={() => setSigningFor({ sheetId: sheet.id, studentId: s.studentId, day })}
-                                >
-                                  Signer
-                                </Button>
+                                <div className="flex flex-col items-center gap-1">
+                                  {/* QR button */}
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs h-7 px-2 gap-1 border-blue-200 text-blue-600 hover:bg-blue-50"
+                                    onClick={() => generateQR({
+                                      sheetId: sheet.id,
+                                      sheetTitle: sheet.title,
+                                      studentId: s.studentId,
+                                      studentName: s.studentName,
+                                      formation: sheet.formation,
+                                      day,
+                                    })}
+                                  >
+                                    <QrCode className="w-3 h-3" /> QR
+                                  </Button>
+                                  {/* Manual sign */}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-[10px] h-6 px-2 text-muted-foreground"
+                                    onClick={() => setSigningFor({ sheetId: sheet.id, studentId: s.studentId, day })}
+                                  >
+                                    Manuel
+                                  </Button>
+                                </div>
                               ) : (
                                 <span className="text-muted-foreground">—</span>
                               )}
@@ -294,7 +438,7 @@ const AttendancePage = () => {
         )}
       </div>
 
-      {/* Signature modal */}
+      {/* Manual signature modal */}
       <Dialog open={!!signingFor} onOpenChange={() => setSigningFor(null)}>
         <DialogContent>
           <DialogHeader>
@@ -305,6 +449,93 @@ const AttendancePage = () => {
           <SignatureCanvas onSave={handleSign} onCancel={() => setSigningFor(null)} />
         </DialogContent>
       </Dialog>
+
+      {/* QR Code modal */}
+      {qrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            {/* Header */}
+            <div className="bg-[#1a1a2e] text-white px-5 py-4 flex items-center justify-between">
+              <div>
+                <p className="font-bold flex items-center gap-2">
+                  <QrCode className="w-4 h-4" /> QR Code d'émargement
+                </p>
+                <p className="text-xs text-blue-300 mt-0.5">Valide 24h · Usage unique</p>
+              </div>
+              <button onClick={() => { setQrModal(null); setQrUrl(""); setQrToken(""); }} className="text-white/70 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* Info */}
+              <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Stagiaire</span>
+                  <span className="font-semibold text-gray-800">{qrModal.studentName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Formation</span>
+                  <span className="text-gray-700">{qrModal.formation}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Journée</span>
+                  <span className="font-semibold text-blue-600">{qrModal.day}</span>
+                </div>
+              </div>
+
+              {/* QR Code */}
+              <div className="flex flex-col items-center">
+                {qrLoading ? (
+                  <div className="w-[220px] h-[220px] flex items-center justify-center bg-gray-50 rounded-xl">
+                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : qrUrl ? (
+                  <>
+                    <div className="border-4 border-[#1a1a2e] rounded-xl overflow-hidden shadow-md">
+                      <img src={qrUrl} alt="QR Code" width={220} height={220} />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2 text-center">
+                      En attente de la signature…
+                      <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full ml-1 animate-pulse" />
+                    </p>
+                  </>
+                ) : null}
+              </div>
+
+              {/* Link copy */}
+              {signingUrl && (
+                <div className="bg-blue-50 rounded-lg p-2 flex items-center gap-2">
+                  <p className="text-xs text-blue-700 truncate flex-1 font-mono">{signingUrl}</p>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(signingUrl); }}
+                    className="text-xs bg-blue-600 text-white px-2 py-1 rounded flex-shrink-0 hover:bg-blue-700"
+                  >
+                    Copier
+                  </button>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={regenerateQR}>
+                  <RefreshCw className="w-3.5 h-3.5" /> Nouveau lien
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => { setQrModal(null); setQrUrl(""); setQrToken(""); }}
+                >
+                  Fermer
+                </Button>
+              </div>
+              <p className="text-xs text-gray-400 text-center">
+                Montrez ce QR au stagiaire ou envoyez-lui le lien par SMS/email
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

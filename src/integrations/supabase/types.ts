@@ -264,6 +264,51 @@ export type Database = {
         }
         Relationships: []
       }
+      qr_tokens: {
+        Row: {
+          created_at: string
+          day: string
+          expires_at: string
+          formation: string
+          id: string
+          sheet_id: string
+          sheet_title: string
+          student_id: string
+          student_name: string
+          token: string
+          used: boolean
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          expires_at?: string
+          formation: string
+          id?: string
+          sheet_id: string
+          sheet_title: string
+          student_id: string
+          student_name: string
+          token?: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          expires_at?: string
+          formation?: string
+          id?: string
+          sheet_id?: string
+          sheet_title?: string
+          student_id?: string
+          student_name?: string
+          token?: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       satisfaction_questions: {
         Row: {
           created_at: string
