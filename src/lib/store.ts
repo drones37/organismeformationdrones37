@@ -493,8 +493,10 @@ export const store = {
   // Satisfaction
   getSatisfactions: () => satisfactions,
   getSatisfactionsByStudent: (studentId: string) => satisfactions.filter(s => s.studentId === studentId),
-  addSatisfaction: (s: Omit<SatisfactionResponse, "id">) => {
-    const newS = { ...s, id: Date.now().toString() };
+  addSatisfaction: (s: Omit<SatisfactionResponse, "id" | "questions"> & { questions?: SatisfactionQuestion[] }) => {
+    const id = Date.now().toString();
+    const questions = s.questions && s.questions.length > 0 ? s.questions : buildDefaultQuestions(s.type, id);
+    const newS: SatisfactionResponse = { ...s, id, questions };
     satisfactions = [...satisfactions, newS];
     notifyStoreChange();
     supabase.from("satisfaction_responses").insert({
@@ -542,6 +544,16 @@ export const store = {
   },
   getSatisfactionCount: (year?: number) => {
     return year ? satisfactions.filter(s => new Date(s.date).getFullYear() === year).length : satisfactions.length;
+  },
+  getSatisfactionStats: (type: "chaud" | "froid", year?: number) => {
+    let responses = satisfactions.filter(s => s.type === type);
+    if (year) responses = responses.filter(s => new Date(s.date).getFullYear() === year);
+    const allRatings = responses.flatMap(s => s.questions.map(q => q.rating)).filter(r => r > 0);
+    const count = responses.length;
+    if (allRatings.length === 0) return { average: 0, percentage: 0, count };
+    const average = allRatings.reduce((a, b) => a + b, 0) / allRatings.length;
+    const percentage = (average / 5) * 100;
+    return { average, percentage, count };
   },
   getDefaultQuestions: (type: "chaud" | "froid") => {
     const baseId = Date.now().toString();
