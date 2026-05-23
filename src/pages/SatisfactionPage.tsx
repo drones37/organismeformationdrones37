@@ -30,6 +30,12 @@ const SatisfactionPage = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"chaud" | "froid">("chaud");
 
+  // Always refresh from Supabase on mount so newly-added or remotely-completed
+  // questionnaires appear even if local state was stale.
+  useEffect(() => {
+    reloadStore().then(() => forceUpdate(n => n + 1));
+  }, []);
+
   const allStudents = store.getStudents();
   const satisfactions = store.getSatisfactions();
   const chaudStats = store.getSatisfactionStats("chaud");
