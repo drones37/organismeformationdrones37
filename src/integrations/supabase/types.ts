@@ -377,6 +377,56 @@ export type Database = {
         }
         Relationships: []
       }
+      satisfaction_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          formation: string
+          id: string
+          satisfaction_id: string
+          student_id: string
+          student_name: string
+          token: string
+          type: string
+          used: boolean
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          formation: string
+          id?: string
+          satisfaction_id: string
+          student_id: string
+          student_name: string
+          token?: string
+          type: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          formation?: string
+          id?: string
+          satisfaction_id?: string
+          student_id?: string
+          student_name?: string
+          token?: string
+          type?: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "satisfaction_tokens_satisfaction_id_fkey"
+            columns: ["satisfaction_id"]
+            isOneToOne: false
+            referencedRelation: "satisfaction_responses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           created_at: string
