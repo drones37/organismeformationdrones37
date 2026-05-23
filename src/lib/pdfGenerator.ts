@@ -399,6 +399,16 @@ export function generateAttestationPDF(student: Student) {
   doc.setFont("helvetica", "normal");
   doc.text(`Fait à Montlouis sur Loire, le ${new Date().toLocaleDateString("fr-FR")}`, 20, y);
   y += 12;
+
+  // Embed saved instructor signature if available
+  try {
+    const sig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
+    if (sig) {
+      doc.addImage(sig, "PNG", 115, y - 4, 50, 20);
+    }
+  } catch { /* ignore */ }
+  y += 18;
+
   doc.setFont("helvetica", "bold");
   doc.text(COMPANY.owner, 140, y, { align: "center" });
   y += 5;
