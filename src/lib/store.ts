@@ -25,6 +25,12 @@ export interface Student {
   handicapDetails?: string;
   handicapAdaptations?: string;
   prerequisites?: PrerequisiteCheck[];
+  attestationResult?: "acquis" | "en_cours" | "non_acquis";
+  docSignatures?: {
+    livret?: { student?: string; signedAt?: string };
+    convention?: { student?: string; signedAt?: string };
+    attestation?: { student?: string; signedAt?: string };
+  };
 }
 
 export interface AttendanceStudent {
@@ -184,6 +190,8 @@ function dbToStudent(r: any): Student {
     status: r.status, dossierComplet: r.dossier_complet, handicap: r.handicap,
     handicapDetails: r.handicap_details, handicapAdaptations: r.handicap_adaptations,
     prerequisites: r.prerequisites || [],
+    attestationResult: r.attestation_result || undefined,
+    docSignatures: r.doc_signatures || {},
   };
 }
 
@@ -353,6 +361,8 @@ export const store = {
     if (updates.handicapDetails !== undefined) db.handicap_details = updates.handicapDetails;
     if (updates.handicapAdaptations !== undefined) db.handicap_adaptations = updates.handicapAdaptations;
     if (updates.prerequisites !== undefined) db.prerequisites = updates.prerequisites as any;
+    if (updates.attestationResult !== undefined) db.attestation_result = updates.attestationResult;
+    if (updates.docSignatures !== undefined) db.doc_signatures = updates.docSignatures as any;
     supabase.from("students").update(db).eq("id", id).then();
   },
 
