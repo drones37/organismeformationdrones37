@@ -2,6 +2,9 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+const ADMIN_PASSWORD = "Formation2026!";
+const LOCAL_AUTH_KEY = "drones37_local_auth";
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
@@ -12,36 +15,60 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const makeFakeSession = (email: string): Session => {
+  const user = {
+    id: "local-admin",
+    email,
+    aud: "authenticated",
+    role: "authenticated",
+    app_metadata: {},
+    user_metadata: {},
+    created_at: new Date().toISOString(),
+  } as unknown as User;
+  return {
+    access_token: "local",
+    refresh_token: "local",
+    expires_in: 3600 * 24 * 365,
+    expires_at: Math.floor(Date.now() / 1000) + 3600 * 24 * 365,
+    token_type: "bearer",
+    user,
+  } as Session;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+    try {
+      const stored = localStorage.getItem(LOCAL_AUTH_KEY);
+      if (stored) {
+        const s = JSON.parse(stored) as Session;
+        setSession(s);
+        setUser(s.user);
       }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    } catch {
+      // ignore
+    }
+    setLoading(false);
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    if (password !== ADMIN_PASSWORD) {
+      return { error: new Error("Mot de passe incorrect") };
+    }
+    const s = makeFakeSession(email || "admin@drones37.fr");
+    localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(s));
+    setSession(s);
+    setUser(s.user);
+    return { error: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem(LOCAL_AUTH_KEY);
+    setSession(null);
+    setUser(null);
   };
 
   return (
