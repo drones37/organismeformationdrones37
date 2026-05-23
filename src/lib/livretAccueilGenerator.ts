@@ -620,6 +620,16 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.setFont("helvetica", "normal");
     doc.text(COMPANY.owner, 115, y + 12);
     doc.text("Signature :", 115, y + 20);
+
+    // Embed actual signatures
+    try {
+      const sSig = student.docSignatures?.livret?.student;
+      if (sSig) doc.addImage(sSig, "PNG", 50, y + 16, 45, 12);
+    } catch { /* ignore */ }
+    try {
+      const iSig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
+      if (iSig) doc.addImage(iSig, "PNG", 145, y + 16, 45, 12);
+    } catch { /* ignore */ }
   });
 
   // ======================== PAGES 12-13: CGU (résumé) ========================

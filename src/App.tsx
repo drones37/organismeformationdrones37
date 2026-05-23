@@ -22,6 +22,7 @@ import LoginPage from "./pages/LoginPage";
 import QRSignPage from "./pages/QRSignPage";
 import SatisfactionPublicPage from "./pages/SatisfactionPublicPage";
 import ProgressionPublicPage from "./pages/ProgressionPublicPage";
+import DocSignPage from "./pages/DocSignPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/signer/:token" element={<QRSignPage />} />
             <Route path="/satisfaction/:token" element={<SatisfactionPublicPage />} />
             <Route path="/progression/:token" element={<ProgressionPublicPage />} />
+            <Route path="/sign-doc/:token" element={<DocSignPage />} />
             {/* Protected routes */}
             <Route
               element={

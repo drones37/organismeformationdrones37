@@ -378,10 +378,11 @@ export function generateAttestationPDF(student: Student) {
 
   // Result checkboxes
   doc.setFontSize(10);
+  const attestationStatus = student.attestationResult || (student.status === "terminee" ? "acquis" : student.status === "en_cours" ? "en_cours" : undefined);
   const results = [
-    { label: "Formation acquise", checked: student.status === "terminee" },
-    { label: "Formation en cours d'acquisition", checked: student.status === "en_cours" },
-    { label: "Formation non acquise", checked: false },
+    { label: "Formation acquise", checked: attestationStatus === "acquis" },
+    { label: "Formation en cours d'acquisition", checked: attestationStatus === "en_cours" },
+    { label: "Formation non acquise", checked: attestationStatus === "non_acquis" },
   ];
   results.forEach(r => {
     doc.setDrawColor(...COLORS.primary);
@@ -1006,6 +1007,16 @@ export function generateConventionPDF(student: Student) {
   doc.setDrawColor(...COLORS.lightGray);
   doc.rect(15, y, 70, 30);
   doc.rect(125, y, 70, 30);
+
+  // Embed signatures (student left box, instructor right box)
+  try {
+    const sSig = student.docSignatures?.convention?.student;
+    if (sSig) doc.addImage(sSig, "PNG", 17, y + 2, 66, 26);
+  } catch { /* ignore */ }
+  try {
+    const iSig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
+    if (iSig) doc.addImage(iSig, "PNG", 127, y + 2, 66, 26);
+  } catch { /* ignore */ }
 
   addFooter(doc);
   doc.save(`Convention_${student.firstName}_${student.lastName}.pdf`);

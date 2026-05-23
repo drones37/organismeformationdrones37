@@ -94,6 +94,7 @@ const StudentDetailPage = () => {
   const [savedInstructorSig, setSavedInstructorSig] = useState<string | null>(null);
   const [openSetDefaultSig, setOpenSetDefaultSig] = useState(false);
   const [qrToken, setQrToken] = useState<{ progId: string; url: string } | null>(null);
+  const [docQrToken, setDocQrToken] = useState<{ docType: "livret" | "convention" | "attestation"; url: string } | null>(null);
 
   useEffect(() => {
     setSavedInstructorSig(localStorage.getItem("instructorSignature"));
@@ -118,6 +119,27 @@ const StudentDetailPage = () => {
   }, [qrToken]);
 
   const student = store.getStudents().find(s => s.id === id);
+
+  // Poll for student doc signature
+  useEffect(() => {
+    if (!docQrToken || !student) return;
+    const sid = student.id;
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("students")
+        .select("doc_signatures")
+        .eq("id", sid)
+        .maybeSingle();
+      const sigs: any = data?.doc_signatures || {};
+      if (sigs[docQrToken.docType]?.student) {
+        toast.success("Le stagiaire a signé !");
+        store.updateStudent(sid, { docSignatures: sigs });
+        setDocQrToken(null);
+        forceUpdate(n => n + 1);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [docQrToken, student]);
 
   // If the student isn't in the in-memory cache yet, try a fresh reload
   // from the database once before declaring it "not found". This avoids
@@ -197,6 +219,33 @@ const StudentDetailPage = () => {
     setQrToken({ progId, url });
   };
 
+  const handleGenerateDocQR = async (docType: "livret" | "convention" | "attestation") => {
+    if (!student) return;
+    await supabase.from("doc_sign_tokens").update({ used: true })
+      .eq("student_id", student.id).eq("doc_type", docType).eq("used", false);
+    const { data, error } = await supabase
+      .from("doc_sign_tokens")
+      .insert({
+        student_id: student.id,
+        student_name: `${student.firstName} ${student.lastName}`,
+        doc_type: docType,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Erreur lors de la génération du lien");
+      return;
+    }
+    const url = `${window.location.origin}/sign-doc/${data.token}`;
+    setDocQrToken({ docType, url });
+  };
+
+  const handleAttestationResultChange = (value: "acquis" | "en_cours" | "non_acquis") => {
+    if (!student) return;
+    store.updateStudent(student.id, { attestationResult: value });
+    forceUpdate(n => n + 1);
+  };
+
   const handleCreateProgression = () => {
     if (!selectedFormation) return;
     store.addProgression({
@@ -273,18 +322,42 @@ const StudentDetailPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={() => generateLivretAccueilPDF(student)}>
-            <FileDown className="w-3.5 h-3.5 mr-1" /> Livret d'accueil
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={() => generateLivretAccueilPDF(student)}>
+              <FileDown className="w-3.5 h-3.5 mr-1" /> Livret d'accueil
+              {student.docSignatures?.livret?.student && <Check className="w-3 h-3 ml-1 text-success" />}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateDocQR("livret")} title="Faire signer par QR">
+              <QrCode className="w-3.5 h-3.5" />
+            </Button>
+          </div>
           <Button variant="outline" size="sm" onClick={() => generateConvocationPDF(student)}>
             <FileDown className="w-3.5 h-3.5 mr-1" /> Convocation
           </Button>
-          <Button variant="outline" size="sm" onClick={() => generateConventionPDF(student)}>
-            <FileDown className="w-3.5 h-3.5 mr-1" /> Convention
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => generateAttestationPDF(student)}>
-            <Download className="w-3.5 h-3.5 mr-1" /> Attestation
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={() => generateConventionPDF(student)}>
+              <FileDown className="w-3.5 h-3.5 mr-1" /> Convention
+              {student.docSignatures?.convention?.student && <Check className="w-3 h-3 ml-1 text-success" />}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateDocQR("convention")} title="Faire signer par QR">
+              <QrCode className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-1">
+            <Select value={student.attestationResult || ""} onValueChange={(v) => handleAttestationResultChange(v as any)}>
+              <SelectTrigger className="h-9 w-[140px] text-xs">
+                <SelectValue placeholder="Résultat..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="acquis">✓ Acquis</SelectItem>
+                <SelectItem value="en_cours">… En cours</SelectItem>
+                <SelectItem value="non_acquis">✗ Non acquis</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={() => generateAttestationPDF(student)}>
+              <Download className="w-3.5 h-3.5 mr-1" /> Attestation
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -1006,6 +1079,33 @@ const StudentDetailPage = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground break-all">{qrToken.url}</p>
+              <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: QR code pour signature document (Livret / Convention / Attestation) */}
+      <Dialog open={!!docQrToken} onOpenChange={(o) => !o && setDocQrToken(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Signature du {docQrToken?.docType === "livret" ? "Livret d'accueil" : docQrToken?.docType === "convention" ? "Convention" : "Attestation"}
+            </DialogTitle>
+          </DialogHeader>
+          {docQrToken && (
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Le stagiaire scanne ce QR avec son téléphone pour signer le document.
+              </p>
+              <div className="flex justify-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(docQrToken.url)}`}
+                  alt="QR code"
+                  className="rounded-lg border border-border"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground break-all">{docQrToken.url}</p>
               <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
             </div>
           )}
