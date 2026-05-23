@@ -378,10 +378,11 @@ export function generateAttestationPDF(student: Student) {
 
   // Result checkboxes
   doc.setFontSize(10);
+  const attestationStatus = student.attestationResult || (student.status === "terminee" ? "acquis" : student.status === "en_cours" ? "en_cours" : undefined);
   const results = [
-    { label: "Formation acquise", checked: student.status === "terminee" },
-    { label: "Formation en cours d'acquisition", checked: student.status === "en_cours" },
-    { label: "Formation non acquise", checked: false },
+    { label: "Formation acquise", checked: attestationStatus === "acquis" },
+    { label: "Formation en cours d'acquisition", checked: attestationStatus === "en_cours" },
+    { label: "Formation non acquise", checked: attestationStatus === "non_acquis" },
   ];
   results.forEach(r => {
     doc.setDrawColor(...COLORS.primary);
