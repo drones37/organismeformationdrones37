@@ -322,18 +322,42 @@ const StudentDetailPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="outline" size="sm" onClick={() => generateLivretAccueilPDF(student)}>
-            <FileDown className="w-3.5 h-3.5 mr-1" /> Livret d'accueil
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={() => generateLivretAccueilPDF(student)}>
+              <FileDown className="w-3.5 h-3.5 mr-1" /> Livret d'accueil
+              {student.docSignatures?.livret?.student && <Check className="w-3 h-3 ml-1 text-success" />}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateDocQR("livret")} title="Faire signer par QR">
+              <QrCode className="w-3.5 h-3.5" />
+            </Button>
+          </div>
           <Button variant="outline" size="sm" onClick={() => generateConvocationPDF(student)}>
             <FileDown className="w-3.5 h-3.5 mr-1" /> Convocation
           </Button>
-          <Button variant="outline" size="sm" onClick={() => generateConventionPDF(student)}>
-            <FileDown className="w-3.5 h-3.5 mr-1" /> Convention
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => generateAttestationPDF(student)}>
-            <Download className="w-3.5 h-3.5 mr-1" /> Attestation
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={() => generateConventionPDF(student)}>
+              <FileDown className="w-3.5 h-3.5 mr-1" /> Convention
+              {student.docSignatures?.convention?.student && <Check className="w-3 h-3 ml-1 text-success" />}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleGenerateDocQR("convention")} title="Faire signer par QR">
+              <QrCode className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-1">
+            <Select value={student.attestationResult || ""} onValueChange={(v) => handleAttestationResultChange(v as any)}>
+              <SelectTrigger className="h-9 w-[140px] text-xs">
+                <SelectValue placeholder="Résultat..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="acquis">✓ Acquis</SelectItem>
+                <SelectItem value="en_cours">… En cours</SelectItem>
+                <SelectItem value="non_acquis">✗ Non acquis</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={() => generateAttestationPDF(student)}>
+              <Download className="w-3.5 h-3.5 mr-1" /> Attestation
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -1055,6 +1079,33 @@ const StudentDetailPage = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground break-all">{qrToken.url}</p>
+              <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: QR code pour signature document (Livret / Convention / Attestation) */}
+      <Dialog open={!!docQrToken} onOpenChange={(o) => !o && setDocQrToken(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Signature du {docQrToken?.docType === "livret" ? "Livret d'accueil" : docQrToken?.docType === "convention" ? "Convention" : "Attestation"}
+            </DialogTitle>
+          </DialogHeader>
+          {docQrToken && (
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Le stagiaire scanne ce QR avec son téléphone pour signer le document.
+              </p>
+              <div className="flex justify-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(docQrToken.url)}`}
+                  alt="QR code"
+                  className="rounded-lg border border-border"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground break-all">{docQrToken.url}</p>
               <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
             </div>
           )}
