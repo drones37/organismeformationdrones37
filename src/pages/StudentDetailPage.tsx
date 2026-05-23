@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { store, reloadStore, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
 import { FORMATION_TYPES, getPrerequisitesForFormation } from "@/lib/formationModules";
-import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck, PenLine, QrCode, Check } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck, PenLine, QrCode, Check, Copy, Share2, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -244,6 +244,42 @@ const StudentDetailPage = () => {
     if (!student) return;
     store.updateStudent(student.id, { attestationResult: value });
     forceUpdate(n => n + 1);
+  };
+
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url).then(() => toast.success("Lien copié dans le presse-papiers"));
+  };
+
+  const handleDownloadQR = (url: string, filename: string) => {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`;
+    const a = document.createElement("a");
+    a.href = qrUrl;
+    a.download = filename;
+    a.target = "_blank";
+    a.click();
+    toast.success("QR code téléchargé");
+  };
+
+  const handleShareQR = async (url: string, title: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // user cancelled
+      }
+    } else {
+      handleCopyLink(url);
+    }
+  };
+
+  const handleSendSMS = (url: string) => {
+    if (!student?.phone) {
+      toast.error("Le stagiaire n'a pas de numéro de téléphone enregistré");
+      return;
+    }
+    const phone = student.phone.replace(/\s/g, "").replace(/^0/, "+33");
+    const body = encodeURIComponent(`Bonjour ${student.firstName}, merci de signer votre document en scannant ce QR code : ${url}`);
+    window.open(`sms:${phone}?body=${body}`, "_blank");
   };
 
   const handleCreateProgression = () => {
@@ -1079,6 +1115,20 @@ const StudentDetailPage = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground break-all">{qrToken.url}</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleCopyLink(qrToken.url)}>
+                  <Copy className="w-3.5 h-3.5 mr-1.5" /> Copier le lien
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleDownloadQR(qrToken.url, `qr-progression-${student?.lastName}.png`)}>
+                  <Download className="w-3.5 h-3.5 mr-1.5" /> Télécharger QR
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleShareQR(qrToken.url, "Signature livret de progression")}>
+                  <Share2 className="w-3.5 h-3.5 mr-1.5" /> Partager
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleSendSMS(qrToken.url)}>
+                  <Smartphone className="w-3.5 h-3.5 mr-1.5" /> Envoyer SMS
+                </Button>
+              </div>
               <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
             </div>
           )}
@@ -1106,6 +1156,20 @@ const StudentDetailPage = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground break-all">{docQrToken.url}</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleCopyLink(docQrToken.url)}>
+                  <Copy className="w-3.5 h-3.5 mr-1.5" /> Copier le lien
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleDownloadQR(docQrToken.url, `qr-${docQrToken.docType}-${student?.lastName}.png`)}>
+                  <Download className="w-3.5 h-3.5 mr-1.5" /> Télécharger QR
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleShareQR(docQrToken.url, `Signature ${docQrToken.docType}`)}>
+                  <Share2 className="w-3.5 h-3.5 mr-1.5" /> Partager
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleSendSMS(docQrToken.url)}>
+                  <Smartphone className="w-3.5 h-3.5 mr-1.5" /> Envoyer SMS
+                </Button>
+              </div>
               <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
             </div>
           )}
