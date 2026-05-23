@@ -236,9 +236,14 @@ export type Database = {
           global_result: string | null
           id: string
           instructor_name: string
+          instructor_signature: string | null
+          instructor_signed_at: string | null
+          observations: string | null
           start_date: string
           student_id: string
           student_name: string
+          student_signature: string | null
+          student_signed_at: string | null
         }
         Insert: {
           created_at?: string
@@ -247,9 +252,14 @@ export type Database = {
           global_result?: string | null
           id: string
           instructor_name?: string
+          instructor_signature?: string | null
+          instructor_signed_at?: string | null
+          observations?: string | null
           start_date: string
           student_id: string
           student_name: string
+          student_signature?: string | null
+          student_signed_at?: string | null
         }
         Update: {
           created_at?: string
@@ -258,9 +268,47 @@ export type Database = {
           global_result?: string | null
           id?: string
           instructor_name?: string
+          instructor_signature?: string | null
+          instructor_signed_at?: string | null
+          observations?: string | null
           start_date?: string
           student_id?: string
           student_name?: string
+          student_signature?: string | null
+          student_signed_at?: string | null
+        }
+        Relationships: []
+      }
+      progression_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          progression_id: string
+          student_name: string
+          token: string
+          used: boolean
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          progression_id: string
+          student_name: string
+          token?: string
+          used?: boolean
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          progression_id?: string
+          student_name?: string
+          token?: string
+          used?: boolean
+          used_at?: string | null
         }
         Relationships: []
       }
