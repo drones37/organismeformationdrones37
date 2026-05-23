@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { store, reloadStore, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
 import { FORMATION_TYPES, getPrerequisitesForFormation } from "@/lib/formationModules";
-import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck, PenLine, QrCode, Check } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck, PenLine, QrCode, Check, Copy, Share2, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
