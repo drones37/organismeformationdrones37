@@ -704,6 +704,60 @@ const StudentDetailPage = () => {
                   </div>
                 </TabsContent>
               </Tabs>
+
+              {/* Observations + Signatures */}
+              <div className="mt-6 pt-6 border-t border-border space-y-4">
+                <div>
+                  <Label className="text-sm font-semibold">Observations du formateur</Label>
+                  <Textarea
+                    value={progression.observations || ""}
+                    onChange={e => handleObservationsChange(progression.id, e.target.value)}
+                    placeholder="Remarques, points forts, axes d'amélioration..."
+                    className="mt-1.5 min-h-[80px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-border rounded-lg p-3 bg-muted/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">Signature formateur</p>
+                      {progression.instructorSignature && <Check className="w-4 h-4 text-success" />}
+                    </div>
+                    {progression.instructorSignature ? (
+                      <div>
+                        <img src={progression.instructorSignature} alt="Signature formateur" className="h-16 bg-white rounded border border-border" />
+                        <p className="text-xs text-muted-foreground mt-1">Signé le {progression.instructorSignedAt}</p>
+                        <Button variant="ghost" size="sm" className="mt-1 text-xs h-7" onClick={() => handleApplyInstructorSignature(progression.id)}>
+                          Re-signer
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" onClick={() => handleApplyInstructorSignature(progression.id)} className="bg-accent text-accent-foreground hover:opacity-90">
+                        <PenLine className="w-3.5 h-3.5 mr-1.5" />
+                        {savedInstructorSig ? "Apposer ma signature" : "Enregistrer ma signature"}
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="border border-border rounded-lg p-3 bg-muted/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">Signature stagiaire</p>
+                      {progression.studentSignature && <Check className="w-4 h-4 text-success" />}
+                    </div>
+                    {progression.studentSignature ? (
+                      <div>
+                        <img src={progression.studentSignature} alt="Signature stagiaire" className="h-16 bg-white rounded border border-border" />
+                        <p className="text-xs text-muted-foreground mt-1">Signé le {progression.studentSignedAt}</p>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => handleGenerateProgressionQR(progression.id, progression.studentName)}>
+                        <QrCode className="w-3.5 h-3.5 mr-1.5" />
+                        Envoyer QR au stagiaire
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground bg-card rounded-xl border border-border">
