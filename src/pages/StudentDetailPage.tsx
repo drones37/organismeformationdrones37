@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { store, reloadStore, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
 import { FORMATION_TYPES, getPrerequisitesForFormation } from "@/lib/formationModules";
-import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck, PenLine, QrCode, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import SignatureCanvas from "@/components/SignatureCanvas";
 import { generateAttestationPDF, generateProgressionPDF, generateAttendancePDF, generateConvocationPDF, generateConventionPDF, generateSatisfactionPDF } from "@/lib/pdfGenerator";
 import { generateLivretAccueilPDF } from "@/lib/livretAccueilGenerator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const statusLabels: Record<string, string> = {
   en_cours: "En cours",
@@ -89,6 +91,31 @@ const StudentDetailPage = () => {
   const [openCreateSatisfaction, setOpenCreateSatisfaction] = useState(false);
   const [satType, setSatType] = useState<"chaud" | "froid">("chaud");
   const [refetchTried, setRefetchTried] = useState(false);
+  const [savedInstructorSig, setSavedInstructorSig] = useState<string | null>(null);
+  const [openSetDefaultSig, setOpenSetDefaultSig] = useState(false);
+  const [qrToken, setQrToken] = useState<{ progId: string; url: string } | null>(null);
+
+  useEffect(() => {
+    setSavedInstructorSig(localStorage.getItem("instructorSignature"));
+  }, []);
+
+  useEffect(() => {
+    if (!qrToken) return;
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("progression_sheets")
+        .select("student_signature")
+        .eq("id", qrToken.progId)
+        .maybeSingle();
+      if (data?.student_signature) {
+        toast.success("Le stagiaire a signé !");
+        store.setProgressionStudentSignature(qrToken.progId, data.student_signature);
+        setQrToken(null);
+        forceUpdate(n => n + 1);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [qrToken]);
 
   const student = store.getStudents().find(s => s.id === id);
 
@@ -131,6 +158,43 @@ const StudentDetailPage = () => {
     store.signAttendance(signingFor.sheetId, signingFor.studentId, signingFor.day, dataUrl);
     setSigningFor(null);
     forceUpdate(n => n + 1);
+  };
+
+  const handleSaveDefaultSignature = (dataUrl: string) => {
+    localStorage.setItem("instructorSignature", dataUrl);
+    setSavedInstructorSig(dataUrl);
+    setOpenSetDefaultSig(false);
+    toast.success("Signature formateur enregistrée");
+  };
+
+  const handleApplyInstructorSignature = (progId: string) => {
+    if (!savedInstructorSig) {
+      setOpenSetDefaultSig(true);
+      return;
+    }
+    store.setProgressionInstructorSignature(progId, savedInstructorSig);
+    toast.success("Signature formateur apposée");
+    forceUpdate(n => n + 1);
+  };
+
+  const handleObservationsChange = (progId: string, value: string) => {
+    store.setProgressionObservations(progId, value);
+    forceUpdate(n => n + 1);
+  };
+
+  const handleGenerateProgressionQR = async (progId: string, studentName: string) => {
+    await supabase.from("progression_tokens").update({ used: true }).eq("progression_id", progId).eq("used", false);
+    const { data, error } = await supabase
+      .from("progression_tokens")
+      .insert({ progression_id: progId, student_name: studentName })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error("Erreur lors de la génération du lien");
+      return;
+    }
+    const url = `${window.location.origin}/progression/${data.token}`;
+    setQrToken({ progId, url });
   };
 
   const handleCreateProgression = () => {
@@ -640,6 +704,60 @@ const StudentDetailPage = () => {
                   </div>
                 </TabsContent>
               </Tabs>
+
+              {/* Observations + Signatures */}
+              <div className="mt-6 pt-6 border-t border-border space-y-4">
+                <div>
+                  <Label className="text-sm font-semibold">Observations du formateur</Label>
+                  <Textarea
+                    value={progression.observations || ""}
+                    onChange={e => handleObservationsChange(progression.id, e.target.value)}
+                    placeholder="Remarques, points forts, axes d'amélioration..."
+                    className="mt-1.5 min-h-[80px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="border border-border rounded-lg p-3 bg-muted/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">Signature formateur</p>
+                      {progression.instructorSignature && <Check className="w-4 h-4 text-success" />}
+                    </div>
+                    {progression.instructorSignature ? (
+                      <div>
+                        <img src={progression.instructorSignature} alt="Signature formateur" className="h-16 bg-white rounded border border-border" />
+                        <p className="text-xs text-muted-foreground mt-1">Signé le {progression.instructorSignedAt}</p>
+                        <Button variant="ghost" size="sm" className="mt-1 text-xs h-7" onClick={() => handleApplyInstructorSignature(progression.id)}>
+                          Re-signer
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" onClick={() => handleApplyInstructorSignature(progression.id)} className="bg-accent text-accent-foreground hover:opacity-90">
+                        <PenLine className="w-3.5 h-3.5 mr-1.5" />
+                        {savedInstructorSig ? "Apposer ma signature" : "Enregistrer ma signature"}
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="border border-border rounded-lg p-3 bg-muted/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold uppercase text-muted-foreground">Signature stagiaire</p>
+                      {progression.studentSignature && <Check className="w-4 h-4 text-success" />}
+                    </div>
+                    {progression.studentSignature ? (
+                      <div>
+                        <img src={progression.studentSignature} alt="Signature stagiaire" className="h-16 bg-white rounded border border-border" />
+                        <p className="text-xs text-muted-foreground mt-1">Signé le {progression.studentSignedAt}</p>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => handleGenerateProgressionQR(progression.id, progression.studentName)}>
+                        <QrCode className="w-3.5 h-3.5 mr-1.5" />
+                        Envoyer QR au stagiaire
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground bg-card rounded-xl border border-border">
@@ -853,6 +971,44 @@ const StudentDetailPage = () => {
               Créer le questionnaire
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: enregistrer la signature formateur par défaut */}
+      <Dialog open={openSetDefaultSig} onOpenChange={setOpenSetDefaultSig}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enregistrer ma signature formateur</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-3">
+            Cette signature sera réutilisée automatiquement sur tous vos livrets de progression.
+          </p>
+          <SignatureCanvas onSave={handleSaveDefaultSignature} onCancel={() => setOpenSetDefaultSig(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: QR code pour signature stagiaire */}
+      <Dialog open={!!qrToken} onOpenChange={(o) => !o && setQrToken(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Signature du stagiaire</DialogTitle>
+          </DialogHeader>
+          {qrToken && (
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Le stagiaire scanne ce QR avec son téléphone pour signer le livret.
+              </p>
+              <div className="flex justify-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(qrToken.url)}`}
+                  alt="QR code"
+                  className="rounded-lg border border-border"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground break-all">{qrToken.url}</p>
+              <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
