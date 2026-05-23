@@ -1156,6 +1156,20 @@ const StudentDetailPage = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground break-all">{docQrToken.url}</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => handleCopyLink(docQrToken.url)}>
+                  <Copy className="w-3.5 h-3.5 mr-1.5" /> Copier le lien
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleDownloadQR(docQrToken.url, `qr-${docQrToken.docType}-${student?.lastName}.png`)}>
+                  <Download className="w-3.5 h-3.5 mr-1.5" /> Télécharger QR
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleShareQR(docQrToken.url, `Signature ${docQrToken.docType}`)}>
+                  <Share2 className="w-3.5 h-3.5 mr-1.5" /> Partager
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleSendSMS(docQrToken.url)}>
+                  <Smartphone className="w-3.5 h-3.5 mr-1.5" /> Envoyer SMS
+                </Button>
+              </div>
               <p className="text-xs text-accent animate-pulse">En attente de la signature...</p>
             </div>
           )}
