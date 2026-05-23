@@ -91,6 +91,31 @@ const StudentDetailPage = () => {
   const [openCreateSatisfaction, setOpenCreateSatisfaction] = useState(false);
   const [satType, setSatType] = useState<"chaud" | "froid">("chaud");
   const [refetchTried, setRefetchTried] = useState(false);
+  const [savedInstructorSig, setSavedInstructorSig] = useState<string | null>(null);
+  const [openSetDefaultSig, setOpenSetDefaultSig] = useState(false);
+  const [qrToken, setQrToken] = useState<{ progId: string; url: string } | null>(null);
+
+  useEffect(() => {
+    setSavedInstructorSig(localStorage.getItem("instructorSignature"));
+  }, []);
+
+  useEffect(() => {
+    if (!qrToken) return;
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("progression_sheets")
+        .select("student_signature")
+        .eq("id", qrToken.progId)
+        .maybeSingle();
+      if (data?.student_signature) {
+        toast.success("Le stagiaire a signé !");
+        store.setProgressionStudentSignature(qrToken.progId, data.student_signature);
+        setQrToken(null);
+        forceUpdate(n => n + 1);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [qrToken]);
 
   const student = store.getStudents().find(s => s.id === id);
 
