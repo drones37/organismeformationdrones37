@@ -140,7 +140,7 @@ const AttendancePage = () => {
       token = newToken.token;
     }
 
-    const signingUrl = `${window.location.origin}/signer/${token}`;
+    const signingUrl = `${getPublicOrigin()}/signer/${token}`;
     setQrToken(token);
     setQrUrl(getQRUrl(signingUrl));
     setQrLoading(false);
@@ -176,7 +176,7 @@ const AttendancePage = () => {
 
     if (error || !newToken) { setQrLoading(false); return; }
 
-    const signingUrl = `${window.location.origin}/signer/${newToken.token}`;
+    const signingUrl = `${getPublicOrigin()}/signer/${newToken.token}`;
     setQrToken(newToken.token);
     setQrUrl(getQRUrl(signingUrl));
     setQrLoading(false);
@@ -224,7 +224,7 @@ const AttendancePage = () => {
     return { signedSigs, totalSigs };
   };
 
-  const signingUrl = qrToken ? `${window.location.origin}/signer/${qrToken}` : "";
+  const signingUrl = qrToken ? `${getPublicOrigin()}/signer/${qrToken}` : "";
 
   return (
     <div className="space-y-6 animate-fade-in">
