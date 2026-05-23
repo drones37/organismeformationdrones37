@@ -72,6 +72,11 @@ export interface ProgressionSheet {
   modules: ProgressionModule[];
   globalResult?: "acquis" | "en_cours" | "non_acquis";
   instructorName: string;
+  observations?: string;
+  instructorSignature?: string;
+  studentSignature?: string;
+  instructorSignedAt?: string;
+  studentSignedAt?: string;
 }
 
 export interface SatisfactionQuestion {
@@ -205,6 +210,11 @@ function dbToProgression(sheet: any, modules: any[]): ProgressionSheet {
     id: sheet.id, studentId: sheet.student_id, studentName: sheet.student_name,
     formation: sheet.formation, startDate: sheet.start_date, endDate: sheet.end_date,
     instructorName: sheet.instructor_name, globalResult: sheet.global_result,
+    observations: sheet.observations || "",
+    instructorSignature: sheet.instructor_signature || undefined,
+    studentSignature: sheet.student_signature || undefined,
+    instructorSignedAt: sheet.instructor_signed_at || undefined,
+    studentSignedAt: sheet.student_signed_at || undefined,
     modules: modules.filter(m => m.progression_id === sheet.id)
       .sort((a: any, b: any) => a.sort_order - b.sort_order)
       .map((m: any) => ({
@@ -484,6 +494,29 @@ export const store = {
     progressions = progressions.map(p => p.id === progressionId ? { ...p, globalResult: result } : p);
     notifyStoreChange();
     supabase.from("progression_sheets").update({ global_result: result }).eq("id", progressionId).then();
+  },
+  setProgressionObservations: (progressionId: string, observations: string) => {
+    progressions = progressions.map(p => p.id === progressionId ? { ...p, observations } : p);
+    notifyStoreChange();
+    supabase.from("progression_sheets").update({ observations } as any).eq("id", progressionId).then();
+  },
+  setProgressionInstructorSignature: (progressionId: string, signature: string) => {
+    const signedAt = new Date().toLocaleString("fr-FR");
+    progressions = progressions.map(p => p.id === progressionId ? { ...p, instructorSignature: signature, instructorSignedAt: signedAt } : p);
+    notifyStoreChange();
+    supabase.from("progression_sheets").update({ instructor_signature: signature, instructor_signed_at: signedAt } as any).eq("id", progressionId).then();
+  },
+  setProgressionStudentSignature: (progressionId: string, signature: string) => {
+    const signedAt = new Date().toLocaleString("fr-FR");
+    progressions = progressions.map(p => p.id === progressionId ? { ...p, studentSignature: signature, studentSignedAt: signedAt } : p);
+    notifyStoreChange();
+    supabase.from("progression_sheets").update({ student_signature: signature, student_signed_at: signedAt } as any).eq("id", progressionId).then();
+  },
+  deleteProgression: (progressionId: string) => {
+    progressions = progressions.filter(p => p.id !== progressionId);
+    notifyStoreChange();
+    supabase.from("progression_modules").delete().eq("progression_id", progressionId).then();
+    supabase.from("progression_sheets").delete().eq("id", progressionId).then();
   },
   getDefaultModules: (formation?: string) => {
     const mods = formation ? buildModulesForFormation(formation) : buildModulesForFormation("Télépilote Drone STS-01/STS-02");
