@@ -17,6 +17,19 @@ import { supabase } from "@/integrations/supabase/client";
 const getQRUrl = (text: string) =>
   `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(text)}`;
 
+// Always use the published public URL for signing links so QR codes work
+// for students (the Lovable preview URL is auth-protected).
+const PUBLIC_ORIGIN = "https://organismeformationdrones37.lovable.app";
+const getPublicOrigin = () => {
+  if (typeof window === "undefined") return PUBLIC_ORIGIN;
+  const host = window.location.hostname;
+  // Use current origin only when on the production domain or localhost dev
+  if (host === "organismeformationdrones37.lovable.app" || host === "localhost" || host === "127.0.0.1") {
+    return window.location.origin;
+  }
+  return PUBLIC_ORIGIN;
+};
+
 // ─── Types ────────────────────────────────────────────────────────
 interface QRModal {
   sheetId: string;
