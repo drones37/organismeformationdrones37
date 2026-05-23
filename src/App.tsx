@@ -17,8 +17,10 @@ import VeillePage from "./pages/VeillePage";
 import PlanActionPage from "./pages/PlanActionPage";
 import ProceduresPage from "./pages/ProceduresPage";
 import ReclamationsPage from "./pages/ReclamationsPage";
+import SatisfactionPage from "./pages/SatisfactionPage";
 import LoginPage from "./pages/LoginPage";
 import QRSignPage from "./pages/QRSignPage";
+import SatisfactionPublicPage from "./pages/SatisfactionPublicPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,8 +34,11 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
+            {/* Public routes - no login required */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signer/:token" element={<QRSignPage />} />
+            <Route path="/satisfaction/:token" element={<SatisfactionPublicPage />} />
+            {/* Protected routes */}
             <Route
               element={
                 <ProtectedRoute>
@@ -47,6 +52,7 @@ const App = () => (
               <Route path="/eleves" element={<StudentsPage />} />
               <Route path="/eleves/:id" element={<StudentDetailPage />} />
               <Route path="/emargement" element={<AttendancePage />} />
+              <Route path="/satisfaction" element={<SatisfactionPage />} />
               <Route path="/facturation" element={<FacturationPage />} />
               <Route path="/procedures" element={<ProceduresPage />} />
               <Route path="/reclamations" element={<ReclamationsPage />} />
