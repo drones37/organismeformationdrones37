@@ -246,6 +246,42 @@ const StudentDetailPage = () => {
     forceUpdate(n => n + 1);
   };
 
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url).then(() => toast.success("Lien copié dans le presse-papiers"));
+  };
+
+  const handleDownloadQR = (url: string, filename: string) => {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(url)}`;
+    const a = document.createElement("a");
+    a.href = qrUrl;
+    a.download = filename;
+    a.target = "_blank";
+    a.click();
+    toast.success("QR code téléchargé");
+  };
+
+  const handleShareQR = async (url: string, title: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // user cancelled
+      }
+    } else {
+      handleCopyLink(url);
+    }
+  };
+
+  const handleSendSMS = (url: string) => {
+    if (!student?.phone) {
+      toast.error("Le stagiaire n'a pas de numéro de téléphone enregistré");
+      return;
+    }
+    const phone = student.phone.replace(/\s/g, "").replace(/^0/, "+33");
+    const body = encodeURIComponent(`Bonjour ${student.firstName}, merci de signer votre document en scannant ce QR code : ${url}`);
+    window.open(`sms:${phone}?body=${body}`, "_blank");
+  };
+
   const handleCreateProgression = () => {
     if (!selectedFormation) return;
     store.addProgression({
