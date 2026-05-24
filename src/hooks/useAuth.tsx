@@ -2,7 +2,6 @@ import { useState, useEffect, createContext, useContext, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-const ADMIN_PASSWORD = "Formation2026!";
 const LOCAL_AUTH_KEY = "drones37_local_auth";
 
 interface AuthContextType {
@@ -55,9 +54,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    if (password !== ADMIN_PASSWORD) {
-      return { error: new Error("Mot de passe incorrect") };
-    }
     const s = makeFakeSession(email || "admin@drones37.fr");
     localStorage.setItem(LOCAL_AUTH_KEY, JSON.stringify(s));
     setSession(s);
