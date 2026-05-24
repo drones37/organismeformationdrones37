@@ -11,6 +11,8 @@ import { toast } from "@/hooks/use-toast";
 
 const LoginPage = () => {
   const { signIn, session } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -25,9 +27,9 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const { error } = await signIn("admin@drones37.fr", "");
-    if (error) {
-      setError("Connexion impossible");
+    const { error: signInError } = await signIn(email, password);
+    if (signInError) {
+      setError("Email ou mot de passe incorrect");
     }
     setLoading(false);
   };
@@ -51,8 +53,34 @@ const LoginPage = () => {
             {error && (
               <p className="text-sm text-destructive text-center">{error}</p>
             )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@drones37.fr"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Votre mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Connexion..." : "Entrer"}
+              {loading ? "Connexion..." : "Se connecter"}
             </Button>
           </form>
         </CardContent>
