@@ -523,18 +523,18 @@ export const store = {
   setGlobalResult: (progressionId: string, result: ProgressionSheet["globalResult"]) => {
     progressions = progressions.map(p => p.id === progressionId ? { ...p, globalResult: result } : p);
     notifyStoreChange();
-    supabase.from("progression_sheets").update({ global_result: result }).eq("id", progressionId).then();
+    supabase.from("progression_sheets").update({ global_result: result }).filter("id::text", "eq", progressionId).then();
   },
   setProgressionObservations: (progressionId: string, observations: string) => {
     progressions = progressions.map(p => p.id === progressionId ? { ...p, observations } : p);
     notifyStoreChange();
-    supabase.from("progression_sheets").update({ observations } as any).eq("id", progressionId).then();
+    supabase.from("progression_sheets").update({ observations } as any).filter("id::text", "eq", progressionId).then();
   },
   setProgressionInstructorSignature: (progressionId: string, signature: string) => {
     const signedAt = new Date().toLocaleString("fr-FR");
     progressions = progressions.map(p => p.id === progressionId ? { ...p, instructorSignature: signature, instructorSignedAt: signedAt } : p);
     notifyStoreChange();
-    supabase.from("progression_sheets").update({ instructor_signature: signature, instructor_signed_at: signedAt } as any).eq("id", Number(progressionId)).then(({ error }) => {
+    supabase.from("progression_sheets").update({ instructor_signature: signature, instructor_signed_at: signedAt } as any).filter("id::text", "eq", progressionId).then(({ error }) => {
       if (error) console.error("[store] instructor_signature save error:", error);
     });
   },
@@ -542,7 +542,7 @@ export const store = {
     const signedAt = new Date().toLocaleString("fr-FR");
     progressions = progressions.map(p => p.id === progressionId ? { ...p, studentSignature: signature, studentSignedAt: signedAt } : p);
     notifyStoreChange();
-    supabase.from("progression_sheets").update({ student_signature: signature, student_signed_at: signedAt } as any).eq("id", Number(progressionId)).then(({ error }) => {
+    supabase.from("progression_sheets").update({ student_signature: signature, student_signed_at: signedAt } as any).filter("id::text", "eq", progressionId).then(({ error }) => {
       if (error) console.error("[store] student_signature save error:", error);
     });
   },
