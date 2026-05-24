@@ -11,11 +11,8 @@ import { toast } from "@/hooks/use-toast";
 
 const LoginPage = () => {
   const { signIn, session } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resetting, setResetting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,33 +25,11 @@ const LoginPage = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    const { error } = await signIn(email, password);
+    const { error } = await signIn("admin@drones37.fr", "");
     if (error) {
-      setError("Email ou mot de passe incorrect");
+      setError("Connexion impossible");
     }
     setLoading(false);
-  };
-
-  const handleResetPassword = async () => {
-    if (!email) {
-      setError("Saisis ton email puis clique sur « Mot de passe oublié »");
-      return;
-    }
-    setError("");
-    setResetting(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
-    });
-    setResetting(false);
-    if (error) {
-      setError("Impossible d'envoyer l'email de réinitialisation");
-    } else {
-      toast({
-        title: "Email envoyé",
-        description: "Vérifie ta boîte de réception pour réinitialiser ton mot de passe.",
-      });
-    }
   };
 
   return (
@@ -73,50 +48,11 @@ const LoginPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@drones37.fr"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
             {error && (
               <p className="text-sm text-destructive text-center">{error}</p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Connexion..." : "Se connecter"}
-            </Button>
-            <Button
-              type="button"
-              variant="link"
-              className="w-full"
-              onClick={handleResetPassword}
-              disabled={resetting}
-            >
-              {resetting ? "Envoi..." : "Mot de passe oublié ?"}
+              {loading ? "Connexion..." : "Entrer"}
             </Button>
           </form>
         </CardContent>
