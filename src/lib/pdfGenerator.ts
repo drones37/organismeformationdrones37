@@ -509,11 +509,11 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
   // Evaluation table - début
   const evalStartRows = progression.modules.map(m => [
     m.name,
-    m.ratingStart === 1 ? "●" : "",
-    m.ratingStart === 2 ? "●" : "",
-    m.ratingStart === 3 ? "●" : "",
-    m.ratingStart === 4 ? "●" : "",
-    m.ratingStart === 5 ? "●" : "",
+    m.ratingStart === 1 ? "X" : "",
+    m.ratingStart === 2 ? "X" : "",
+    m.ratingStart === 3 ? "X" : "",
+    m.ratingStart === 4 ? "X" : "",
+    m.ratingStart === 5 ? "X" : "",
   ]);
 
   autoTable(doc, {
@@ -581,11 +581,11 @@ export function generateProgressionPDF(progression: ProgressionSheet) {
 
   const evalEndRows = progression.modules.map(m => [
     m.name,
-    m.ratingEnd === 1 ? "●" : "",
-    m.ratingEnd === 2 ? "●" : "",
-    m.ratingEnd === 3 ? "●" : "",
-    m.ratingEnd === 4 ? "●" : "",
-    m.ratingEnd === 5 ? "●" : "",
+    m.ratingEnd === 1 ? "X" : "",
+    m.ratingEnd === 2 ? "X" : "",
+    m.ratingEnd === 3 ? "X" : "",
+    m.ratingEnd === 4 ? "X" : "",
+    m.ratingEnd === 5 ? "X" : "",
   ]);
 
   autoTable(doc, {
@@ -1056,11 +1056,11 @@ export function generateSatisfactionPDF(response: SatisfactionResponse) {
   // Questions table
   const rows = response.questions.map(q => [
     q.text,
-    q.rating === 1 ? "●" : "",
-    q.rating === 2 ? "●" : "",
-    q.rating === 3 ? "●" : "",
-    q.rating === 4 ? "●" : "",
-    q.rating === 5 ? "●" : "",
+    q.rating === 1 ? "X" : "",
+    q.rating === 2 ? "X" : "",
+    q.rating === 3 ? "X" : "",
+    q.rating === 4 ? "X" : "",
+    q.rating === 5 ? "X" : "",
   ]);
 
   autoTable(doc, {

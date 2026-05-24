@@ -534,13 +534,17 @@ export const store = {
     const signedAt = new Date().toLocaleString("fr-FR");
     progressions = progressions.map(p => p.id === progressionId ? { ...p, instructorSignature: signature, instructorSignedAt: signedAt } : p);
     notifyStoreChange();
-    supabase.from("progression_sheets").update({ instructor_signature: signature, instructor_signed_at: signedAt } as any).eq("id", progressionId).then();
+    supabase.from("progression_sheets").update({ instructor_signature: signature, instructor_signed_at: signedAt } as any).eq("id", Number(progressionId)).then(({ error }) => {
+      if (error) console.error("[store] instructor_signature save error:", error);
+    });
   },
   setProgressionStudentSignature: (progressionId: string, signature: string) => {
     const signedAt = new Date().toLocaleString("fr-FR");
     progressions = progressions.map(p => p.id === progressionId ? { ...p, studentSignature: signature, studentSignedAt: signedAt } : p);
     notifyStoreChange();
-    supabase.from("progression_sheets").update({ student_signature: signature, student_signed_at: signedAt } as any).eq("id", progressionId).then();
+    supabase.from("progression_sheets").update({ student_signature: signature, student_signed_at: signedAt } as any).eq("id", Number(progressionId)).then(({ error }) => {
+      if (error) console.error("[store] student_signature save error:", error);
+    });
   },
   deleteProgression: (progressionId: string) => {
     progressions = progressions.filter(p => p.id !== progressionId);
