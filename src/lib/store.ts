@@ -277,6 +277,26 @@ export async function initStore() {
   documents = (dRes.data || []).map(dbToDocument);
   const allModules = pmRes.data || [];
   progressions = (pRes.data || []).map((s: any) => dbToProgression(s, allModules));
+
+  // Self-healing: any progression with 0 modules → regenerate defaults & persist.
+  const emptyProgressions = progressions.filter(p => !p.modules || p.modules.length === 0);
+  if (emptyProgressions.length > 0) {
+    for (const p of emptyProgressions) {
+      const defaults = buildModulesForFormation(p.formation).map((m, i) => ({
+        ...m,
+        id: `m${Date.now()}_${i}_${Math.random().toString(36).slice(2, 6)}`,
+      }));
+      p.modules = defaults;
+      const rows = defaults.map((m, i) => ({
+        id: m.id, progression_id: p.id, name: m.name,
+        objectives: (m.objectives || []) as any, status: m.status,
+        rating_start: m.ratingStart ?? null, rating_end: m.ratingEnd ?? null,
+        comment: m.comment ?? null, evaluated_at: m.evaluatedAt ?? null, sort_order: i,
+      }));
+      await supabase.from("progression_modules").upsert(rows as any[], { onConflict: "id" });
+    }
+  }
+
   const allQuestions = sqRes.data || [];
   const satisfactionRows = srRes.data || [];
   const missingQuestionResponses = satisfactionRows.filter((resp: any) => !allQuestions.some((q: any) => q.satisfaction_id === resp.id));
