@@ -628,7 +628,7 @@ export function generateLivretAccueilPDF(student: Student) {
       "Plusieurs places de stationnement adaptées",
       "Sanitaires handicapés",
       "Bâtiment de plain-pied sans escalier",
-      "Ouvertures et portes à passage utile ≥ 80 cm",
+      "Ouvertures et portes à passage utile supérieur ou égal à 80 cm",
       "Terrain accessible en fauteuil roulant (enrobé)",
     ], y + 4, { maxWidth: 105, indent: 82 });
     y = Math.max(accY, y + 56);
