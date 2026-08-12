@@ -122,11 +122,11 @@ export function generateEntryChecklistPDF(student: Student) {
     bodyStyles: { fontSize: 8.5, cellPadding: 3, valign: "middle" },
     alternateRowStyles: { fillColor: [245, 248, 250] },
     columnStyles: {
-      0: { halign: "center", cellWidth: 12, fontStyle: "bold" },
+      0: { halign: "center", cellWidth: 10, fontStyle: "bold" },
       1: { cellWidth: 88 },
       2: { halign: "center", cellWidth: 24 },
       3: { halign: "center", cellWidth: 28 },
-      4: { cellWidth: 40 },
+      4: { cellWidth: 30 },
     },
     margin: { left: 15, right: 15 },
     didDrawCell: (data) => {
