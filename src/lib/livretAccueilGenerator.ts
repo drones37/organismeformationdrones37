@@ -911,7 +911,23 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
     addFooter(doc, i, totalPages);
   }
 
-  const fileName = `Livret_Accueil_${student.firstName}_${student.lastName}_${config.title.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+  const slug = config.title.replace(/[^a-zA-Z0-9]/g, "_");
+  const fileName = blank
+    ? `Livret_Accueil_VIERGE_${slug}.pdf`
+    : `Livret_Accueil_${student.firstName}_${student.lastName}_${slug}.pdf`;
   doc.save(fileName);
   return fileName;
+}
+
+// Version vierge : sans nom de stagiaire ni dates
+export function generateLivretAccueilVierge(formation: string) {
+  const emptyStudent = {
+    id: "vierge",
+    firstName: "",
+    lastName: "",
+    formation,
+    startDate: new Date().toISOString(),
+    endDate: new Date().toISOString(),
+  } as unknown as Student;
+  return generateLivretAccueilPDF(emptyStudent, { blank: true });
 }
