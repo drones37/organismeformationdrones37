@@ -132,7 +132,7 @@ export function generateAttendancePDF(sheet: AttendanceSheet) {
 
   // Info block
   doc.setFillColor(...COLORS.lightGray);
-  doc.roundedRect(15, y, 267, 22, 3, 3, "F");
+  doc.roundedRect(15, y, 267, 28, 3, 3, "F");
   y += 7;
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
@@ -156,6 +156,11 @@ export function generateAttendancePDF(sheet: AttendanceSheet) {
   doc.text("Formateur :", 210, y);
   doc.setFont("helvetica", "normal");
   doc.text(COMPANY.owner, 240, y);
+  y += 7;
+  doc.setFont("helvetica", "bold");
+  doc.text("Horaires :", 20, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(`9h00 – 13h00 et 14h00 – 17h00 (7 h/jour) — ${sheet.days} jour${sheet.days > 1 ? "s" : ""} soit ${sheet.days * 7} heures`, 48, y);
   y += 12;
 
   // Build day columns
