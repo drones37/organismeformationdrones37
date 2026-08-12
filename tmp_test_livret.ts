@@ -1,5 +1,6 @@
 import { generateLivretAccueilPDF } from './src/lib/livretAccueilGenerator';
 import type { Student } from './src/lib/store';
+import { writeFileSync } from 'fs';
 
 const student: Student = {
   id: 'test',
@@ -15,5 +16,6 @@ const student: Student = {
 } as Student;
 
 const doc = generateLivretAccueilPDF(student);
-doc.save('/tmp/livret_test.pdf');
+const buf = doc.output('arraybuffer');
+writeFileSync('/tmp/livret_test.pdf', new Uint8Array(buf));
 console.log('PDF saved to /tmp/livret_test.pdf');
