@@ -599,7 +599,7 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.setFontSize(10);
     doc.text("Emplacement du site de formation", 20, y);
     y += 6;
-    doc.addImage(IMG_EMPLACEMENT, "JPEG", 20, y, 170, 60);
+    doc.addImage(IMG_EMPLACEMENT, "JPEG", 20, y, 120, 60);
     y += 66;
 
     doc.setFont("helvetica", "bold");
