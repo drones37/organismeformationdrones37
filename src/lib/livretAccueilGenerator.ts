@@ -233,7 +233,8 @@ function checkNewPage(doc: jsPDF, y: number, needed: number): number {
 }
 
 // ==================== MAIN GENERATOR ====================
-export function generateLivretAccueilPDF(student: Student) {
+export function generateLivretAccueilPDF(student: Student, options?: { blank?: boolean }) {
+  const blank = options?.blank === true;
   const config = getFormationConfig(student.formation);
   const modules = getModulesForFormation(student.formation);
   const doc = new jsPDF();
@@ -274,12 +275,17 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.text("Stagiaire", 105, 160, { align: "center" });
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.text(`${student.firstName} ${student.lastName}`, 105, 172, { align: "center" });
+    doc.text(blank ? "........................................" : `${student.firstName} ${student.lastName}`, 105, 172, { align: "center" });
 
     // Dates
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    doc.text(`Du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`, 105, 185, { align: "center" });
+    doc.text(
+      blank
+        ? "Du ...... / ...... / ............  au  ...... / ...... / ............"
+        : `Du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`,
+      105, 185, { align: "center" }
+    );
 
     // Bottom info
     doc.setFontSize(8);
@@ -744,7 +750,7 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.setFont("helvetica", "bold");
     doc.text("Stagiaire :", 20, y + 6);
     doc.setFont("helvetica", "normal");
-    doc.text(`${student.firstName} ${student.lastName}`, 20, y + 12);
+    doc.text(blank ? "..............................." : `${student.firstName} ${student.lastName}`, 20, y + 12);
     doc.text("Signature :", 20, y + 20);
 
     doc.setFont("helvetica", "bold");
@@ -754,14 +760,16 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.text("Signature :", 115, y + 20);
 
     // Embed actual signatures
-    try {
-      const sSig = student.docSignatures?.livret?.student;
-      if (sSig) doc.addImage(sSig, "PNG", 50, y + 16, 45, 12);
-    } catch { /* ignore */ }
-    try {
-      const iSig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
-      if (iSig) doc.addImage(iSig, "PNG", 145, y + 16, 45, 12);
-    } catch { /* ignore */ }
+    if (!blank) {
+      try {
+        const sSig = student.docSignatures?.livret?.student;
+        if (sSig) doc.addImage(sSig, "PNG", 50, y + 16, 45, 12);
+      } catch { /* ignore */ }
+      try {
+        const iSig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
+        if (iSig) doc.addImage(iSig, "PNG", 145, y + 16, 45, 12);
+      } catch { /* ignore */ }
+    }
   });
 
   // ======================== PAGES 12-13: CGU (résumé) ========================
@@ -903,7 +911,23 @@ export function generateLivretAccueilPDF(student: Student) {
     addFooter(doc, i, totalPages);
   }
 
-  const fileName = `Livret_Accueil_${student.firstName}_${student.lastName}_${config.title.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+  const slug = config.title.replace(/[^a-zA-Z0-9]/g, "_");
+  const fileName = blank
+    ? `Livret_Accueil_VIERGE_${slug}.pdf`
+    : `Livret_Accueil_${student.firstName}_${student.lastName}_${slug}.pdf`;
   doc.save(fileName);
   return fileName;
+}
+
+// Version vierge : sans nom de stagiaire ni dates
+export function generateLivretAccueilVierge(formation: string) {
+  const emptyStudent = {
+    id: "vierge",
+    firstName: "",
+    lastName: "",
+    formation,
+    startDate: new Date().toISOString(),
+    endDate: new Date().toISOString(),
+  } as unknown as Student;
+  return generateLivretAccueilPDF(emptyStudent, { blank: true });
 }

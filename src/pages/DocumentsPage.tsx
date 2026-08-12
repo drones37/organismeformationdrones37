@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { generateLivretAccueilVierge } from "@/lib/livretAccueilGenerator";
+import { FORMATION_TYPES } from "@/lib/formationModules";
 
 const categoryLabels: Record<Document["category"], string> = {
   convention: "Convention",
@@ -43,6 +45,8 @@ const DocumentsPage = () => {
   const [form, setForm] = useState({ name: "", category: "convention" as Document["category"] });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const [blankOpen, setBlankOpen] = useState(false);
+  const [blankFormation, setBlankFormation] = useState<string>(FORMATION_TYPES[0]);
 
   const docs = store.getDocuments().filter(d => {
     const matchesSearch = d.name.toLowerCase().includes(search.toLowerCase());
@@ -116,6 +120,35 @@ const DocumentsPage = () => {
         </div>
         <div className="flex items-center gap-2">
           <input ref={uploadInputRef} type="file" className="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png" onChange={handleFileUpload} />
+          <Dialog open={blankOpen} onOpenChange={setBlankOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <FileText className="w-4 h-4 mr-2" /> Livret d'accueil vierge
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="font-heading text-xl">Livret d'accueil vierge</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 mt-4">
+                <div>
+                  <Label>Formation concernée</Label>
+                  <Select value={blankFormation} onValueChange={setBlankFormation}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {FORMATION_TYPES.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  className="w-full bg-accent text-accent-foreground hover:opacity-90"
+                  onClick={() => { generateLivretAccueilVierge(blankFormation); setBlankOpen(false); }}
+                >
+                  <Download className="w-4 h-4 mr-2" /> Télécharger le PDF vierge
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button variant="outline" onClick={() => uploadInputRef.current?.click()}>
             <Upload className="w-4 h-4 mr-2" /> Importer
           </Button>
