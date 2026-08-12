@@ -31,10 +31,52 @@ interface FormationConfig {
   certification?: string;
   objectives: string[];
   prerequis: string;
+  prerequisEntree?: string[];
+  prerequisValidation?: string[];
+  planning?: { jour: string; matin: string; apresMidi: string }[];
   duree: string;
   materiel: string;
   publicVise: string;
 }
+
+const PREREQUIS_ENTREE_FPDC = [
+  "Le candidat devra fournir la preuve de l'usage du drone dans le cadre de l'exercice de son métier et dans le secteur d'activités visé, au travers d'un entretien de positionnement avec l'organisme de formation.",
+  "Le candidat doit être en possession de l'un des certificats d'aptitude théoriques obligatoires (BAPD et/ou CATS).",
+  "Si le candidat n'est pas en possession de l'un de ces certificats d'aptitude théorique, il devra obligatoirement être en capacité de se présenter à ces examens avant son inscription à la validation de sa certification pratique.",
+];
+
+const PREREQUIS_VALIDATION_FPDC = [
+  "Le candidat devra avoir suivi une formation délivrée par un organisme labellisé par la FPDC et répondant aux critères et attendus de la certification tels que définis dans le règlement de certification.",
+  "Le candidat devra être détenteur du diplôme du BAPD pour évoluer en catégorie ouverte et/ou du CATS pour évoluer en catégorie spécifique, délivrés par la DGAC.",
+];
+
+const PLANNING_STS = [
+  {
+    jour: "Jour 1",
+    matin: "Accueil, présentation de la formation et du référentiel RS7235 — Rappels réglementaires (règlements UE 2019/947 et 2019/945, scénarios STS-01 / STS-02) — Positionnement des stagiaires",
+    apresMidi: "Prise en main de l'aéronef, documentation constructeur, vérifications pré-vol — Premiers exercices de télépilotage en vol stationnaire et déplacements simples",
+  },
+  {
+    jour: "Jour 2",
+    matin: "Préparation de la mission : cartes aéronautiques, NOTAM, météo, zones de vol — Analyse de risques et mesures d'atténuation",
+    apresMidi: "Exercices pratiques STS-01 : vol en vue, gestion du volume opérationnel, trajectoires imposées",
+  },
+  {
+    jour: "Jour 3",
+    matin: "Suivi administratif de l'activité : AlphaTango, MANEX, enregistrement exploitant, déclarations DGAC — Assurances et responsabilités",
+    apresMidi: "Exercices pratiques STS-02 : vol hors vue avec observateurs, gestion de l'espace, communication équipage",
+  },
+  {
+    jour: "Jour 4",
+    matin: "Situations anormales et dégradées : pannes GPS, perte de liaison, batterie faible, procédures d'urgence",
+    apresMidi: "Mises en situation professionnelles complètes : briefing, mission, débriefing — Évaluation formative",
+  },
+  {
+    jour: "Jour 5",
+    matin: "Révisions et consolidation des acquis — Traitement des points faibles identifiés",
+    apresMidi: "Évaluation pratique finale (STS-01 / STS-02) — Débriefing individuel, livret de progression, bilan et questionnaire de satisfaction",
+  },
+];
 
 function getFormationConfig(formation: string): FormationConfig {
   const lower = formation.toLowerCase();
@@ -89,6 +131,9 @@ function getFormationConfig(formation: string): FormationConfig {
     materiel: "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD.",
     publicVise: "Toute personne souhaitant exercer en tant que télépilote professionnel de drone.",
     certification: "RS7235 — Télépilotage de drone en scénarios standards STS-01 et STS-02 (éligible CPF)",
+    prerequisEntree: PREREQUIS_ENTREE_FPDC,
+    prerequisValidation: PREREQUIS_VALIDATION_FPDC,
+    planning: PLANNING_STS,
   };
 }
 
@@ -257,6 +302,8 @@ export function generateLivretAccueilPDF(student: Student) {
       "   4.2 Mise en œuvre de l'action de formation",
       "   4.3 Modalités pédagogiques",
       "   4.4 Programme — Items d'évaluation",
+      "   4.5 Prérequis et conditions de certification",
+      "   4.6 Planning de la formation (5 jours)",
       "5. Site de formation",
       "6. Constitution de votre dossier",
       "7. Règlement intérieur",
@@ -312,6 +359,12 @@ export function generateLivretAccueilPDF(student: Student) {
     // Satisfaction
     y = addParagraph(doc, "100% de nos élèves sont satisfaits de leur formation télépilote professionnel de drone.", y);
     y += 4;
+    y = addSubTitle(doc, "Un réseau d'experts de la pulvérisation par drone", y);
+    y += 4;
+    y = addParagraph(doc, "DRONES37 fait partie d'un réseau d'experts au niveau national lui permettant de rester à un haut niveau d'expertise et d'exigence (https://experts-drones.com).", y);
+    y += 2;
+    y = addParagraph(doc, "Résolument tournée vers des missions complexes, DRONES37 présente toute une gamme de prestations à destination des professionnels de l'immobilier et de l'assurance, mais également des entreprises, des industries et des collectivités : cartographie, inspections techniques, appui aux services de secours et d'intervention en qualité d'officier expert appui drone du SDIS37, pulvérisation sur bâtiments par drones, promotion immobilière, etc.", y);
+    y += 2;
     y = addParagraph(doc, "Retrouvez nos prestations sur notre site internet : https://www.drones37.com", y);
   });
 
@@ -468,6 +521,55 @@ export function generateLivretAccueilPDF(student: Student) {
       margin: { left: 15, right: 15 },
     });
   });
+
+  // ======================== PRÉREQUIS ========================
+  if (config.prerequisEntree || config.prerequisValidation) {
+    pages.push(() => {
+      addHeader(doc);
+      let y = addSectionTitle(doc, "Les prérequis", 42);
+      y += 4;
+
+      y = addSubTitle(doc, "À l'entrée en formation", y);
+      y += 4;
+      y = addBulletList(doc, config.prerequisEntree || [], y);
+      y += 6;
+
+      y = addSubTitle(doc, "À la validation de la certification", y);
+      y += 4;
+      y = addBulletList(doc, config.prerequisValidation || [], y);
+      y += 6;
+
+      y = addParagraph(doc, "BAPD : Brevet d'Aptitude de Pilote à Distance (catégorie ouverte) — CATS : Certificat d'Aptitude Théorique de télépilote en scénarios standards (catégorie spécifique), délivrés par la DGAC.", y, { fontSize: 8 });
+    });
+  }
+
+  // ======================== PLANNING 5 JOURS ========================
+  if (config.planning && config.planning.length > 0) {
+    pages.push(() => {
+      addHeader(doc);
+      let y = addSectionTitle(doc, "Planning de la formation", 42);
+      y += 4;
+
+      y = addParagraph(doc, `${config.duree} — Horaires : 9h00-13h00 (matin) et 14h00-17h00 (après-midi). Le planning est indicatif et peut être réaménagé, notamment en fonction des conditions météorologiques, afin d'optimiser le temps de télépilotage.`, y);
+      y += 4;
+
+      autoTable(doc, {
+        startY: y,
+        head: [["Jour", "Matin (9h-13h)", "Après-midi (14h-17h)"]],
+        body: config.planning!.map(p => [p.jour, p.matin, p.apresMidi]),
+        theme: "grid",
+        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9 },
+        bodyStyles: { fontSize: 7.5, cellPadding: 3, valign: "top" },
+        alternateRowStyles: { fillColor: [245, 248, 250] },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 20, halign: "center" },
+          1: { cellWidth: 80 },
+          2: { cellWidth: 80 },
+        },
+        margin: { left: 15, right: 15 },
+      });
+    });
+  }
 
   // ======================== PAGE 8: SITE DE FORMATION ========================
   pages.push(() => {
