@@ -594,18 +594,18 @@ export function generateLivretAccueilPDF(student: Student) {
     y = addParagraph(doc, "Pour les personnes en situation de handicap, les sessions peuvent se passer au RUBIXCO, 1 rue Bernard Maris, 37270 Montlouis sur Loire, à 5 minutes du centre.", y);
     y += 6;
 
-    y = checkNewPage(doc, y, 70);
+    y = checkNewPage(doc, y, 50);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Emplacement du site de formation", 20, y);
     y += 6;
-    doc.addImage(IMG_EMPLACEMENT, "JPEG", 20, y, 120, 60);
-    y += 66;
+    doc.addImage(IMG_EMPLACEMENT, "JPEG", 20, y, 85, 42.5);
+    y += 48.5;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Accès", 20, y);
-    y += 6;
+    y += 3;
     y = addBulletList(doc, [
       "En provenance de PARIS : A10 Sortie n°21",
       "En provenance de NANTES : A85/E60 Sortie D7",
@@ -624,23 +624,23 @@ export function generateLivretAccueilPDF(student: Student) {
       "Wifi",
       "Eau à disposition",
     ], y, { maxWidth: 75 });
-    doc.addImage(IMG_SALLE, "JPEG", 110, y - 2, 85, 53);
-    y = Math.max(locauxY, y + 53) + 6;
+    doc.addImage(IMG_SALLE, "JPEG", 120, y - 2, 65, 40.5);
+    y = Math.max(locauxY, y + 40.5) + 4;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Accessibilité handicapée (RUBIXCO)", 20, y);
     y += 6;
-    doc.addImage(IMG_RUBIXCO, "JPEG", 20, y, 55, 54);
+    doc.addImage(IMG_RUBIXCO, "JPEG", 20, y, 40, 39);
     const accY = addBulletList(doc, [
       "Plusieurs places de stationnement adaptées",
       "Sanitaires handicapés",
       "Bâtiment de plain-pied sans escalier",
       "Ouvertures et portes à passage utile supérieur ou égal à 80 cm",
       "Terrain accessible en fauteuil roulant (enrobé)",
-    ], y + 4, { maxWidth: 105, indent: 82 });
-    y = Math.max(accY, y + 56);
-    y += 4;
+    ], y + 2, { fontSize: 8, maxWidth: 120, indent: 67 });
+    y = Math.max(accY, y + 41);
+    y += 2;
     y = addParagraph(doc, "DRONES37 ne prendra pas en charge la locomotion des stagiaires sur les lieux de formation, leurs hébergements ainsi que leurs repas.", y, { fontSize: 8 });
   });
 
