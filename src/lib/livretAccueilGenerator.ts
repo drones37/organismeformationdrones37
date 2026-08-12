@@ -208,15 +208,16 @@ function addParagraph(doc: jsPDF, text: string, y: number, options?: { fontSize?
   return y + lines.length * (fs * 0.45) + 2;
 }
 
-function addBulletList(doc: jsPDF, items: string[], y: number, options?: { fontSize?: number; maxWidth?: number }): number {
+function addBulletList(doc: jsPDF, items: string[], y: number, options?: { fontSize?: number; maxWidth?: number; indent?: number }): number {
   const fs = options?.fontSize || 9;
   const mw = options?.maxWidth || 160;
+  const x = options?.indent ?? 22;
   doc.setFontSize(fs);
   doc.setFont("helvetica", "normal");
   items.forEach(item => {
     const lines = doc.splitTextToSize(item, mw);
-    doc.text("•", 22, y);
-    doc.text(lines, 27, y);
+    doc.text("•", x, y);
+    doc.text(lines, x + 5, y);
     y += lines.length * (fs * 0.45) + 2;
   });
   return y;
