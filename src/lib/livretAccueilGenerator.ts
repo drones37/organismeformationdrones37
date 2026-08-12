@@ -630,7 +630,7 @@ export function generateLivretAccueilPDF(student: Student) {
       "Bâtiment de plain-pied sans escalier",
       "Ouvertures et portes à passage utile ≥ 80 cm",
       "Terrain accessible en fauteuil roulant (enrobé)",
-    ], y, { maxWidth: 105 });
+    ], y + 4, { maxWidth: 105, indent: 82 });
     y = Math.max(accY, y + 56);
     y += 4;
     y = addParagraph(doc, "DRONES37 ne prendra pas en charge la locomotion des stagiaires sur les lieux de formation, leurs hébergements ainsi que leurs repas.", y, { fontSize: 8 });
