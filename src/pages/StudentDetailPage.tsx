@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { store, reloadStore, ProgressionModule, Document, SatisfactionResponse, PrerequisiteCheck } from "@/lib/store";
 import { useStoreRefresh } from "@/hooks/useStoreData";
 import { FORMATION_TYPES, getPrerequisitesForFormation } from "@/lib/formationModules";
-import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck, PenLine, QrCode, Check, Copy, Share2, Smartphone } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Calendar, BookOpen, ClipboardCheck, FileText, Download, Plus, Star, CheckCircle2, Clock, XCircle, AlertCircle, Trash2, MessageSquare, FileDown, Upload, Accessibility, ShieldCheck, PenLine, QrCode, Check, Copy, Share2, Smartphone, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import SignatureCanvas from "@/components/SignatureCanvas";
 import { generateAttestationPDF, generateProgressionPDF, generateAttendancePDF, generateConvocationPDF, generateConventionPDF, generateSatisfactionPDF } from "@/lib/pdfGenerator";
 import { generateLivretAccueilPDF } from "@/lib/livretAccueilGenerator";
+import { generateEntryChecklistPDF } from "@/lib/entryChecklistGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -394,6 +395,9 @@ const StudentDetailPage = () => {
               <Download className="w-3.5 h-3.5 mr-1" /> Attestation
             </Button>
           </div>
+          <Button variant="outline" size="sm" onClick={() => generateEntryChecklistPDF(student)}>
+            <ClipboardList className="w-3.5 h-3.5 mr-1" /> Checklist entrée
+          </Button>
         </div>
       </div>
 
