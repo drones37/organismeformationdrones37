@@ -608,26 +608,29 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.setFontSize(10);
     doc.text("Les locaux de formation", 20, y);
     y += 6;
-    y = addBulletList(doc, [
+    const locauxY = addBulletList(doc, [
       "Tables et chaises",
       "Tableau blanc magnétique",
       "Écran LED",
       "Wifi",
       "Eau à disposition",
-    ], y);
-    y += 6;
+    ], y, { maxWidth: 75 });
+    doc.addImage(IMG_SALLE, "JPEG", 110, y - 2, 85, 53);
+    y = Math.max(locauxY, y + 53) + 6;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Accessibilité handicapée (RUBIXCO)", 20, y);
     y += 6;
-    y = addBulletList(doc, [
+    doc.addImage(IMG_RUBIXCO, "JPEG", 20, y, 55, 54);
+    const accY = addBulletList(doc, [
       "Plusieurs places de stationnement adaptées",
       "Sanitaires handicapés",
       "Bâtiment de plain-pied sans escalier",
       "Ouvertures et portes à passage utile ≥ 80 cm",
       "Terrain accessible en fauteuil roulant (enrobé)",
-    ], y);
+    ], y, { maxWidth: 105 });
+    y = Math.max(accY, y + 56);
     y += 4;
     y = addParagraph(doc, "DRONES37 ne prendra pas en charge la locomotion des stagiaires sur les lieux de formation, leurs hébergements ainsi que leurs repas.", y, { fontSize: 8 });
   });
