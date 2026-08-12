@@ -469,61 +469,6 @@ export function generateLivretAccueilPDF(student: Student) {
     });
   });
 
-  // ============ PAGE : PLANNING DÉTAILLÉ (STS-01/STS-02 — 5 jours) ============
-  const isSTS = !(/pulvé|bâtiment|a1|a3|ouverte/i.test(student.formation));
-  if (isSTS) {
-    pages.push(() => {
-      addHeader(doc);
-      let y = addSectionTitle(doc, "Programme — Planning détaillé de formation", 42);
-      y += 2;
-      y = addSubTitle(doc, config.title + " — 5 jours (35 heures)", y);
-      y += 4;
-      y = addParagraph(doc, "Répartition indicative des 18 items d'évaluation par jour et demi-journée. Ce planning est adapté à chaque session en fonction du nombre de jours de formation et des conditions météorologiques.", y);
-      y += 4;
-
-      autoTable(doc, {
-        startY: y,
-        head: [["Jour", "Matin (9h00 – 13h00)", "Après-midi (14h00 – 17h00)"]],
-        body: [
-          [
-            "Jour 1",
-            "1. Connaître la réglementation européenne et française UAS\n2. Connaître les catégories d'exploitation (Ouverte, Spécifique, Certifiée)\n3. Créer et actualiser un MANEX",
-            "4. Déclarer une activité d'exploitant UAS auprès des autorités\n5. Intégrer un UAS auprès d'un exploitant\n9. Effectuer les déclarations sur AlphaTango / DGAC",
-          ],
-          [
-            "Jour 2",
-            "8. Lire et interpréter les cartes aéronautiques (OACI, NOTAM, SUP AIP)",
-            "6. Préparer un vol Mission en STS-01\n7. Préparer un vol Mission en STS-02",
-          ],
-          [
-            "Jour 3",
-            "10. Télépiloter un UAS avec assistance GPS",
-            "12. Télépiloter un UAS en vol à vue (VLOS)",
-          ],
-          [
-            "Jour 4",
-            "11. Télépiloter un UAS en mode ATTI (sans GPS)",
-            "13. Télépiloter un UAS hors vue (BVLOS) avec observateur",
-          ],
-          [
-            "Jour 5",
-            "14. Télépiloter un UAS en situations dégradées\n15. Appliquer des procédures d'urgence adaptées à la mission et l'UAS\n16. Gérer les situations anormales (perte GPS, FlyAway, intrusion)",
-            "17. Analyser des risques et déclarer un incident (CRESUS)\n18. Entretenir un UAS\nBilan et remise du Livret de progression / Attestation",
-          ],
-        ],
-        theme: "grid",
-        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9, halign: "center" },
-        bodyStyles: { fontSize: 8, cellPadding: 3, valign: "top" },
-        alternateRowStyles: { fillColor: [245, 248, 250] },
-        columnStyles: { 0: { fontStyle: "bold", halign: "center", cellWidth: 20 }, 1: { cellWidth: 80 }, 2: { cellWidth: 80 } },
-        margin: { left: 15, right: 15 },
-      });
-
-      const yEnd = (doc as any).lastAutoTable?.finalY + 8 || 250;
-      addParagraph(doc, "À l'issue de cette formation et sous réserve d'une marge de progression convenable, nous remettons à chaque élève un Livret de progression et une Attestation de suivi de formation.", yEnd);
-    });
-  }
-
   // ======================== PAGE 8: SITE DE FORMATION ========================
   pages.push(() => {
     addHeader(doc);
