@@ -359,6 +359,12 @@ export function generateLivretAccueilPDF(student: Student) {
     // Satisfaction
     y = addParagraph(doc, "100% de nos élèves sont satisfaits de leur formation télépilote professionnel de drone.", y);
     y += 4;
+    y = addSubTitle(doc, "Un réseau d'experts de la pulvérisation par drone", y);
+    y += 4;
+    y = addParagraph(doc, "DRONES37 fait partie d'un réseau d'experts au niveau national lui permettant de rester à un haut niveau d'expertise et d'exigence (https://experts-drones.com).", y);
+    y += 2;
+    y = addParagraph(doc, "Résolument tournée vers des missions complexes, DRONES37 présente toute une gamme de prestations à destination des professionnels de l'immobilier et de l'assurance, mais également des entreprises, des industries et des collectivités : cartographie, inspections techniques, appui aux services de secours et d'intervention en qualité d'officier expert appui drone du SDIS37, pulvérisation sur bâtiments par drones, promotion immobilière, etc.", y);
+    y += 2;
     y = addParagraph(doc, "Retrouvez nos prestations sur notre site internet : https://www.drones37.com", y);
   });
 
