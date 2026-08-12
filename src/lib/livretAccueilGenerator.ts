@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Student } from "./store";
 import { getModulesForFormation } from "./formationModules";
+import { IMG_BANNIERE, IMG_RESEAU, IMG_SALLE, IMG_RUBIXCO } from "./livretImages";
 
 const COMPANY = {
   name: "DRONES37",
@@ -332,6 +333,8 @@ export function generateLivretAccueilPDF(student: Student) {
 
     y = addParagraph(doc, "DRONES37 est une entreprise spécialisée dans la pulvérisation sur bâtiments par drones, créée en septembre 2020. Elle propose à ses clients des traitements sur tout types de bâtiments par drones, des inspections techniques, des modélisations 3D et vues aériennes.", y);
     y += 4;
+    doc.addImage(IMG_BANNIERE, "JPEG", 30, y, 150, 57);
+    y += 62;
     y = addParagraph(doc, "DRONES37 est référencé auprès de la Direction Générale de l'Aviation Civile (DGAC) comme entreprise utilisatrice de drones et centre de formation. Les appareils utilisés sont certifiés conformes et les télépilotes sont membres de l'Union Nationale des Exploitants Professionnels d'Aéronefs Télépilotés (UNEPAT).", y);
     y += 4;
     y = addParagraph(doc, "DRONES37 est également membre de la Fédération Professionnelle du Drone Civil (FPDC) et est un organisme de formation déclaré auprès de la préfecture d'Indre et Loire sous le numéro 24370471537.", y);
@@ -361,8 +364,11 @@ export function generateLivretAccueilPDF(student: Student) {
     y += 4;
     y = addSubTitle(doc, "Un réseau d'experts de la pulvérisation par drone", y);
     y += 4;
-    y = addParagraph(doc, "DRONES37 fait partie d'un réseau d'experts au niveau national lui permettant de rester à un haut niveau d'expertise et d'exigence (https://experts-drones.com).", y);
-    y += 2;
+    doc.addImage(IMG_RESEAU, "JPEG", 20, y, 75, 64);
+    {
+      const textY = addParagraph(doc, "DRONES37 fait partie d'un réseau d'experts au niveau national lui permettant de rester à un haut niveau d'expertise et d'exigence (https://experts-drones.com).", y + 18, { maxWidth: 85, indent: 103 });
+      y = Math.max(textY, y + 68);
+    }
     y = addParagraph(doc, "Résolument tournée vers des missions complexes, DRONES37 présente toute une gamme de prestations à destination des professionnels de l'immobilier et de l'assurance, mais également des entreprises, des industries et des collectivités : cartographie, inspections techniques, appui aux services de secours et d'intervention en qualité d'officier expert appui drone du SDIS37, pulvérisation sur bâtiments par drones, promotion immobilière, etc.", y);
     y += 2;
     y = addParagraph(doc, "Retrouvez nos prestations sur notre site internet : https://www.drones37.com", y);
