@@ -594,12 +594,13 @@ export function generateLivretAccueilPDF(student: Student) {
     y = addParagraph(doc, "Pour les personnes en situation de handicap, les sessions peuvent se passer au RUBIXCO, 1 rue Bernard Maris, 37270 Montlouis sur Loire, à 5 minutes du centre.", y);
     y += 6;
 
+    y = checkNewPage(doc, y, 70);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Emplacement du site de formation", 20, y);
     y += 6;
-    doc.addImage(IMG_EMPLACEMENT, "JPEG", 20, y, 170, 70);
-    y += 76;
+    doc.addImage(IMG_EMPLACEMENT, "JPEG", 20, y, 170, 60);
+    y += 66;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
