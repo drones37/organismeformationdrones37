@@ -2,7 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Student } from "./store";
 import { getModulesForFormation } from "./formationModules";
-import { IMG_BANNIERE, IMG_RESEAU, IMG_SALLE, IMG_RUBIXCO } from "./livretImages";
+import { IMG_BANNIERE, IMG_RESEAU, IMG_SALLE, IMG_RUBIXCO, IMG_EMPLACEMENT } from "./livretImages";
 
 const COMPANY = {
   name: "DRONES37",
@@ -593,6 +593,14 @@ export function generateLivretAccueilPDF(student: Student) {
     y += 2;
     y = addParagraph(doc, "Pour les personnes en situation de handicap, les sessions peuvent se passer au RUBIXCO, 1 rue Bernard Maris, 37270 Montlouis sur Loire, à 5 minutes du centre.", y);
     y += 6;
+
+    y = checkNewPage(doc, y, 70);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Emplacement du site de formation", 20, y);
+    y += 6;
+    doc.addImage(IMG_EMPLACEMENT, "JPEG", 20, y, 170, 60);
+    y += 66;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
