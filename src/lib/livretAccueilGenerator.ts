@@ -28,6 +28,7 @@ const COLORS = {
 interface FormationConfig {
   title: string;
   subtitle: string;
+  certification?: string;
   objectives: string[];
   prerequis: string;
   duree: string;
@@ -87,6 +88,7 @@ function getFormationConfig(formation: string): FormationConfig {
     duree: "5 jours (35 heures)",
     materiel: "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD.",
     publicVise: "Toute personne souhaitant exercer en tant que télépilote professionnel de drone.",
+    certification: "RS7235 — Télépilotage de drone en scénarios standards STS-01 et STS-02 (éligible CPF)",
   };
 }
 
@@ -255,7 +257,6 @@ export function generateLivretAccueilPDF(student: Student) {
       "   4.2 Mise en œuvre de l'action de formation",
       "   4.3 Modalités pédagogiques",
       "   4.4 Programme — Items d'évaluation",
-      "   4.5 Planning détaillé de formation (5 jours)",
       "5. Site de formation",
       "6. Constitution de votre dossier",
       "7. Règlement intérieur",
@@ -382,6 +383,11 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.setFont("helvetica", "bold");
     doc.text("Durée :", 20, y); doc.setFont("helvetica", "normal"); doc.text(config.duree, 50, y);
     y += 6;
+    if (config.certification) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Certification :", 20, y); doc.setFont("helvetica", "normal"); doc.text(config.certification, 50, y, { maxWidth: 140 });
+      y += 6;
+    }
     doc.setFont("helvetica", "bold");
     doc.text("Prérequis :", 20, y); doc.setFont("helvetica", "normal"); doc.text(config.prerequis, 50, y, { maxWidth: 140 });
     y += 6;
