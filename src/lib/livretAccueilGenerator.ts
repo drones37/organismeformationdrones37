@@ -28,6 +28,7 @@ const COLORS = {
 interface FormationConfig {
   title: string;
   subtitle: string;
+  certification?: string;
   objectives: string[];
   prerequis: string;
   duree: string;
@@ -87,6 +88,7 @@ function getFormationConfig(formation: string): FormationConfig {
     duree: "5 jours (35 heures)",
     materiel: "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD.",
     publicVise: "Toute personne souhaitant exercer en tant que télépilote professionnel de drone.",
+    certification: "RS7235 — Télépilotage de drone en scénarios standards STS-01 et STS-02 (éligible CPF)",
   };
 }
 
@@ -255,7 +257,6 @@ export function generateLivretAccueilPDF(student: Student) {
       "   4.2 Mise en œuvre de l'action de formation",
       "   4.3 Modalités pédagogiques",
       "   4.4 Programme — Items d'évaluation",
-      "   4.5 Planning détaillé de formation (5 jours)",
       "5. Site de formation",
       "6. Constitution de votre dossier",
       "7. Règlement intérieur",
@@ -376,12 +377,17 @@ export function generateLivretAccueilPDF(student: Student) {
 
     // Info block
     doc.setFillColor(...COLORS.lightGray);
-    doc.roundedRect(15, y - 2, 180, 28, 3, 3, "F");
+    doc.roundedRect(15, y - 2, 180, config.certification ? 34 : 28, 3, 3, "F");
     y += 4;
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text("Durée :", 20, y); doc.setFont("helvetica", "normal"); doc.text(config.duree, 50, y);
     y += 6;
+    if (config.certification) {
+      doc.setFont("helvetica", "bold");
+      doc.text("Certification :", 20, y); doc.setFont("helvetica", "normal"); doc.text(config.certification, 50, y, { maxWidth: 140 });
+      y += 6;
+    }
     doc.setFont("helvetica", "bold");
     doc.text("Prérequis :", 20, y); doc.setFont("helvetica", "normal"); doc.text(config.prerequis, 50, y, { maxWidth: 140 });
     y += 6;
@@ -462,61 +468,6 @@ export function generateLivretAccueilPDF(student: Student) {
       margin: { left: 15, right: 15 },
     });
   });
-
-  // ============ PAGE : PLANNING DÉTAILLÉ (STS-01/STS-02 — 5 jours) ============
-  const isSTS = !(/pulvé|bâtiment|a1|a3|ouverte/i.test(student.formation));
-  if (isSTS) {
-    pages.push(() => {
-      addHeader(doc);
-      let y = addSectionTitle(doc, "Programme — Planning détaillé de formation", 42);
-      y += 2;
-      y = addSubTitle(doc, config.title + " — 5 jours (35 heures)", y);
-      y += 4;
-      y = addParagraph(doc, "Répartition indicative des 18 items d'évaluation par jour et demi-journée. Ce planning est adapté à chaque session en fonction du nombre de jours de formation et des conditions météorologiques.", y);
-      y += 4;
-
-      autoTable(doc, {
-        startY: y,
-        head: [["Jour", "Matin (9h00 – 13h00)", "Après-midi (14h00 – 17h00)"]],
-        body: [
-          [
-            "Jour 1",
-            "1. Connaître la réglementation européenne et française UAS\n2. Connaître les catégories d'exploitation (Ouverte, Spécifique, Certifiée)\n3. Créer et actualiser un MANEX",
-            "4. Déclarer une activité d'exploitant UAS auprès des autorités\n5. Intégrer un UAS auprès d'un exploitant\n9. Effectuer les déclarations sur AlphaTango / DGAC",
-          ],
-          [
-            "Jour 2",
-            "8. Lire et interpréter les cartes aéronautiques (OACI, NOTAM, SUP AIP)",
-            "6. Préparer un vol Mission en STS-01\n7. Préparer un vol Mission en STS-02",
-          ],
-          [
-            "Jour 3",
-            "10. Télépiloter un UAS avec assistance GPS",
-            "12. Télépiloter un UAS en vol à vue (VLOS)",
-          ],
-          [
-            "Jour 4",
-            "11. Télépiloter un UAS en mode ATTI (sans GPS)",
-            "13. Télépiloter un UAS hors vue (BVLOS) avec observateur",
-          ],
-          [
-            "Jour 5",
-            "14. Télépiloter un UAS en situations dégradées\n15. Appliquer des procédures d'urgence adaptées à la mission et l'UAS\n16. Gérer les situations anormales (perte GPS, FlyAway, intrusion)",
-            "17. Analyser des risques et déclarer un incident (CRESUS)\n18. Entretenir un UAS\nBilan et remise du Livret de progression / Attestation",
-          ],
-        ],
-        theme: "grid",
-        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9, halign: "center" },
-        bodyStyles: { fontSize: 8, cellPadding: 3, valign: "top" },
-        alternateRowStyles: { fillColor: [245, 248, 250] },
-        columnStyles: { 0: { fontStyle: "bold", halign: "center", cellWidth: 20 }, 1: { cellWidth: 80 }, 2: { cellWidth: 80 } },
-        margin: { left: 15, right: 15 },
-      });
-
-      const yEnd = (doc as any).lastAutoTable?.finalY + 8 || 250;
-      addParagraph(doc, "À l'issue de cette formation et sous réserve d'une marge de progression convenable, nous remettons à chaque élève un Livret de progression et une Attestation de suivi de formation.", yEnd);
-    });
-  }
 
   // ======================== PAGE 8: SITE DE FORMATION ========================
   pages.push(() => {
