@@ -302,6 +302,8 @@ export function generateLivretAccueilPDF(student: Student) {
       "   4.2 Mise en œuvre de l'action de formation",
       "   4.3 Modalités pédagogiques",
       "   4.4 Programme — Items d'évaluation",
+      "   4.5 Prérequis et conditions de certification",
+      "   4.6 Planning de la formation (5 jours)",
       "5. Site de formation",
       "6. Constitution de votre dossier",
       "7. Règlement intérieur",
