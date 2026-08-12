@@ -750,7 +750,7 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
     doc.setFont("helvetica", "bold");
     doc.text("Stagiaire :", 20, y + 6);
     doc.setFont("helvetica", "normal");
-    doc.text(`${student.firstName} ${student.lastName}`, 20, y + 12);
+    doc.text(blank ? "..............................." : `${student.firstName} ${student.lastName}`, 20, y + 12);
     doc.text("Signature :", 20, y + 20);
 
     doc.setFont("helvetica", "bold");
@@ -760,14 +760,16 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
     doc.text("Signature :", 115, y + 20);
 
     // Embed actual signatures
-    try {
-      const sSig = student.docSignatures?.livret?.student;
-      if (sSig) doc.addImage(sSig, "PNG", 50, y + 16, 45, 12);
-    } catch { /* ignore */ }
-    try {
-      const iSig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
-      if (iSig) doc.addImage(iSig, "PNG", 145, y + 16, 45, 12);
-    } catch { /* ignore */ }
+    if (!blank) {
+      try {
+        const sSig = student.docSignatures?.livret?.student;
+        if (sSig) doc.addImage(sSig, "PNG", 50, y + 16, 45, 12);
+      } catch { /* ignore */ }
+      try {
+        const iSig = typeof window !== "undefined" ? window.localStorage.getItem("instructorSignature") : null;
+        if (iSig) doc.addImage(iSig, "PNG", 145, y + 16, 45, 12);
+      } catch { /* ignore */ }
+    }
   });
 
   // ======================== PAGES 12-13: CGU (résumé) ========================
