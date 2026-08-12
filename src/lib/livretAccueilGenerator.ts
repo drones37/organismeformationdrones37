@@ -522,6 +522,55 @@ export function generateLivretAccueilPDF(student: Student) {
     });
   });
 
+  // ======================== PRÉREQUIS ========================
+  if (config.prerequisEntree || config.prerequisValidation) {
+    pages.push(() => {
+      addHeader(doc);
+      let y = addSectionTitle(doc, "Les prérequis", 42);
+      y += 4;
+
+      y = addSubTitle(doc, "À l'entrée en formation", y);
+      y += 4;
+      y = addBulletList(doc, config.prerequisEntree || [], y);
+      y += 6;
+
+      y = addSubTitle(doc, "À la validation de la certification", y);
+      y += 4;
+      y = addBulletList(doc, config.prerequisValidation || [], y);
+      y += 6;
+
+      y = addParagraph(doc, "BAPD : Brevet d'Aptitude de Pilote à Distance (catégorie ouverte) — CATS : Certificat d'Aptitude Théorique de télépilote en scénarios standards (catégorie spécifique), délivrés par la DGAC.", y, { fontSize: 8 });
+    });
+  }
+
+  // ======================== PLANNING 5 JOURS ========================
+  if (config.planning && config.planning.length > 0) {
+    pages.push(() => {
+      addHeader(doc);
+      let y = addSectionTitle(doc, "Planning de la formation", 42);
+      y += 4;
+
+      y = addParagraph(doc, `${config.duree} — Horaires : 9h00-13h00 (matin) et 14h00-17h00 (après-midi). Le planning est indicatif et peut être réaménagé, notamment en fonction des conditions météorologiques, afin d'optimiser le temps de télépilotage.`, y);
+      y += 4;
+
+      autoTable(doc, {
+        startY: y,
+        head: [["Jour", "Matin (9h-13h)", "Après-midi (14h-17h)"]],
+        body: config.planning!.map(p => [p.jour, p.matin, p.apresMidi]),
+        theme: "grid",
+        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9 },
+        bodyStyles: { fontSize: 7.5, cellPadding: 3, valign: "top" },
+        alternateRowStyles: { fillColor: [245, 248, 250] },
+        columnStyles: {
+          0: { fontStyle: "bold", cellWidth: 20, halign: "center" },
+          1: { cellWidth: 80 },
+          2: { cellWidth: 80 },
+        },
+        margin: { left: 15, right: 15 },
+      });
+    });
+  }
+
   // ======================== PAGE 8: SITE DE FORMATION ========================
   pages.push(() => {
     addHeader(doc);
