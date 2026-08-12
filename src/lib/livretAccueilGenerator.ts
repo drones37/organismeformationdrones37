@@ -233,7 +233,8 @@ function checkNewPage(doc: jsPDF, y: number, needed: number): number {
 }
 
 // ==================== MAIN GENERATOR ====================
-export function generateLivretAccueilPDF(student: Student) {
+export function generateLivretAccueilPDF(student: Student, options?: { blank?: boolean }) {
+  const blank = options?.blank === true;
   const config = getFormationConfig(student.formation);
   const modules = getModulesForFormation(student.formation);
   const doc = new jsPDF();
@@ -274,12 +275,17 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.text("Stagiaire", 105, 160, { align: "center" });
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.text(`${student.firstName} ${student.lastName}`, 105, 172, { align: "center" });
+    doc.text(blank ? "........................................" : `${student.firstName} ${student.lastName}`, 105, 172, { align: "center" });
 
     // Dates
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    doc.text(`Du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`, 105, 185, { align: "center" });
+    doc.text(
+      blank
+        ? "Du ...... / ...... / ............  au  ...... / ...... / ............"
+        : `Du ${new Date(student.startDate).toLocaleDateString("fr-FR")} au ${new Date(student.endDate).toLocaleDateString("fr-FR")}`,
+      105, 185, { align: "center" }
+    );
 
     // Bottom info
     doc.setFontSize(8);
