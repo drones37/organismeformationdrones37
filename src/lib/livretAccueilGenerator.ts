@@ -377,7 +377,7 @@ export function generateLivretAccueilPDF(student: Student) {
 
     // Info block
     doc.setFillColor(...COLORS.lightGray);
-    doc.roundedRect(15, y - 2, 180, 28, 3, 3, "F");
+    doc.roundedRect(15, y - 2, 180, config.certification ? 34 : 28, 3, 3, "F");
     y += 4;
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
