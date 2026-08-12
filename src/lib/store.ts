@@ -534,7 +534,7 @@ export const store = {
     const signedAt = new Date().toLocaleString("fr-FR");
     progressions = progressions.map(p => p.id === progressionId ? { ...p, instructorSignature: signature, instructorSignedAt: signedAt } : p);
     notifyStoreChange();
-    supabase.rpc("update_progression_instructor_signature", { p_id: progressionId, p_signature: signature, p_signed_at: signedAt }).then(({ error }) => {
+    (supabase.rpc as any)("update_progression_instructor_signature", { p_id: progressionId, p_signature: signature, p_signed_at: signedAt }).then(({ error }: any) => {
       if (error) console.error("[store] instructor_signature save error:", error);
     });
   },
@@ -542,7 +542,7 @@ export const store = {
     const signedAt = new Date().toLocaleString("fr-FR");
     progressions = progressions.map(p => p.id === progressionId ? { ...p, studentSignature: signature, studentSignedAt: signedAt } : p);
     notifyStoreChange();
-    supabase.rpc("update_progression_student_signature", { p_id: progressionId, p_signature: signature, p_signed_at: signedAt }).then(({ error }) => {
+    (supabase.rpc as any)("update_progression_student_signature", { p_id: progressionId, p_signature: signature, p_signed_at: signedAt }).then(({ error }: any) => {
       if (error) console.error("[store] student_signature save error:", error);
     });
   },

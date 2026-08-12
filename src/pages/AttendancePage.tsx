@@ -45,7 +45,7 @@ const AttendancePage = () => {
   const [, forceUpdate] = useState(0);
   const [open, setOpen] = useState(false);
   const [signingFor, setSigningFor] = useState<{ sheetId: string; studentId: string; day: string } | null>(null);
-  const [form, setForm] = useState({ title: "", date: "", formation: "", days: "3" });
+  const [form, setForm] = useState({ title: "", date: "", formation: "", days: "5" });
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
   // QR modal state
@@ -59,7 +59,7 @@ const AttendancePage = () => {
 
   const handleCreate = () => {
     if (!form.title || !form.date) return;
-    const days = parseInt(form.days) || 3;
+    const days = parseInt(form.days) || 5;
     const dayKeys: Record<string, { signed: boolean }> = {};
     for (let i = 1; i <= days; i++) {
       dayKeys[`J${i}`] = { signed: false };
@@ -79,7 +79,7 @@ const AttendancePage = () => {
         };
       }),
     });
-    setForm({ title: "", date: "", formation: "", days: "3" });
+    setForm({ title: "", date: "", formation: "", days: "5" });
     setSelectedStudents([]);
     setOpen(false);
     forceUpdate(n => n + 1);
