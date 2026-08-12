@@ -362,7 +362,12 @@ export function generateLivretAccueilPDF(student: Student) {
     // Satisfaction
     y = addParagraph(doc, "100% de nos élèves sont satisfaits de leur formation télépilote professionnel de drone.", y);
     y += 4;
-    y = addSubTitle(doc, "Un réseau d'experts de la pulvérisation par drone", y);
+  });
+
+  // ======================== PAGE 4bis: RÉSEAU D'EXPERTS ========================
+  pages.push(() => {
+    addHeader(doc);
+    let y = addSectionTitle(doc, "Un réseau d'experts de la pulvérisation par drone", 42);
     y += 4;
     doc.addImage(IMG_RESEAU, "JPEG", 20, y, 75, 64);
     {
