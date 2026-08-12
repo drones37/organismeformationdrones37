@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Student } from "./store";
 import { getModulesForFormation } from "./formationModules";
+import { IMG_BANNIERE, IMG_RESEAU, IMG_SALLE, IMG_RUBIXCO } from "./livretImages";
 
 const COMPANY = {
   name: "DRONES37",
@@ -207,15 +208,16 @@ function addParagraph(doc: jsPDF, text: string, y: number, options?: { fontSize?
   return y + lines.length * (fs * 0.45) + 2;
 }
 
-function addBulletList(doc: jsPDF, items: string[], y: number, options?: { fontSize?: number; maxWidth?: number }): number {
+function addBulletList(doc: jsPDF, items: string[], y: number, options?: { fontSize?: number; maxWidth?: number; indent?: number }): number {
   const fs = options?.fontSize || 9;
   const mw = options?.maxWidth || 160;
+  const x = options?.indent ?? 22;
   doc.setFontSize(fs);
   doc.setFont("helvetica", "normal");
   items.forEach(item => {
     const lines = doc.splitTextToSize(item, mw);
-    doc.text("•", 22, y);
-    doc.text(lines, 27, y);
+    doc.text("•", x, y);
+    doc.text(lines, x + 5, y);
     y += lines.length * (fs * 0.45) + 2;
   });
   return y;
@@ -332,6 +334,8 @@ export function generateLivretAccueilPDF(student: Student) {
 
     y = addParagraph(doc, "DRONES37 est une entreprise spécialisée dans la pulvérisation sur bâtiments par drones, créée en septembre 2020. Elle propose à ses clients des traitements sur tout types de bâtiments par drones, des inspections techniques, des modélisations 3D et vues aériennes.", y);
     y += 4;
+    doc.addImage(IMG_BANNIERE, "JPEG", 30, y, 150, 57);
+    y += 62;
     y = addParagraph(doc, "DRONES37 est référencé auprès de la Direction Générale de l'Aviation Civile (DGAC) comme entreprise utilisatrice de drones et centre de formation. Les appareils utilisés sont certifiés conformes et les télépilotes sont membres de l'Union Nationale des Exploitants Professionnels d'Aéronefs Télépilotés (UNEPAT).", y);
     y += 4;
     y = addParagraph(doc, "DRONES37 est également membre de la Fédération Professionnelle du Drone Civil (FPDC) et est un organisme de formation déclaré auprès de la préfecture d'Indre et Loire sous le numéro 24370471537.", y);
@@ -359,10 +363,18 @@ export function generateLivretAccueilPDF(student: Student) {
     // Satisfaction
     y = addParagraph(doc, "100% de nos élèves sont satisfaits de leur formation télépilote professionnel de drone.", y);
     y += 4;
-    y = addSubTitle(doc, "Un réseau d'experts de la pulvérisation par drone", y);
+  });
+
+  // ======================== PAGE 4bis: RÉSEAU D'EXPERTS ========================
+  pages.push(() => {
+    addHeader(doc);
+    let y = addSectionTitle(doc, "Un réseau d'experts de la pulvérisation par drone", 42);
     y += 4;
-    y = addParagraph(doc, "DRONES37 fait partie d'un réseau d'experts au niveau national lui permettant de rester à un haut niveau d'expertise et d'exigence (https://experts-drones.com).", y);
-    y += 2;
+    doc.addImage(IMG_RESEAU, "JPEG", 20, y, 75, 64);
+    {
+      const textY = addParagraph(doc, "DRONES37 fait partie d'un réseau d'experts au niveau national lui permettant de rester à un haut niveau d'expertise et d'exigence (https://experts-drones.com).", y + 18, { maxWidth: 85, indent: 103 });
+      y = Math.max(textY, y + 68);
+    }
     y = addParagraph(doc, "Résolument tournée vers des missions complexes, DRONES37 présente toute une gamme de prestations à destination des professionnels de l'immobilier et de l'assurance, mais également des entreprises, des industries et des collectivités : cartographie, inspections techniques, appui aux services de secours et d'intervention en qualité d'officier expert appui drone du SDIS37, pulvérisation sur bâtiments par drones, promotion immobilière, etc.", y);
     y += 2;
     y = addParagraph(doc, "Retrouvez nos prestations sur notre site internet : https://www.drones37.com", y);
@@ -597,26 +609,29 @@ export function generateLivretAccueilPDF(student: Student) {
     doc.setFontSize(10);
     doc.text("Les locaux de formation", 20, y);
     y += 6;
-    y = addBulletList(doc, [
+    const locauxY = addBulletList(doc, [
       "Tables et chaises",
       "Tableau blanc magnétique",
       "Écran LED",
       "Wifi",
       "Eau à disposition",
-    ], y);
-    y += 6;
+    ], y, { maxWidth: 75 });
+    doc.addImage(IMG_SALLE, "JPEG", 110, y - 2, 85, 53);
+    y = Math.max(locauxY, y + 53) + 6;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text("Accessibilité handicapée (RUBIXCO)", 20, y);
     y += 6;
-    y = addBulletList(doc, [
+    doc.addImage(IMG_RUBIXCO, "JPEG", 20, y, 55, 54);
+    const accY = addBulletList(doc, [
       "Plusieurs places de stationnement adaptées",
       "Sanitaires handicapés",
       "Bâtiment de plain-pied sans escalier",
-      "Ouvertures et portes à passage utile ≥ 80 cm",
+      "Ouvertures et portes à passage utile supérieur ou égal à 80 cm",
       "Terrain accessible en fauteuil roulant (enrobé)",
-    ], y);
+    ], y + 4, { maxWidth: 105, indent: 82 });
+    y = Math.max(accY, y + 56);
     y += 4;
     y = addParagraph(doc, "DRONES37 ne prendra pas en charge la locomotion des stagiaires sur les lieux de formation, leurs hébergements ainsi que leurs repas.", y, { fontSize: 8 });
   });
