@@ -31,10 +31,52 @@ interface FormationConfig {
   certification?: string;
   objectives: string[];
   prerequis: string;
+  prerequisEntree?: string[];
+  prerequisValidation?: string[];
+  planning?: { jour: string; matin: string; apresMidi: string }[];
   duree: string;
   materiel: string;
   publicVise: string;
 }
+
+const PREREQUIS_ENTREE_FPDC = [
+  "Le candidat devra fournir la preuve de l'usage du drone dans le cadre de l'exercice de son métier et dans le secteur d'activités visé, au travers d'un entretien de positionnement avec l'organisme de formation.",
+  "Le candidat doit être en possession de l'un des certificats d'aptitude théoriques obligatoires (BAPD et/ou CATS).",
+  "Si le candidat n'est pas en possession de l'un de ces certificats d'aptitude théorique, il devra obligatoirement être en capacité de se présenter à ces examens avant son inscription à la validation de sa certification pratique.",
+];
+
+const PREREQUIS_VALIDATION_FPDC = [
+  "Le candidat devra avoir suivi une formation délivrée par un organisme labellisé par la FPDC et répondant aux critères et attendus de la certification tels que définis dans le règlement de certification.",
+  "Le candidat devra être détenteur du diplôme du BAPD pour évoluer en catégorie ouverte et/ou du CATS pour évoluer en catégorie spécifique, délivrés par la DGAC.",
+];
+
+const PLANNING_STS = [
+  {
+    jour: "Jour 1",
+    matin: "Accueil, présentation de la formation et du référentiel RS7235 — Rappels réglementaires (règlements UE 2019/947 et 2019/945, scénarios STS-01 / STS-02) — Positionnement des stagiaires",
+    apresMidi: "Prise en main de l'aéronef, documentation constructeur, vérifications pré-vol — Premiers exercices de télépilotage en vol stationnaire et déplacements simples",
+  },
+  {
+    jour: "Jour 2",
+    matin: "Préparation de la mission : cartes aéronautiques, NOTAM, météo, zones de vol — Analyse de risques et mesures d'atténuation",
+    apresMidi: "Exercices pratiques STS-01 : vol en vue, gestion du volume opérationnel, trajectoires imposées",
+  },
+  {
+    jour: "Jour 3",
+    matin: "Suivi administratif de l'activité : AlphaTango, MANEX, enregistrement exploitant, déclarations DGAC — Assurances et responsabilités",
+    apresMidi: "Exercices pratiques STS-02 : vol hors vue avec observateurs, gestion de l'espace, communication équipage",
+  },
+  {
+    jour: "Jour 4",
+    matin: "Situations anormales et dégradées : pannes GPS, perte de liaison, batterie faible, procédures d'urgence",
+    apresMidi: "Mises en situation professionnelles complètes : briefing, mission, débriefing — Évaluation formative",
+  },
+  {
+    jour: "Jour 5",
+    matin: "Révisions et consolidation des acquis — Traitement des points faibles identifiés",
+    apresMidi: "Évaluation pratique finale (STS-01 / STS-02) — Débriefing individuel, livret de progression, bilan et questionnaire de satisfaction",
+  },
+];
 
 function getFormationConfig(formation: string): FormationConfig {
   const lower = formation.toLowerCase();
@@ -89,6 +131,9 @@ function getFormationConfig(formation: string): FormationConfig {
     materiel: "Matériel pour écrire, tenue décontractée, équipement météo, matériel informatique avec carte SD.",
     publicVise: "Toute personne souhaitant exercer en tant que télépilote professionnel de drone.",
     certification: "RS7235 — Télépilotage de drone en scénarios standards STS-01 et STS-02 (éligible CPF)",
+    prerequisEntree: PREREQUIS_ENTREE_FPDC,
+    prerequisValidation: PREREQUIS_VALIDATION_FPDC,
+    planning: PLANNING_STS,
   };
 }
 
