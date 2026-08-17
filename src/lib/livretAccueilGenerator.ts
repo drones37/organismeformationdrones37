@@ -254,6 +254,10 @@ function checkNewPage(doc: jsPDF, y: number, needed: number): number {
 export function generateLivretAccueilPDF(student: Student, options?: { blank?: boolean }) {
   const blank = options?.blank === true;
   const config = getFormationConfig(student.formation);
+  const version = (options as any)?.version || getLivretVersion(student);
+  const isSTS = !!config.planning;
+  const v3 = version === "v3" && isSTS;
+  if (v3) config.planning = PLANNING_STS_V3;
   const modules = getModulesForFormation(student.formation);
   const doc = new jsPDF();
   const pages: (() => void)[] = [];
@@ -313,13 +317,63 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
     doc.text(`NDA: ${COMPANY.nda} — Certifié QUALIOPI n°${COMPANY.qualiopiCert}`, 105, 272, { align: "center" });
   });
 
+  // ======================== PAGE FPDC (v3) : correspondance Fiche N°2 ========================
+  if (v3) {
+    pages.push(() => {
+      addHeader(doc);
+      let y = addSectionTitle(doc, "Correspondance avec le cahier des charges FPDC — Fiche N°2", 42);
+      y += 4;
+      y = addParagraph(doc, "Ce livret d'accueil constitue le document décrivant le contenu de la formation « Télépilote Drone STS-01/STS-02 » préparant à la certification RS7235. Le tableau ci-dessous indique où trouver chacune des mentions exigées par la Fiche N°2 de constitution du dossier pédagogique.", y);
+      y += 4;
+      autoTable(doc, {
+        startY: y,
+        head: [["Critère exigé (Fiche N°2 FPDC)", "Traité dans"]],
+        body: [
+          ["Objectif général de la formation", "Votre formation"],
+          ["Objectifs pédagogiques", "Votre formation — Objectifs de la formation"],
+          ["Contenu de la formation", "Programme — Items d'évaluation"],
+          ["Volumes horaires détaillés (présentiel / distanciel)", "Planning de la formation"],
+          ["Modalités pédagogiques", "Votre formation — Modalités pédagogiques"],
+          ["Modalités d'évaluation", "Modalités d'évaluation"],
+          ["Public visé", "Votre formation"],
+          ["Prérequis", "Les prérequis"],
+        ],
+        theme: "grid",
+        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9 },
+        bodyStyles: { fontSize: 8.5, cellPadding: 3 },
+        alternateRowStyles: { fillColor: [245, 248, 250] },
+        columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 90 } },
+        margin: { left: 15, right: 15 },
+      });
+    });
+  }
+
   // ======================== PAGE 2: SOMMAIRE ========================
   pages.push(() => {
     addHeader(doc);
     let y = addSectionTitle(doc, "SOMMAIRE", 42);
     y += 4;
 
-    const sommaire = [
+    const sommaire = v3 ? [
+      "1. L'entreprise DRONES37",
+      "2. Certification QUALIOPI",
+      "3. Un réseau d'experts de la pulvérisation par drone",
+      "4. Organigramme — Une équipe disponible",
+      "5. Votre formation",
+      "   5.1 Objectifs de la formation",
+      "   5.2 Mise en œuvre de l'action de formation",
+      "   5.3 Modalités pédagogiques",
+      "6. Programme — Items d'évaluation",
+      "7. Prérequis et conditions de certification",
+      "8. Modalités d'évaluation",
+      "9. Planning de la formation (5 jours)",
+      "10. Site de formation",
+      "11. Constitution de votre dossier",
+      "12. Règlement intérieur",
+      "13. Conditions Générales d'Utilisation (CGU)",
+      "14. Conditions Générales de Vente (CGV)",
+      "15. Protection des données personnelles",
+    ] : [
       "1. L'entreprise DRONES37",
       "2. Certification QUALIOPI",
       "3. Organigramme — Une équipe disponible",
