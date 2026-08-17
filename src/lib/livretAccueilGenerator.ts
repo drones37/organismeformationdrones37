@@ -635,6 +635,40 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
 
   // ======================== PLANNING 5 JOURS ========================
   if (config.planning && config.planning.length > 0) {
+    // Modalités d'évaluation (v3, avant le planning)
+    if (v3) {
+      pages.push(() => {
+        addHeader(doc);
+        let y = addSectionTitle(doc, "Modalités d'évaluation", 42);
+        y += 4;
+        y = addParagraph(doc, "L'évaluation des stagiaires porte sur les deux blocs de compétences du référentiel RS7235 et se déroule selon les modalités suivantes :", y);
+        y += 6;
+        y = addSubTitle(doc, "Évaluation continue", y);
+        y += 4;
+        y = addBulletList(doc, [
+          "Observation directe du formateur tout au long de la formation, sur chaque exercice pratique et mise en situation",
+          "Questionnaires de connaissances réglementaires et techniques en cours de formation",
+        ], y);
+        y += 6;
+        y = addSubTitle(doc, "Évaluation pratique finale", y);
+        y += 4;
+        y = addParagraph(doc, "Elle a lieu à l'issue des 5 jours de formation, lors d'une session dédiée organisée par l'organisme.", y);
+        y += 2;
+        y = addBulletList(doc, [
+          "Mise en situation professionnelle complète (briefing, préparation de mission, vol, débriefing) sur les scénarios STS-01 et STS-02",
+          "Évaluation réalisée par un juré mandaté par la FPDC, extérieur à l'organisme de formation, garantissant l'indépendance de l'évaluation",
+          "Évaluation sur grille de critères alignée sur les 18 items du référentiel RS7235, couvrant le Bloc 1 (préparer une mission de vol) et le Bloc 2 (réaliser une mission de captation de données)",
+        ], y);
+        y += 6;
+        y = addSubTitle(doc, "Restitution et certification", y);
+        y += 4;
+        y = addBulletList(doc, [
+          "Remise d'un Livret de progression et d'une Attestation de suivi de formation pratique à chaque stagiaire à l'issue des 5 jours",
+          "Résultat de l'évaluation transmis par le juré à la commission Labellisation de la FPDC en vue de la délivrance de la certification RS7235",
+          "Questionnaire de satisfaction à chaud remis en fin de formation",
+        ], y);
+      });
+    }
     pages.push(() => {
       addHeader(doc);
       let y = addSectionTitle(doc, "Planning de la formation", 42);
@@ -658,6 +692,11 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
         },
         margin: { left: 15, right: 15 },
       });
+
+      if (v3) {
+        const afterY = (doc as any).lastAutoTable?.finalY + 8 || y + 100;
+        addParagraph(doc, "Ce planning couvre les 5 jours de formation. L'évaluation pratique finale en vue de la certification RS7235 est organisée dans un second temps, à l'issue de la formation, par un juré mandaté par la FPDC et extérieur à l'organisme (cf. Modalités d'évaluation).", afterY, { fontSize: 8 });
+      }
     });
   }
 
