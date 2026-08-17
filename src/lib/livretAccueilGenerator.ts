@@ -79,6 +79,24 @@ const PLANNING_STS = [
   },
 ];
 
+// Planning v3 (nouveau livret) : l'évaluation certificative est organisée après la formation
+const PLANNING_STS_V3 = [
+  ...PLANNING_STS.slice(0, 4),
+  {
+    jour: "Jour 5",
+    matin: "Révisions et consolidation des acquis — Traitement des points faibles identifiés",
+    apresMidi: "Mise en situation professionnelle complète, débriefing individuel avec le formateur, remise du livret de progression, bilan et questionnaire de satisfaction",
+  },
+];
+
+// Livret v3 : applicable aux élèves créés à partir de cette date (les anciens gardent le livret v2)
+export const LIVRET_V3_CUTOFF = 1787000000000;
+
+export function getLivretVersion(student: Student): "v2" | "v3" {
+  const ts = Number(student.id);
+  return Number.isFinite(ts) && ts >= LIVRET_V3_CUTOFF ? "v3" : "v2";
+}
+
 function getFormationConfig(formation: string): FormationConfig {
   const lower = formation.toLowerCase();
   if (lower.includes("pulvé") || lower.includes("bâtiment")) {
@@ -233,9 +251,13 @@ function checkNewPage(doc: jsPDF, y: number, needed: number): number {
 }
 
 // ==================== MAIN GENERATOR ====================
-export function generateLivretAccueilPDF(student: Student, options?: { blank?: boolean }) {
+export function generateLivretAccueilPDF(student: Student, options?: { blank?: boolean; version?: "v2" | "v3" }) {
   const blank = options?.blank === true;
   const config = getFormationConfig(student.formation);
+  const version = options?.version || getLivretVersion(student);
+  const isSTS = !!config.planning;
+  const v3 = version === "v3" && isSTS;
+  if (v3) config.planning = PLANNING_STS_V3;
   const modules = getModulesForFormation(student.formation);
   const doc = new jsPDF();
   const pages: (() => void)[] = [];
@@ -295,13 +317,63 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
     doc.text(`NDA: ${COMPANY.nda} — Certifié QUALIOPI n°${COMPANY.qualiopiCert}`, 105, 272, { align: "center" });
   });
 
+  // ======================== PAGE FPDC (v3) : correspondance Fiche N°2 ========================
+  if (v3) {
+    pages.push(() => {
+      addHeader(doc);
+      let y = addSectionTitle(doc, "Correspondance avec le cahier des charges FPDC — Fiche N°2", 42);
+      y += 4;
+      y = addParagraph(doc, "Ce livret d'accueil constitue le document décrivant le contenu de la formation « Télépilote Drone STS-01/STS-02 » préparant à la certification RS7235. Le tableau ci-dessous indique où trouver chacune des mentions exigées par la Fiche N°2 de constitution du dossier pédagogique.", y);
+      y += 4;
+      autoTable(doc, {
+        startY: y,
+        head: [["Critère exigé (Fiche N°2 FPDC)", "Traité dans"]],
+        body: [
+          ["Objectif général de la formation", "Votre formation"],
+          ["Objectifs pédagogiques", "Votre formation — Objectifs de la formation"],
+          ["Contenu de la formation", "Programme — Items d'évaluation"],
+          ["Volumes horaires détaillés (présentiel / distanciel)", "Planning de la formation"],
+          ["Modalités pédagogiques", "Votre formation — Modalités pédagogiques"],
+          ["Modalités d'évaluation", "Modalités d'évaluation"],
+          ["Public visé", "Votre formation"],
+          ["Prérequis", "Les prérequis"],
+        ],
+        theme: "grid",
+        headStyles: { fillColor: COLORS.primary, textColor: COLORS.white, fontStyle: "bold", fontSize: 9 },
+        bodyStyles: { fontSize: 8.5, cellPadding: 3 },
+        alternateRowStyles: { fillColor: [245, 248, 250] },
+        columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 90 } },
+        margin: { left: 15, right: 15 },
+      });
+    });
+  }
+
   // ======================== PAGE 2: SOMMAIRE ========================
   pages.push(() => {
     addHeader(doc);
     let y = addSectionTitle(doc, "SOMMAIRE", 42);
     y += 4;
 
-    const sommaire = [
+    const sommaire = v3 ? [
+      "1. L'entreprise DRONES37",
+      "2. Certification QUALIOPI",
+      "3. Un réseau d'experts de la pulvérisation par drone",
+      "4. Organigramme — Une équipe disponible",
+      "5. Votre formation",
+      "   5.1 Objectifs de la formation",
+      "   5.2 Mise en œuvre de l'action de formation",
+      "   5.3 Modalités pédagogiques",
+      "6. Programme — Items d'évaluation",
+      "7. Prérequis et conditions de certification",
+      "8. Modalités d'évaluation",
+      "9. Planning de la formation (5 jours)",
+      "10. Site de formation",
+      "11. Constitution de votre dossier",
+      "12. Règlement intérieur",
+      "13. Conditions Générales d'Utilisation (CGU)",
+      "14. Conditions Générales de Vente (CGV)",
+      "15. Protection des données personnelles",
+    ] : [
       "1. L'entreprise DRONES37",
       "2. Certification QUALIOPI",
       "3. Organigramme — Une équipe disponible",
@@ -563,6 +635,40 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
 
   // ======================== PLANNING 5 JOURS ========================
   if (config.planning && config.planning.length > 0) {
+    // Modalités d'évaluation (v3, avant le planning)
+    if (v3) {
+      pages.push(() => {
+        addHeader(doc);
+        let y = addSectionTitle(doc, "Modalités d'évaluation", 42);
+        y += 4;
+        y = addParagraph(doc, "L'évaluation des stagiaires porte sur les deux blocs de compétences du référentiel RS7235 et se déroule selon les modalités suivantes :", y);
+        y += 6;
+        y = addSubTitle(doc, "Évaluation continue", y);
+        y += 4;
+        y = addBulletList(doc, [
+          "Observation directe du formateur tout au long de la formation, sur chaque exercice pratique et mise en situation",
+          "Questionnaires de connaissances réglementaires et techniques en cours de formation",
+        ], y);
+        y += 6;
+        y = addSubTitle(doc, "Évaluation pratique finale", y);
+        y += 4;
+        y = addParagraph(doc, "Elle a lieu à l'issue des 5 jours de formation, lors d'une session dédiée organisée par l'organisme.", y);
+        y += 2;
+        y = addBulletList(doc, [
+          "Mise en situation professionnelle complète (briefing, préparation de mission, vol, débriefing) sur les scénarios STS-01 et STS-02",
+          "Évaluation réalisée par un juré mandaté par la FPDC, extérieur à l'organisme de formation, garantissant l'indépendance de l'évaluation",
+          "Évaluation sur grille de critères alignée sur les 18 items du référentiel RS7235, couvrant le Bloc 1 (préparer une mission de vol) et le Bloc 2 (réaliser une mission de captation de données)",
+        ], y);
+        y += 6;
+        y = addSubTitle(doc, "Restitution et certification", y);
+        y += 4;
+        y = addBulletList(doc, [
+          "Remise d'un Livret de progression et d'une Attestation de suivi de formation pratique à chaque stagiaire à l'issue des 5 jours",
+          "Résultat de l'évaluation transmis par le juré à la commission Labellisation de la FPDC en vue de la délivrance de la certification RS7235",
+          "Questionnaire de satisfaction à chaud remis en fin de formation",
+        ], y);
+      });
+    }
     pages.push(() => {
       addHeader(doc);
       let y = addSectionTitle(doc, "Planning de la formation", 42);
@@ -586,6 +692,11 @@ export function generateLivretAccueilPDF(student: Student, options?: { blank?: b
         },
         margin: { left: 15, right: 15 },
       });
+
+      if (v3) {
+        const afterY = (doc as any).lastAutoTable?.finalY + 8 || y + 100;
+        addParagraph(doc, "Ce planning couvre les 5 jours de formation. L'évaluation pratique finale en vue de la certification RS7235 est organisée dans un second temps, à l'issue de la formation, par un juré mandaté par la FPDC et extérieur à l'organisme (cf. Modalités d'évaluation).", afterY, { fontSize: 8 });
+      }
     });
   }
 
@@ -929,5 +1040,5 @@ export function generateLivretAccueilVierge(formation: string) {
     startDate: new Date().toISOString(),
     endDate: new Date().toISOString(),
   } as unknown as Student;
-  return generateLivretAccueilPDF(emptyStudent, { blank: true });
+  return generateLivretAccueilPDF(emptyStudent, { blank: true, version: "v3" });
 }
