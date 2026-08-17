@@ -251,10 +251,10 @@ function checkNewPage(doc: jsPDF, y: number, needed: number): number {
 }
 
 // ==================== MAIN GENERATOR ====================
-export function generateLivretAccueilPDF(student: Student, options?: { blank?: boolean }) {
+export function generateLivretAccueilPDF(student: Student, options?: { blank?: boolean; version?: "v2" | "v3" }) {
   const blank = options?.blank === true;
   const config = getFormationConfig(student.formation);
-  const version = (options as any)?.version || getLivretVersion(student);
+  const version = options?.version || getLivretVersion(student);
   const isSTS = !!config.planning;
   const v3 = version === "v3" && isSTS;
   if (v3) config.planning = PLANNING_STS_V3;
@@ -1040,5 +1040,5 @@ export function generateLivretAccueilVierge(formation: string) {
     startDate: new Date().toISOString(),
     endDate: new Date().toISOString(),
   } as unknown as Student;
-  return generateLivretAccueilPDF(emptyStudent, { blank: true });
+  return generateLivretAccueilPDF(emptyStudent, { blank: true, version: "v3" });
 }
