@@ -79,6 +79,24 @@ const PLANNING_STS = [
   },
 ];
 
+// Planning v3 (nouveau livret) : l'évaluation certificative est organisée après la formation
+const PLANNING_STS_V3 = [
+  ...PLANNING_STS.slice(0, 4),
+  {
+    jour: "Jour 5",
+    matin: "Révisions et consolidation des acquis — Traitement des points faibles identifiés",
+    apresMidi: "Mise en situation professionnelle complète, débriefing individuel avec le formateur, remise du livret de progression, bilan et questionnaire de satisfaction",
+  },
+];
+
+// Livret v3 : applicable aux élèves créés à partir de cette date (les anciens gardent le livret v2)
+export const LIVRET_V3_CUTOFF = 1787000000000;
+
+export function getLivretVersion(student: Student): "v2" | "v3" {
+  const ts = Number(student.id);
+  return Number.isFinite(ts) && ts >= LIVRET_V3_CUTOFF ? "v3" : "v2";
+}
+
 function getFormationConfig(formation: string): FormationConfig {
   const lower = formation.toLowerCase();
   if (lower.includes("pulvé") || lower.includes("bâtiment")) {
